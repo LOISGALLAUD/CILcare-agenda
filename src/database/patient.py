@@ -30,6 +30,7 @@ class Patient:
     mail: list[str] = field(default_factory=list)
     _identifier: str = field(init=False, default_factory=generate_id, repr=False)
 
+#------------------------------------------------------------------------------#
 
 if __name__ == "__main__":
     person = Patient("Loïs", "GALLAUD", 19,

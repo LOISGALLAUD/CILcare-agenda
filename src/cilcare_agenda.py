@@ -10,6 +10,9 @@ as well as the connections to the database.
 import time
 
 from src.loggers import Loggers
+
+from src.database.db_cursor import DBCursor
+
 from src.interface.user_interface import GUI
 
 #------------------------------------------------------------------------------#
@@ -35,9 +38,11 @@ class Agenda:
         self.loggers.log.info("Starting %s v%s...", Agenda.NAME, Agenda.VERSION)
 
         # Setup the current user
-
+        self.current_user = None
 
         # Setup the database connection
+        self.loggers.log.info("Connecting to the database...")
+        self.db_cursor = DBCursor(self)
 
         # Setup the GUI
         self.gui = GUI(self)

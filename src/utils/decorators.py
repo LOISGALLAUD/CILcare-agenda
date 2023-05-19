@@ -11,26 +11,29 @@ import sys
 
 #-------------------------------------------------------------------#
 
-
-def setup_service(func):
+def setup_service(max_attempts=5):
     """
     Setups to the service when its setup method is done.
     This way, the application will try to connect to the service safely.
     """
-    max_attempts = 5
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        class_name = args[0].__class__.__name__ # Get the name of the service
-        loggers = args[0].loggers
-        attempt = 1
-        while attempt <= max_attempts:
-            loggers.log.debug(f"Setup {class_name} (attempt {attempt})")
-            if result := func(*args, **kwargs):
-                return result
-            attempt += 1
-        loggers.log.debug(f"Unable to setup {class_name}.")
-        sys.exit(1)
-    return wrapper
+    def decorator_func(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            class_name = args[0].__class__.__name__ # Get the name of the service
+            loggers = args[0].loggers
+            attempt = 1
+            while attempt <= max_attempts:
+                loggers.log.debug(f"Setup {class_name} (attempt {attempt})")
+                try:
+                    func(*args, **kwargs)
+                except Exception as setup_error:
+                    loggers.log.debug(f"Unable to setup {class_name}: {type(setup_error).__name__}")
+                attempt += 1
+            loggers.log.fatal(f"Can't setup {class_name}. Exiting the application.")
+            print("CILcare agenda stopped.")
+            sys.exit(1)
+        return wrapper
+    return decorator_func
 
 def close_service(func):
     """

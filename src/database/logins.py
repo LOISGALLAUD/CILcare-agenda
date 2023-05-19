@@ -23,6 +23,17 @@ class Logins:
     _password: str = ""
     _port: int = 3306
 
+    def __init__(self):
+        """
+        Logins constructor.
+        """
+        with open("./logins.txt", "r", encoding="utf-8") as logins_file:
+            self._host = logins_file.readline().strip()
+            self._database = logins_file.readline().strip()
+            self._user = logins_file.readline().strip()
+            self._password = logins_file.readline().strip()
+            self._port = int(logins_file.readline().strip())
+
     def get_host(self) -> str:
         """
         Returns the host.

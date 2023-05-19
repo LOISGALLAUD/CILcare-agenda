@@ -22,22 +22,21 @@ class DBCursor:
     It will be able to return information or modify
     values in the database.
     """
-    def __init__(self, app, logins:dict) -> None:
+    def __init__(self, app) -> None:
         self.loggers = app.loggers
-        self.logins = Logins(**logins)
+        self._logins = Logins() # gets the logins from the logins.txt file
         self.connection = None
-        self.connect()
+        self.setup_connection()
 
-    @setup_service
-    def connect(self) -> bool:
+    @setup_service(max_attempts=10)
+    def setup_connection(self) -> bool:
         """
         Connects to the database.
         """
-        self.loggers.log.info("Connecting to the database...")
-        self.connection = mysql.connect(host=self.logins.get_host(),
-                                            database=self.logins.get_database(),
-                                            user=self.logins.get_user(),
-                                            password=self.logins.get_password(),
-                                            port=self.logins.get_port())
+        self.connection = mysql.connect(host=self._logins.get_host(),
+                                            database=self._logins.get_database(),
+                                            user=self._logins.get_user(),
+                                            password=self._logins.get_password(),
+                                            port=self._logins.get_port())
         self.loggers.log.info("Connected to the database.")
         return True
