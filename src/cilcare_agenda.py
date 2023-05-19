@@ -36,6 +36,7 @@ class Agenda:
 
         # Setup the current user
 
+
         # Setup the database connection
 
         # Setup the GUI
