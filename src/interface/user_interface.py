@@ -8,7 +8,9 @@ of the application.
 
 #-------------------------------------------------------------------#
 
-from src.utils.graphical_utils import Tk
+from src.utils.graphical_utils import Tk, Frame, BOTH
+from src.interface.menus.login_menu import LoginMenu
+from src.interface.menus.main_menu import MainMenu
 
 #-------------------------------------------------------------------#
 
@@ -25,6 +27,11 @@ class GUI(Tk):
         self.resizable = False
         self.config(bg="black")
 
+        self.login_menu = None
+        self.current_menu = None
+
+        self.setup_menus()
+
     def start(self) -> bool:
         """
         Displays the GUI.
@@ -40,3 +47,36 @@ class GUI(Tk):
         self.quit()
         self.loggers.log.info("GUI closed.")
         return True
+
+    def setup_menus(self):
+        """
+        Setup the different menus of the application.
+        """
+        self.login_menu = LoginMenu(self)
+        #self.credits_menu = CreditsMenu(self)
+        #self.settings_menu = SettingsMenu(self)
+        self.main_menu = MainMenu(self)
+
+        #self.shopping_menu = ShoppingMenu(self)
+        #self.history_menu = Frame(self)
+        #self.stats_menu = Frame(self)
+
+        self.login_menu.pack(fill=BOTH, expand=True)
+        self.current_menu = self.login_menu
+
+    def change_menu(self, next_menu: Frame):
+        """
+        This function changes the current view to the desired menu.
+        """
+        # Don't do anything if the desired menu is the same as the current menu
+        if next_menu == self.current_menu:
+            return
+
+        # Unbind the keyboard
+        self.unbind("<Key>")
+
+        self.current_menu.pack_forget()
+        next_menu.pack(fill=BOTH, expand=True)
+        # Update the current menu reference
+        self.current_menu = next_menu
+        self.loggers.log.debug(f"({type(next_menu).__name__})")

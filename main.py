@@ -13,5 +13,5 @@ from src.cilcare_agenda import Agenda
 
 if __name__ == "__main__":
     print("Starting CILcare agenda...")
-    marco = Agenda()
+    agenda = Agenda()
     print("CILcare agenda stopped.")
