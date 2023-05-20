@@ -8,6 +8,8 @@ Contains the decorators used in the application.
 
 import functools
 import sys
+from mysql.connector import InterfaceError
+from time import sleep
 
 #-------------------------------------------------------------------#
 
@@ -26,9 +28,10 @@ def setup_service(max_attempts:int=5):
                 loggers.log.debug(f"Setup {class_name} (attempt {attempt})")
                 try:
                     func(*args, **kwargs)
-                except Exception as setup_error:
+                except InterfaceError as setup_error:
                     loggers.log.debug(f"Unable to setup {class_name}: {type(setup_error).__name__}")
                 attempt += 1
+                sleep(.5)
             loggers.log.fatal(f"Can't setup {class_name}. Exiting the application.")
             print("CILcare agenda stopped.")
             sys.exit(1)
@@ -51,6 +54,7 @@ def close_service(max_attempts:int=5):
                 if result := func(*args, **kwargs):
                     return result
                 attempt += 1
+                sleep(.5)
             loggers.log.debug("Failed to close service")
             return None
         return wrapper

@@ -9,7 +9,7 @@ as well as the connections to the database.
 
 import time
 from src.loggers import Loggers
-#from src.database.db_cursor import DBCursor
+from src.database.db_cursor import DBCursor
 from src.interface.user_interface import GUI
 
 #------------------------------------------------------------------------------#
@@ -39,7 +39,7 @@ class Agenda:
 
         # Setup the database connection
         self.loggers.log.info("Connecting to the database...")
-        #self.db_cursor = DBCursor(self)
+        self.db_cursor = DBCursor(self)
 
         # Setup the GUI
         self.gui = GUI(self)

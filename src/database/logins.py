@@ -23,7 +23,7 @@ class Logins:
     _password: str = ""
     _port: int = 3306
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Logins constructor.
         """

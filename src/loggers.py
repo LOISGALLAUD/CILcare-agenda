@@ -17,7 +17,7 @@ class Loggers:
     """
     This class represents the logs of the application.
     """
-    def __init__(self, name):
+    def __init__(self, name: str) -> None:
         """
         Constructor of the Logs class.
         """
@@ -32,14 +32,14 @@ class Loggers:
         self.create_root_dir()
         self.create_log_file()
 
-    def create_root_dir(self):
+    def create_root_dir(self) -> None:
         """
         Create the root directory of the logs.
         """
         if not os.path.exists(self.log_out_path):
             os.makedirs(self.log_out_path)
 
-    def create_log_file(self):
+    def create_log_file(self) -> bool:
         """
         Create the log file.
         """
@@ -55,7 +55,7 @@ class Loggers:
                             datefmt=self.log_date_format, level=self.log_level)
         return True
 
-    def close(self):
+    def close(self) -> bool:
         """
         Add to the log of the day the log of the passed session.
         """
