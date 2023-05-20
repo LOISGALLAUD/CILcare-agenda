@@ -9,7 +9,6 @@ It will be used to interact with the database.
 
 import mysql.connector as mysql
 from src.utils.decorators import setup_service
-
 from src.database.logins import Logins
 
 #------------------------------------------------------------------------------#
@@ -28,15 +27,15 @@ class DBCursor:
         self.connection = None
         self.setup_connection()
 
-    @setup_service(max_attempts=10)
+    @setup_service(max_attempts=5)
     def setup_connection(self) -> bool:
         """
         Connects to the database.
         """
         self.connection = mysql.connect(host=self._logins.get_host(),
-                                            database=self._logins.get_database(),
-                                            user=self._logins.get_user(),
-                                            password=self._logins.get_password(),
-                                            port=self._logins.get_port())
+                                        database=self._logins.get_database(),
+                                        user=self._logins.get_user(),
+                                        password=self._logins.get_password(),
+                                        port=self._logins.get_port())
         self.loggers.log.info("Connected to the database.")
         return True
