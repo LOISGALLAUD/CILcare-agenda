@@ -20,15 +20,8 @@ class MainMenu(Frame):
         super().__init__(gui)
         self.gui = gui
 
-        self.setup_images()
         self.setup_label()
         self.setup_buttons()
-
-    def setup_images(self) -> bool:
-        """
-        Defines the images used in the main menu.
-        """
-        return True
 
     def setup_label(self) -> bool:
         """
@@ -44,12 +37,10 @@ class MainMenu(Frame):
         """
         self.enter_btn = ButtonApp(self, text="Enter",
                                    command=lambda: self.gui.change_menu(self.gui.main_menu))
-        self.settings_btn = ButtonApp(self, text="Settings",
-                                      command=lambda: self.gui.change_menu(self.gui.settings_menu))
-        self.credits_btn = ButtonApp(self, text="Credits",
-                                     command=lambda: self.gui.change_menu(self.gui.credits_menu))
+        self.help_btn = ButtonApp(self, text="Help",
+                                     command=lambda: self.gui.change_menu(self.gui.help_menu))
         self.power_btn = ButtonApp(self, text="Power off",
                                    command=self.gui.app.close)
 
-        for btn in [self.enter_btn, self.settings_btn, self.credits_btn, self.power_btn]:
+        for btn in [self.enter_btn, self.help_btn, self.power_btn]:
             btn.pack()

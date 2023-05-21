@@ -53,8 +53,8 @@ class LoginMenu(Frame):
         Returns True if setup was successful.
         """
         self.login_button = Button(self, text="Login",
-                                   command=lambda: self.log_in(self.username_entry.get(),
-                                                               self.password_entry.get()))
+                                   command=self.log_in)
+        self.login_button.bind("<Return>", self.log_in)
         self.login_button.pack(fill=BOTH, expand=True)
         return True
 
@@ -65,18 +65,19 @@ class LoginMenu(Frame):
         """
         self.username_entry = EntryApp("username", self)
         self.username_entry.pack(fill=BOTH, expand=True)
-        self.username_entry.focus_set()
 
         self.password_entry = EntryApp("password", self, show='•')
         self.password_entry.pack(fill=BOTH, expand=True)
 
         return True
 
-    def log_in(self, username:str, password:str) -> bool:
+    def log_in(self, _event) -> bool:
         """
         Logs the user in.
         Returns True if login was successful.
         """
+        username = self.username_entry.get()
+        password = self.password_entry.get()
         if username == "admin" and password == "admin":
             self.gui.current_menu = self.gui.main_menu
             self.gui.current_menu.pack(fill=BOTH, expand=True)

@@ -8,8 +8,8 @@ Contains the decorators used in the application.
 
 import functools
 import sys
-from mysql.connector import InterfaceError
 from time import sleep
+from mysql.connector import InterfaceError
 
 #-------------------------------------------------------------------#
 

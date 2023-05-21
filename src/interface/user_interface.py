@@ -11,6 +11,7 @@ of the application.
 from src.utils.graphical_utils import Tk, Frame, BOTH
 from src.interface.menus.login_menu import LoginMenu
 from src.interface.menus.main_menu import MainMenu
+from src.interface.menus.help_menu import HelpMenu
 
 #-------------------------------------------------------------------#
 
@@ -53,7 +54,7 @@ class GUI(Tk):
         Setup the different menus of the application.
         """
         self.login_menu = LoginMenu(self)
-        #self.credits_menu = CreditsMenu(self)
+        self.help_menu = HelpMenu(self)
         #self.settings_menu = SettingsMenu(self)
         self.main_menu = MainMenu(self)
 
@@ -61,8 +62,8 @@ class GUI(Tk):
         #self.history_menu = Frame(self)
         #self.stats_menu = Frame(self)
 
-        self.login_menu.pack(fill=BOTH, expand=True)
-        self.current_menu = self.login_menu
+        self.main_menu.pack(fill=BOTH, expand=True)
+        self.current_menu = self.main_menu
 
     def change_menu(self, next_menu: Frame):
         """

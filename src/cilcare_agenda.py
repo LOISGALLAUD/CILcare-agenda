@@ -32,7 +32,7 @@ class Agenda:
 
         # Setup the loggers
         self.loggers = Loggers(Agenda.NAME)
-        self.loggers.log.info("Starting %s v%s...", Agenda.NAME, Agenda.VERSION)
+        self.loggers.log.debug( "Starting %s v%s...", Agenda.NAME, Agenda.VERSION)
 
         # Setup the current user
         self.current_user = None
