@@ -8,7 +8,7 @@ as well as the connections to the database.
 #------------------------------------------------------------------------------#
 
 import time
-from src.loggers import Loggers
+from src.utils.loggers import Loggers
 #from src.database.db_cursor import DBCursor
 from src.interface.user_interface import GUI
 

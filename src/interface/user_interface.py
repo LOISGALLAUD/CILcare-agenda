@@ -49,23 +49,21 @@ class GUI(Tk):
         self.loggers.log.info("GUI closed.")
         return True
 
-    def setup_menus(self):
+    def setup_menus(self) -> bool:
         """
         Setup the different menus of the application.
         """
         self.login_menu = LoginMenu(self)
-        self.help_menu = HelpMenu(self)
-        #self.settings_menu = SettingsMenu(self)
         self.main_menu = MainMenu(self)
+        self.help_menu = HelpMenu(self)
 
-        #self.shopping_menu = ShoppingMenu(self)
         #self.history_menu = Frame(self)
         #self.stats_menu = Frame(self)
 
         self.main_menu.pack(fill=BOTH, expand=True)
         self.current_menu = self.main_menu
 
-    def change_menu(self, next_menu: Frame):
+    def change_menu(self, next_menu: Frame) -> None:
         """
         This function changes the current view to the desired menu.
         """
