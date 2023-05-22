@@ -31,11 +31,3 @@ class Patient:
     _identifier: str = field(init=False, default_factory=generate_id, repr=False)
 
 #------------------------------------------------------------------------------#
-
-if __name__ == "__main__":
-    person = Patient("Loïs", "GALLAUD", 19,
-                     mail=["loisgallaud@hotmail.com", "gallaudlois@gmail.com"])
-    person1 = Patient("Pierrick","BOUILLOUX", 20,
-                      mail=["pierrickb@gmail.com"])
-    print(person)
-    print(person1)

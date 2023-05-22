@@ -17,11 +17,12 @@ class EntryApp(Entry):
     """
     focused_entry = None
 
-    def __init__(self, name:str, *args, **kwargs) -> None:
+    def __init__(self, name:str, hidden:bool, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.name = name
+        self.hidden = hidden
 
-        self.config(bg="gray", fg="white", insertbackground="white")
+        self.config(bg="lightgray", fg="gray", insertbackground="white", font=("system", 15))
         self.bind("<FocusIn>", self.on_focus_in)
         self.bind("<FocusOut>", self.on_focus_out)
 
@@ -36,7 +37,7 @@ class EntryApp(Entry):
             self.delete(0, "end")
             self.config(fg='white')
 
-        if self.name == "password":
+        if self.hidden:
             self.config(show='•')
 
     def on_focus_out(self, _event:object) -> None:

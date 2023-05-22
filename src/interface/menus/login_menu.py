@@ -20,17 +20,10 @@ class LoginMenu(Frame):
     def __init__(self, gui=None) -> None:
         super().__init__(gui)
         self.gui = gui
-        self.config(bg="red")
-
-        self.app_name_label = None
-        self.login_button = None
-        self.username_entry = None
-        self.password_entry = None
-
+        self.config(bg="gray")
+        self.login_container = LoginContainer(self)
+        self.login_container.pack()
         self.setup_images()
-        self.setup_label()
-        self.setup_entry()
-        self.setup_buttons()
 
     def setup_images(self) -> bool:
         """
@@ -38,49 +31,45 @@ class LoginMenu(Frame):
         """
         return True
 
-    def setup_label(self) -> bool:
-        """
-        Setup the label of the menu.
-        """
-        self.app_name_label = Label(self, text=self.gui.app.NAME,
-                                    fg="white", bg="black")
-        self.app_name_label.pack(fill=BOTH, expand=True)
-        return True
-
-    def setup_buttons(self) -> bool:
-        """
-        Setup the buttons of the menu.
-        Returns True if setup was successful.
-        """
-        self.login_button = Button(self, text="Login",
-                                   command=self.log_in)
-        self.login_button.bind("<Return>", self.log_in)
-        self.login_button.pack(fill=BOTH, expand=True)
-        return True
-
-    def setup_entry(self) -> bool:
-        """
-        Setup the entry of the menu.
-        Returns True if setup was successful.
-        """
-        self.username_entry = EntryApp("username", self)
-        self.username_entry.pack(fill=BOTH, expand=True)
-
-        self.password_entry = EntryApp("password", self, show='•')
-        self.password_entry.pack(fill=BOTH, expand=True)
-
-        return True
-
-    def log_in(self, _event) -> bool:
+    def log_in(self) -> bool:
         """
         Logs the user in.
         Returns True if login was successful.
         """
-        username = self.username_entry.get()
-        password = self.password_entry.get()
+        username = self.login_container.username_entry.get()
+        password = self.login_container.pwd_entry.get()
         if username == "admin" and password == "admin":
             self.gui.current_menu = self.gui.main_menu
             self.gui.current_menu.pack(fill=BOTH, expand=True)
             self.pack_forget()
             return True
         return False
+
+class LoginContainer(Frame):
+    """
+    Container of the login menu.
+    """
+    def __init__(self, parent_menu=None) -> None:
+        super().__init__(parent_menu)
+        self.parent_menu = parent_menu
+
+        self.setup_widgets()
+
+    def setup_widgets(self) -> bool:
+        """
+        Setup the widgets of the container.
+        """
+        self.username_label = Label(self, text="Enter your username:", font=("system", 20))
+        self.username_label.pack(fill=BOTH, expand=True)
+        self.username_entry = EntryApp("username", False, self)
+        self.username_entry.pack(fill=BOTH, expand=True)
+        self.pwd_label = Label(self, text="Enter your password:", font=("system", 20))
+        self.pwd_label.pack(fill=BOTH, expand=True)
+        self.pwd_entry = EntryApp("password", True, self, show='•')
+        self.pwd_entry.pack(fill=BOTH, expand=True)
+
+        self.login_button = Button(self, text="Login",
+                                      command=self.parent_menu.log_in)
+        self.login_button.pack(fill=BOTH, expand=True)
+
+        return True

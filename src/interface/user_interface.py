@@ -24,7 +24,7 @@ class GUI(Tk):
         self.app = app
         self.loggers = app.loggers
         self.title = app.NAME
-        self.geometry("800x480")
+        self.attributes("-fullscreen", True)
         self.resizable = False
         self.config(bg="black")
 
@@ -60,7 +60,7 @@ class GUI(Tk):
         #self.history_menu = Frame(self)
         #self.stats_menu = Frame(self)
 
-        self.main_menu.pack(fill=BOTH, expand=True)
+        self.login_menu.pack(fill=BOTH, expand=True)
         self.current_menu = self.main_menu
 
     def change_menu(self, next_menu: Frame) -> None:
