@@ -1,5 +1,5 @@
 """
-cilcare_agenda.ŷ
+cilcare_agenda.
 
 Encapsulates the whole logic of the application
 as well as the connections to the database.
@@ -20,7 +20,7 @@ class Agenda:
     Agenda application.
     """
 
-    NAME = "CILcare_Agenda"
+    NAME = "CILpink_Agenda"
     VERSION = "0.1"
     AUTHOR = "Loïs GALLAUD"
 
@@ -40,6 +40,7 @@ class Agenda:
         # Setup the database connection
         self.loggers.log.info("Connecting to the database...")
         self.db_cursor = DBCursor(self)
+        self.loggers.log.info("Connected to the database.")
 
         # Setup the GUI
         self.gui = GUI(self)
@@ -52,7 +53,8 @@ class Agenda:
         Quits the application.
         """
         # Close the database connection safely
-        # self.database.close()
+        self.db_cursor.close_connection()
+        self.loggers.log.info("Disconnected from the database.")
         # Close the rest of the application
         self.gui.close()
         self.loggers.log.info("Closing %s...", Agenda.NAME)

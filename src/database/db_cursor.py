@@ -37,5 +37,11 @@ class DBCursor:
                                         user=self._logins.get_user(),
                                         password=self._logins.get_password(),
                                         port=self._logins.get_port())
-        self.loggers.log.info("Connected to the database.")
+        return True
+
+    def close_connection(self) -> bool:
+        """
+        Ferme la session MySQL.
+        """
+        self.connection.close()
         return True

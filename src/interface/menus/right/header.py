@@ -20,4 +20,5 @@ class Header(Frame):
         self.manager = manager
 
         self.grid_propagate(False)
-        self.configure(bg="#FFC0CB")
+        self.configure(bg="#2bb5a6")
+

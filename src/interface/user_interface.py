@@ -60,7 +60,7 @@ class GUI(Tk):
         #self.history_menu = Frame(self)
         #self.stats_menu = Frame(self)
 
-        self.login_menu.pack(fill=BOTH, expand=True)
+        self.main_menu.pack(fill=BOTH, expand=True)
         self.current_menu = self.main_menu
 
     def change_menu(self, next_menu: Frame) -> None:

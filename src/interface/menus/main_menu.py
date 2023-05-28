@@ -32,6 +32,5 @@ class MainMenu(Frame):
 
         # Setup the grid
         self.grid_columnconfigure(0, weight=1)
-        self.grid_columnconfigure(1, weight=4)
+        self.grid_columnconfigure(1, weight=6)
         self.grid_rowconfigure(0, weight=1)
-

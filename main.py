@@ -12,6 +12,6 @@ from src.cilcare_agenda import Agenda
 #------------------------------------------------------------------------------#
 
 if __name__ == "__main__":
-    print("Starting CILcare agenda...")
+    print("Starting CILpink agenda...")
     agenda = Agenda()
-    print("CILcare agenda stopped.")
+    print("CILpink agenda stopped.")

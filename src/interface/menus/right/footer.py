@@ -21,4 +21,4 @@ class Footer(Frame):
         self.shopping_manager = manager.manager
         self.loggers = self.shopping_manager.gui.app.loggers
         self.grid_propagate(False)
-        self.configure(bg="#FFC0CB")
+        self.configure(bg="#2bb5a6")

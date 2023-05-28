@@ -18,9 +18,9 @@ class RightGrid(Frame):
     """
     Container of the header, body and footer of the shopping page.
     """
-    def __init__(self, manager=None):
-        super().__init__(manager)
-        self.manager = manager
+    def __init__(self, main_menu=None):
+        super().__init__(main_menu)
+        self.manager = main_menu
 
         self.grid_propagate(False)
 
