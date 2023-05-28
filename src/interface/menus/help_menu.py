@@ -27,12 +27,10 @@ class HelpMenu(Frame):
         """
         Setup the widgets of the menu.
         """
-        self.loggers.log.debug("Setting up the widgets of the help menu...")
-
         self.help_label = Label(self, text="Help menu", bg="black", fg="white")
         self.help_label.pack(side=TOP, fill=BOTH, expand=True)
 
-        self.tips_label = Label(self, text=tips_text, bg="black", fg="white")
+        self.tips_label = Label(self, text=LOREM, bg="black", fg="white")
         self.tips_label.pack(side=TOP, fill=BOTH, expand=True)
 
         self.back_button = Button(self, text="Back", bg="black", fg="white",
@@ -40,7 +38,7 @@ class HelpMenu(Frame):
         self.back_button.pack(side=BOTTOM, fill=BOTH, expand=True)
         return True
 
-tips_text = """Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ac
+LOREM = """Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ac
 ultricies nulla, et aliquet justo. Fusce sit amet risus metus. Quisque sollicitudin
 a elit scelerisque efficitur. Integer laoreet dui sed lacus pellentesque, ac cursus
 magna viverra. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices

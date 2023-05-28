@@ -23,8 +23,8 @@ class DBCursor:
     """
     def __init__(self, app) -> None:
         self.loggers = app.loggers
-        self._logins = Logins() # gets the logins from the logins.txt file
         self.connection = None
+        self._logins = Logins() # gets the logins from the logins.txt file
         self.setup_connection()
 
     @setup_service(max_attempts=5)
