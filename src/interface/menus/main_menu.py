@@ -6,7 +6,9 @@ Configure the main menu of the application.
 
 #-------------------------------------------------------------------#
 
-from src.utils.graphical_utils import Frame, Label, BOTH, ButtonApp
+from src.utils.graphical_utils import Frame
+from src.interface.menus.left.left_grid import LeftGrid
+from src.interface.menus.right.right_grid import RightGrid
 
 #-------------------------------------------------------------------#
 
@@ -20,27 +22,15 @@ class MainMenu(Frame):
         super().__init__(gui)
         self.gui = gui
 
-        self.setup_label()
-        self.setup_buttons()
+        # Setup the left grid for the navbar
+        self.left_grid = LeftGrid(self)
+        self.left_grid.grid(row=0, column=0, sticky='nsew')
 
-    def setup_label(self) -> bool:
-        """
-        Defines the labels used in the main menu.
-        """
-        self.welcome_label = Label(self, text="Welcome to Agenda")
-        self.welcome_label.pack(fill=BOTH)
-        return True
+        # Setup the right grid for the header, body and footer
+        self.right_grid = RightGrid(self)
+        self.right_grid.grid(row=0, column=1, sticky='nsew')
 
-    def setup_buttons(self):
-        """
-        Defines the buttons used in the main menu.
-        """
-        self.enter_btn = ButtonApp(self, text="Enter",
-                                   command=lambda: self.gui.change_menu(self.gui.main_menu))
-        self.help_btn = ButtonApp(self, text="Help",
-                                     command=lambda: self.gui.change_menu(self.gui.help_menu))
-        self.power_btn = ButtonApp(self, text="Power off",
-                                   command=self.gui.app.close)
-
-        for btn in [self.enter_btn, self.help_btn, self.power_btn]:
-            btn.pack()
+        # Setup the grid
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=6)
+        self.grid_rowconfigure(0, weight=1)

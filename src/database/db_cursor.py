@@ -23,8 +23,8 @@ class DBCursor:
     """
     def __init__(self, app) -> None:
         self.loggers = app.loggers
-        self._logins = Logins() # gets the logins from the logins.txt file
         self.connection = None
+        self._logins = Logins() # gets the logins from the logins.txt file
         self.setup_connection()
 
     @setup_service(max_attempts=5)
@@ -37,5 +37,11 @@ class DBCursor:
                                         user=self._logins.get_user(),
                                         password=self._logins.get_password(),
                                         port=self._logins.get_port())
-        self.loggers.log.info("Connected to the database.")
+        return True
+
+    def close_connection(self) -> bool:
+        """
+        Ferme la session MySQL.
+        """
+        self.connection.close()
         return True
