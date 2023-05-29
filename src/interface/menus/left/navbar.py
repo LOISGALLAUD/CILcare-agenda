@@ -58,9 +58,9 @@ class Navbar(Frame):
         for toggle in self.toggles:
             button = getattr(self, f"{toggle.lower()}_btn")
             if toggle == self.current_toggle:
-                button.configure(bg=ButtonApp.ACTIVE_TOGGLE_COLOR)  # set active toggle color
+                button.configure(bg=ButtonApp.ACTIVE_TOGGLE_RED)  # set active toggle color
             else:
-                button.configure(bg=ButtonApp.DEFAULT_BG)  # set default color
+                button.configure(bg=ButtonApp.DEFAULT_BG_RED)  # set default color
 
         # <update right_grid>
 
@@ -68,4 +68,13 @@ class Navbar(Frame):
         """
         Disconnects the user.
         """
+        self.reset_mofifications()
+        self.manager.manager.right_grid.reset_modifications()
         self.manager.manager.gui.change_menu(self.manager.manager.gui.login_menu)
+
+    def reset_mofifications(self) -> None:
+        """
+        Resets the modifications made by the navbar.
+        """
+        current_toggle = "Studies"
+        self.toggle(current_toggle)

@@ -41,3 +41,11 @@ class RightGrid(Frame):
         self.grid_rowconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=4)
         self.grid_rowconfigure(2, weight=2)
+
+    def reset_modifications(self) -> None:
+        """
+        Resets the modifications made by the user.
+        """
+        self.header.reset_modifications()
+        #self.body.reset_modifications()
+        #self.footer.reset_modifications()
