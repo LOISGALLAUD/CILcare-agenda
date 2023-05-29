@@ -54,17 +54,16 @@ class GUI(Tk):
         Setup the different menus of the application.
         """
         self.login_menu = LoginMenu(self)
-        self.current_menu = self.login_menu
         self.main_menu = MainMenu(self)
         self.help_menu = HelpMenu(self)
 
-        self.login_menu.pack(fill=BOTH, expand=True)
+        self.current_menu = self.main_menu
+        self.main_menu.pack(fill=BOTH, expand=True)
 
     def change_menu(self, next_menu: Frame) -> bool:
         """
         This function changes the current view to the desired menu.
         """
-        print(f"Changing menu from {type(self.current_menu).__name__} to {type(next_menu).__name__}"    )
         # Don't do anything if the desired menu is the same as the current menu
         if next_menu == self.current_menu:
             return

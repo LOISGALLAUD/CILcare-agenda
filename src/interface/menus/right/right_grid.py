@@ -34,7 +34,7 @@ class RightGrid(Frame):
 
         # Setup the body inside the right grid
         self.body = Body(self)
-        self.body.grid(row=1, column=0, sticky='nsew')
+        self.body.grid(row=1, column=0, sticky='nsew', )
 
         # Setup the grid
         self.grid_columnconfigure(0, weight=1)
