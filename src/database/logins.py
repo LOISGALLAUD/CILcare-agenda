@@ -27,6 +27,7 @@ class Logins:
         """
         Logins constructor.
         """
+        return
         with open("./logins.txt", "r", encoding="utf-8") as logins_file:
             self._host = logins_file.readline().strip()
             self._database = logins_file.readline().strip()

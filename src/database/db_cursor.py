@@ -25,7 +25,7 @@ class DBCursor:
         self.loggers = app.loggers
         self.connection = None
         self._logins = Logins() # gets the logins from the logins.txt file
-        self.setup_connection()
+        #self.setup_connection()
 
     @setup_service(max_attempts=5)
     def setup_connection(self) -> bool:
@@ -43,5 +43,5 @@ class DBCursor:
         """
         Ferme la session MySQL.
         """
-        self.connection.close()
+        #self.connection.close()
         return True
