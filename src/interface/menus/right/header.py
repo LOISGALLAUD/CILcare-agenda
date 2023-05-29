@@ -29,9 +29,8 @@ class Header(Frame):
         """
         Setup the widgets of the header.
         """
-
         self.add_study_btn = ButtonApp(self, "Green", text="Add study",
-                                       command=lambda: self.toggle("Add study"))
+                                       command=self.display_add_study)
         self.add_days_off_btn = ButtonApp(self, "Green", text="Add days off",
                                             command=lambda: self.toggle("Add days off"))
 
@@ -45,6 +44,7 @@ class Header(Frame):
         """
         Changes the current toggle of the navbar.
         """
+        # If toggle is None, reset the navbar
         if toggle is None:
             for toggle in self.toggles:
                 button = getattr(self, f"{toggle.lower().replace(' ', '_')}_btn")
@@ -68,3 +68,10 @@ class Header(Frame):
         Resets the modifications made by the user.
         """
         self.toggle(None)
+
+    def display_add_study(self) -> None:
+        """
+        Displays the add study template.
+        """
+        self.toggle("Add study")
+        self.manager.body.studies_template.setup_add_study()

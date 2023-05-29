@@ -6,7 +6,7 @@ Studies template for the body
 
 #-------------------------------------------------------------------#
 
-from src.utils.graphical_utils import Frame, Canvas, Label
+from src.utils.graphical_utils import Frame, Canvas, Label, ButtonApp, LabelEntryPair
 
 #-------------------------------------------------------------------#
 
@@ -21,24 +21,44 @@ class StudiesTemplate(Frame):
         self.configure(bg="#FFFFFF")
         self.width = None
         self.height = None
-        self.days_off_timeline = None
-        self.study_timeline = None
-        self.setup_off_days_timeline()
-        self.setup_studies()
+        self.days_off_frame = None
+        self.study_frame = None
+        self.add_study = None
 
-    def setup_off_days_timeline(self) -> None:
+        # By default, the body contains the days off timeline and the study timeline
+        self.setup_off_days_frame()
+        self.setup_studies_frame()
+
+    def setup_off_days_frame(self) -> None:
         """
         Setup the template of days off.
         """
-        self.days_off_timeline = DaysOffTimelineTemplate(self)
-        self.days_off_timeline.pack(fill='both', expand=True, side='top', padx=10, pady=10)
+        self.days_off_frame = DaysOffTimelineTemplate(self)
+        self.days_off_frame.pack(fill='both', expand=True, side='top', padx=10, pady=10)
 
-    def setup_studies(self) -> None:
+    def setup_studies_frame(self) -> None:
         """
         Setup the template of studies.
         """
-        self.study_timeline = StudyTimelineTemplate(self)
-        self.study_timeline.pack(fill='both', expand=True, side='top', padx=10, pady=10)
+        self.study_frame = StudyTimelineTemplate(self)
+        self.study_frame.pack(fill='both', expand=True, side='top', padx=10, pady=10)
+
+    def back_to_studies_frame(self) -> None:
+        """
+        Back to the studies frame.
+        """
+        self.add_study.pack_forget()
+        self.setup_studies_frame()
+        self.setup_off_days_frame()
+
+    def setup_add_study(self) -> None:
+        """
+        Setup the template of adding a study.
+        """
+        self.study_frame.pack_forget()
+        self.days_off_frame.pack_forget()
+        self.add_study = AddStudyTemplate(self)
+        self.add_study.pack(fill='both', expand=True, side='top', padx=10, pady=10)
 
 #-------------------------------------------------------------------#
 
@@ -135,3 +155,35 @@ class StudyTimelineTemplate(Frame):
         self.timeline.create_line(0, self.timeline_height//5,
                          self.timeline_width, self.timeline_height//5,
                          fill="#000000", width=5)
+
+#-------------------------------------------------------------------#
+
+class AddStudyTemplate(Frame):
+    """
+    Templates displayed when the user wants to add a study.
+    """
+    parameters = ["Study name", "Client name", "Animal type", "Number", "Description"]
+    def __init__(self, study_template) -> None:
+        super().__init__(study_template)
+        self.manager = study_template
+        self.configure(bg="#FFFFFF")
+
+        # Parameters of the study
+        for parameter in self.parameters:
+            LabelEntryPair(self, parameter).pack(fill='both', side='top', padx=10)
+        # Serials of the study
+
+        #---------<Serials>-------------------------------------------#
+
+        # Back button
+        self.back_btn = ButtonApp(self, text="Back", bg="#FFFFFF",
+                                  fg="#000000", command=self.manager.back_to_studies_frame)
+        self.back_btn.pack(fill='both', side='top', padx=10, pady=10)
+
+
+class Serials:
+    """
+    Unsorted serials of the study.
+    The user can add as many serials as he wants.
+    Scrollable frame.
+    """
