@@ -22,7 +22,9 @@ class EntryApp(Entry):
         self.name = name
         self.hidden = hidden
 
-        self.config(bg="lightgray", fg="gray", insertbackground="white", font=("system", 15))
+        self.config(bg="#DE026D", fg="white",
+                    insertbackground="white", font=("system", 12),
+                    borderwidth=0, highlightthickness=0,)
         self.bind("<FocusIn>", self.on_focus_in)
         self.bind("<FocusOut>", self.on_focus_out)
 
@@ -50,3 +52,12 @@ class EntryApp(Entry):
         if self.get() == "":
             self.insert(0, self.name)
             self.config(fg='white', show='')
+
+    def reset(self) -> None:
+        """
+        Resets the entry.
+        """
+        self.delete(0, "end")
+        self.insert(0, self.name)
+        self.config(fg='white', show='')
+        self.master.focus()

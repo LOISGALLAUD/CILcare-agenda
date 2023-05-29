@@ -42,7 +42,7 @@ class Navbar(Frame):
         self.export_btn = ButtonApp(self, text="EXPORT",
                                     command=None)
         self.disconnect_btn = ButtonApp(self, text="DISCONNECT",
-                                  command=self.manager.manager.gui.app.close)
+                                  command=self.disconnect)
 
         self.export_btn.pack(fill='both', expand=True, side='top', padx=10, pady=10)
         self.disconnect_btn.pack(fill='both', expand=True, side='bottom', padx=10, pady=(100, 10))
@@ -63,3 +63,9 @@ class Navbar(Frame):
                 button.configure(bg=ButtonApp.DEFAULT_BG)  # set default color
 
         # <update right_grid>
+
+    def disconnect(self) -> None:
+        """
+        Disconnects the user.
+        """
+        self.manager.manager.gui.change_menu(self.manager.manager.gui.login_menu)
