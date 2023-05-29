@@ -6,7 +6,7 @@ Studies template for the body
 
 #-------------------------------------------------------------------#
 
-from src.utils.graphical_utils import Frame, Canvas
+from src.utils.graphical_utils import Frame, Canvas, Label
 
 #-------------------------------------------------------------------#
 
@@ -23,8 +23,8 @@ class StudiesTemplate(Frame):
         self.height = None
         self.days_off_timeline = None
         self.study_timeline = None
-        self.setup_studies()
         self.setup_off_days_timeline()
+        self.setup_studies()
 
     def setup_off_days_timeline(self) -> None:
         """
@@ -42,7 +42,7 @@ class StudiesTemplate(Frame):
 
 #-------------------------------------------------------------------#
 
-class DaysOffTimelineTemplate(Canvas):
+class DaysOffTimelineTemplate(Frame):
     """
     Contains the timeline of the days off.
     """
@@ -50,26 +50,45 @@ class DaysOffTimelineTemplate(Canvas):
         super().__init__(body)
         self.manager = body
         self.configure(bg="red")
-        self.width = None
-        self.height = None
+        self.timeline_width = None
+        self.timeline_height = None
+        self.timeline = None
+
+        self.setup_labels()
+        self.setup_timeline_canvas()
+
+    def setup_labels(self) -> None:
+        """
+        Setup the labels of the timeline.
+        """
+        Label(self, text="Days off / Availabilities", bg="#FFFFFF",
+              fg="#000000", font=("System", 12)).pack(fill='both',
+                                                      side='left', padx=10, pady=10)
+
+    def setup_timeline_canvas(self) -> None:
+        """
+        Setup the canvas of the timeline.
+        """
+        self.timeline = Canvas(self, bg="#FFFFFF")
+        self.timeline.pack(fill='both', expand=True, side='left', padx=10, pady=10)
 
         # Responsive design
-        self.bind("<Configure>", self.draw_timeline)
+        self.timeline.bind("<Configure>", self.draw_timeline)
 
     def draw_timeline(self, _event=None) -> None:
         """
         Draw a line from left to right.
         """
         self.manager.manager.manager.manager.gui.update()
-        self.width = self.winfo_width()
-        self.height = self.winfo_height()
-        self.create_line(0, self.height//5,
-                         self.width, self.height//5,
+        self.timeline_width = self.timeline.winfo_width()
+        self.timeline_height = self.timeline.winfo_height()
+        self.timeline.create_line(0, self.timeline_height//5,
+                         self.timeline_width, self.timeline_height//5,
                          fill="#000000", width=5)
 
 #-------------------------------------------------------------------#
 
-class StudyTimelineTemplate(Canvas):
+class StudyTimelineTemplate(Frame):
     """
     Contains the timeline of the days off.
     """
@@ -77,19 +96,42 @@ class StudyTimelineTemplate(Canvas):
         super().__init__(body)
         self.manager = body
         self.configure(bg="blue")
-        self.width = None
-        self.height = None
+        self.timeline_width = None
+        self.timeline_height = None
+        self.timeline = None
+
+        self.setup_labels()
+        self.setup_timeline_canvas()
+
+    def setup_labels(self) -> None:
+        """
+        Setup the labels of the timeline.
+        """
+        Label(self, text="Study", bg="#FFFFFF",
+              fg="#000000", font=("System", 12)).pack(fill='both',
+                                                      side='left', padx=10, pady=10)
+        frame = Frame(self, bg="#FFFFFF")
+        Label(frame, text="Serial1", bg="#FFFFFF").pack(fill='both', side='top', padx=10, pady=10)
+        Label(frame, text="Serial2", bg="#FFFFFF").pack(fill='both', side='top', padx=10, pady=10)
+        frame.pack(fill='both', side='left', padx=10, pady=10)
+
+    def setup_timeline_canvas(self) -> None:
+        """
+        Setup the canvas of the timeline.
+        """
+        self.timeline = Canvas(self, bg="#FFFFFF")
+        self.timeline.pack(fill='both', expand=True, side='left', padx=10, pady=10)
 
         # Responsive design
-        self.bind("<Configure>", self.draw_timeline)
+        self.timeline.bind("<Configure>", self.draw_timeline)
 
     def draw_timeline(self, _event=None) -> None:
         """
         Draw a line from left to right.
         """
         self.manager.manager.manager.manager.gui.update()
-        self.width = self.winfo_width()
-        self.height = self.winfo_height()
-        self.create_line(0, self.height//5,
-                         self.width, self.height//5,
+        self.timeline_width = self.timeline.winfo_width()
+        self.timeline_height = self.timeline.winfo_height()
+        self.timeline.create_line(0, self.timeline_height//5,
+                         self.timeline_width, self.timeline_height//5,
                          fill="#000000", width=5)
