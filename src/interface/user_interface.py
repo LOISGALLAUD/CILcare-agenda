@@ -64,7 +64,6 @@ class GUI(Tk):
         """
         This function changes the current view to the desired menu.
         """
-        print(f"Changing menu from {type(self.current_menu).__name__} to {type(next_menu).__name__}"    )
         # Don't do anything if the desired menu is the same as the current menu
         if next_menu == self.current_menu:
             return
