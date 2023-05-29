@@ -20,12 +20,12 @@ class LoginMenu(Frame):
     def __init__(self, gui=None) -> None:
         super().__init__(gui)
         self.gui = gui
-        self.config(bg="#2bb5a6")
+        self.config(bg="#FFFFFF")
 
         self.login_container = LoginContainer(self)
         self.name_to_display = self.gui.app.NAME.replace("_", " ")
         self.name_label = Label(self, text=self.name_to_display,
-                                font=("System", 30), bg="#057A6D", fg="white")
+                                font=("System", 30), bg="#FFFFFF", fg="black")
         self.wrong_label = LoginErrorLabel(self, text="Wrong username or password")
 
         self.name_label.pack(pady=(100, 0))
