@@ -6,7 +6,7 @@ Studies template for the body
 
 #-------------------------------------------------------------------#
 
-from src.utils.graphical_utils import Frame, Canvas, Label, ButtonApp, LabelEntryPair
+from src.utils.graphical_utils import Frame, Canvas, Label, ButtonApp, LabelEntryPair, Serials, IntVar, Checkbutton
 
 #-------------------------------------------------------------------#
 
@@ -47,7 +47,9 @@ class StudiesTemplate(Frame):
         """
         Back to the studies frame.
         """
+        self.manager.manager.header.reset_modifications()
         self.add_study.pack_forget()
+        self.add_study = None
         self.setup_studies_frame()
         self.setup_off_days_frame()
 
@@ -55,6 +57,8 @@ class StudiesTemplate(Frame):
         """
         Setup the template of adding a study.
         """
+        if self.add_study is not None:
+            return
         self.study_frame.pack_forget()
         self.days_off_frame.pack_forget()
         self.add_study = AddStudyTemplate(self)
@@ -162,28 +166,35 @@ class AddStudyTemplate(Frame):
     """
     Templates displayed when the user wants to add a study.
     """
-    parameters = ["Study name", "Client name", "Animal type", "Number", "Description"]
+    parameters = ["Study name", "Client name", "Animal type", "Number"]
     def __init__(self, study_template) -> None:
         super().__init__(study_template)
         self.manager = study_template
         self.configure(bg="#FFFFFF")
 
+        self.checkbox_var = IntVar()
+
         # Parameters of the study
         for parameter in self.parameters:
             LabelEntryPair(self, parameter).pack(fill='both', side='top', padx=10)
+
+        self.checkbox = Checkbutton(self, text="Archived", bg="#FFFFFF", activebackground="#FFFFFF",
+                               variable=self.checkbox_var, command=None)
+        self.checkbox.pack(side='top', padx=10, pady=10, anchor="w")
+
+        # Description of the study
+        LabelEntryPair(self, "Description").pack(fill='both', side='top', padx=10)
+
         # Serials of the study
+        self.serials = Serials(self)
+        self.serials.pack(fill='both', side='top', padx=10, pady=10)
 
-        #---------<Serials>-------------------------------------------#
-
-        # Back button
-        self.back_btn = ButtonApp(self, text="Back", bg="#FFFFFF",
-                                  fg="#000000", command=self.manager.back_to_studies_frame)
-        self.back_btn.pack(fill='both', side='top', padx=10, pady=10)
-
-
-class Serials:
-    """
-    Unsorted serials of the study.
-    The user can add as many serials as he wants.
-    Scrollable frame.
-    """
+        # Bottom widget
+        self.bottom_frame = Frame(self, bg="turquoise1")
+        self.bottom_frame.pack(fill='both', side='bottom', padx=10, pady=10)
+        self.confirm_btn = ButtonApp(self.bottom_frame, text="Confirm",
+                                     command=self.manager.back_to_studies_frame)
+        self.back_btn = ButtonApp(self.bottom_frame, text="Back",
+                                  command=self.manager.back_to_studies_frame)
+        self.confirm_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
+        self.back_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)

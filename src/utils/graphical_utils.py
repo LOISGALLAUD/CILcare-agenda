@@ -7,13 +7,14 @@ Helps to reduce the number of imports in the other files.
 
 #-------------------------------------------------------------------#
 
-from tkinter import Tk, Frame, TOP, BOTTOM, BOTH, Button, Entry, Label, Canvas
+from tkinter import Tk, Frame, TOP, BOTTOM, BOTH, Button, Entry, Label, Canvas, IntVar, Checkbutton
 from src.interface.widgets.entry_app import EntryApp
 from src.interface.widgets.button_app import ButtonApp
 from src.interface.widgets.label_entry_pair import LabelEntryPair
+from src.interface.widgets.add_serial import Serials
 
 #-------------------------------------------------------------------#
 
-__all__ = ['Tk', 'Frame', 'TOP', 'BOTTOM', 'BOTH', 'Button',
-           'Entry', 'Canvas', 'Label', 'EntryApp', 'ButtonApp',
-           'LabelEntryPair']
+__all__ = ['Tk', 'Frame', 'TOP', 'BOTTOM', 'BOTH', 'Button', 'IntVar',
+           'Entry', 'Canvas', 'Label', 'EntryApp', 'ButtonApp', 'Checkbutton',
+           'LabelEntryPair', 'Serials']
