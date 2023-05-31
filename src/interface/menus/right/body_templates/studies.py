@@ -6,7 +6,9 @@ Studies template for the body
 
 #-------------------------------------------------------------------#
 
-from src.utils.graphical_utils import Frame, Canvas, Label, ButtonApp, LabelEntryPair, Serials, IntVar, Checkbutton
+from src.utils.graphical_utils import Frame, Canvas, Label, ButtonApp
+from src.utils.graphical_utils import LabelEntryPair, Serials, IntVar, Checkbutton
+from src.interface.widgets.right_click import RightClickMenu
 
 #-------------------------------------------------------------------#
 
@@ -77,6 +79,8 @@ class DaysOffTimelineTemplate(Frame):
         self.timeline_width = None
         self.timeline_height = None
         self.timeline = None
+        self.right_click_menu = RightClickMenu(self)
+
 
         self.setup_labels()
         self.setup_timeline_canvas()
@@ -95,6 +99,9 @@ class DaysOffTimelineTemplate(Frame):
         """
         self.timeline = Canvas(self, bg="#FFFFFF")
         self.timeline.pack(fill='both', expand=True, side='left', padx=10, pady=10)
+
+        # Bind the right click menu to the canvas
+        self.timeline.bind("<Button-3>", self.right_click_menu.show)
 
         # Responsive design
         self.timeline.bind("<Configure>", self.draw_timeline)
@@ -123,6 +130,7 @@ class StudyTimelineTemplate(Frame):
         self.timeline_width = None
         self.timeline_height = None
         self.timeline = None
+        self.right_click_menu = RightClickMenu(self)
 
         self.setup_labels()
         self.setup_timeline_canvas()
@@ -145,6 +153,9 @@ class StudyTimelineTemplate(Frame):
         """
         self.timeline = Canvas(self, bg="#FFFFFF")
         self.timeline.pack(fill='both', expand=True, side='left', padx=10, pady=10)
+
+        # Bind the right click menu to the canvas
+        self.timeline.bind("<Button-3>", self.right_click_menu.show)
 
         # Responsive design
         self.timeline.bind("<Configure>", self.draw_timeline)
