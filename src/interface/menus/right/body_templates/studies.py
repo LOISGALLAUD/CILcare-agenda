@@ -8,7 +8,7 @@ Studies template for the body
 
 from src.utils.graphical_utils import Frame, Canvas, Label, ButtonApp
 from src.utils.graphical_utils import LabelEntryPair, Serials, IntVar, Checkbutton
-from src.interface.widgets.right_click import RightClickMenu
+from src.interface.widgets.right_click import RCMSerial, RCMStudy
 
 #-------------------------------------------------------------------#
 
@@ -79,8 +79,7 @@ class DaysOffTimelineTemplate(Frame):
         self.timeline_width = None
         self.timeline_height = None
         self.timeline = None
-        self.right_click_menu = RightClickMenu(self)
-
+        self.right_click_menu_study = RCMStudy(self)
 
         self.setup_labels()
         self.setup_timeline_canvas()
@@ -101,7 +100,7 @@ class DaysOffTimelineTemplate(Frame):
         self.timeline.pack(fill='both', expand=True, side='left', padx=10, pady=10)
 
         # Bind the right click menu to the canvas
-        self.timeline.bind("<Button-3>", self.right_click_menu.show)
+        self.timeline.bind("<Button-3>", self.right_click_menu_study.show)
 
         # Responsive design
         self.timeline.bind("<Configure>", self.draw_timeline)
@@ -114,8 +113,8 @@ class DaysOffTimelineTemplate(Frame):
         self.timeline_width = self.timeline.winfo_width()
         self.timeline_height = self.timeline.winfo_height()
         self.timeline.create_line(0, self.timeline_height//5,
-                         self.timeline_width, self.timeline_height//5,
-                         fill="#000000", width=5)
+                                self.timeline_width, self.timeline_height//5,
+                                fill="#000000", width=5)
 
 #-------------------------------------------------------------------#
 
@@ -130,7 +129,8 @@ class StudyTimelineTemplate(Frame):
         self.timeline_width = None
         self.timeline_height = None
         self.timeline = None
-        self.right_click_menu = RightClickMenu(self)
+        self.right_click_menu_study = RCMStudy(self)
+        self.right_click_menu_serial = RCMSerial(self)
 
         self.setup_labels()
         self.setup_timeline_canvas()
@@ -143,6 +143,8 @@ class StudyTimelineTemplate(Frame):
               fg="#000000", font=("System", 12)).pack(fill='both',
                                                       side='left', padx=10, pady=10)
         frame = Frame(self, bg="#FFFFFF")
+        frame.bind("<Button-3>", self.right_click_menu_serial.show)
+
         Label(frame, text="Serial1", bg="#FFFFFF").pack(fill='both', side='top', padx=10, pady=10)
         Label(frame, text="Serial2", bg="#FFFFFF").pack(fill='both', side='top', padx=10, pady=10)
         frame.pack(fill='both', side='left', padx=10, pady=10)
@@ -155,7 +157,7 @@ class StudyTimelineTemplate(Frame):
         self.timeline.pack(fill='both', expand=True, side='left', padx=10, pady=10)
 
         # Bind the right click menu to the canvas
-        self.timeline.bind("<Button-3>", self.right_click_menu.show)
+        self.timeline.bind("<Button-3>", self.right_click_menu_study.show)
 
         # Responsive design
         self.timeline.bind("<Configure>", self.draw_timeline)

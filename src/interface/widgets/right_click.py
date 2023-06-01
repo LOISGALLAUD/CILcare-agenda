@@ -11,17 +11,43 @@ from src.utils.graphical_utils import Menu
 
 #------------------------------------------------------------------------------#
 
-class RightClickMenu(Menu):
+class RCMStudy(Menu):
     """
-    Frame displaying when right clicking.
+    Right Click Menu Study
+    Frame displaying when right clicking
+    on the study timeline.
     """
     def __init__(self, manager):
         super().__init__(manager)
+        self.manager = manager
         self.config(tearoff=False)
-        self.add_command(label="Option 1", command=lambda: print("Option 1 selected"))
-        self.add_command(label="Option 2", command=lambda: print("Option 2 selected"))
+        self.add_command(label="Display", command=None)
+        self.add_command(label="Modify", command=self.manager.manager.manager.manager.header.display_add_study)
         self.add_separator()
-        self.add_command(label="Quitter", command=None)
+        self.add_command(label="Delete", command=None)
+
+    def show(self, event):
+        """
+        Shows the menu at the given coordinates.
+        """
+        self.tk_popup(event.x_root, event.y_root)
+
+class RCMSerial(Menu):
+    """
+    Right Click Menu Serial
+    Frame displaying when right clicking
+    on the serials.
+    """
+    def __init__(self, manager):
+        super().__init__(manager)
+        self.manager = manager
+        self.config(tearoff=False)
+        self.add_command(label="Add a template", command=None)
+        self.add_command(label="Add a task",
+                         command=None)
+        self.add_command(label="Activate", command=None)
+        self.add_separator()
+        self.add_command(label="Delete", command=None)
 
     def show(self, event):
         """
