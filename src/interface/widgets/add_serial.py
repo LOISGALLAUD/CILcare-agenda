@@ -17,9 +17,11 @@ class Serials(Frame):
     Scrollable frame.
     """
     parameters = ["Name", "Number", "Ears"]
+    MAX_SERIALS = 10
     def __init__(self, study_template) -> None:
         super().__init__(study_template)
         self.manager = study_template
+        self.displayed_serial = 0
         self.configure(bg="#888888")
         Label(self, text="Serials: ", bg="#FFFFFF",
               fg="#000000").pack(fill='both', side='left', pady=10)
@@ -30,16 +32,23 @@ class Serials(Frame):
         """
         Add a line to the serial widget
         """
+        if self.displayed_serial >= self.MAX_SERIALS:
+            return
         line_frame = Frame(self, bg="#4440ae")
         line_frame.pack(fill='both', side='top', pady=10)
         for parameter in self.parameters:
             LabelEntryPair(line_frame, parameter).pack(fill='both', side='left', padx=10, pady=10)
 
         ButtonApp(line_frame, text="X", bg="#FFFFFF",
-                    command=lambda: self.remove_serial_line(line_frame)).pack(fill='both', side='left', padx=10, pady=10)
+                    command=lambda: self.remove_serial_line(line_frame)).pack(fill='both',
+                                                                              side='left',
+                                                                              padx=10,
+                                                                              pady=10)
+        self.displayed_serial += 1
 
     def remove_serial_line(self, line_frame) -> None:
         """
         Remove a line from the serial widget
         """
+        self.displayed_serial -= 1
         line_frame.destroy()
