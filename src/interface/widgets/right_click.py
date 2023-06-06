@@ -22,7 +22,8 @@ class RCMStudy(Menu):
         self.manager = manager
         self.config(tearoff=False)
         self.add_command(label="Display", command=None)
-        self.add_command(label="Modify", command=self.manager.manager.manager.manager.header.display_add_study)
+        self.add_command(label="Modify",
+                         command=self.manager.manager.manager.manager.header.display_add_study)
         self.add_separator()
         self.add_command(label="Delete", command=None)
 
