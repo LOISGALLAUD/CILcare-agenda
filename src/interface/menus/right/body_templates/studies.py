@@ -26,6 +26,7 @@ class StudiesTemplate(Frame):
         self.days_off_frame = None
         self.study_frame = None
         self.add_study = None
+        self.add_days_off = None
 
         # By default, the body contains the days off timeline and the study timeline
         self.setup_off_days_frame()
@@ -45,13 +46,23 @@ class StudiesTemplate(Frame):
         self.study_frame = StudyTimelineTemplate(self)
         self.study_frame.pack(fill='both', expand=True, side='top')
 
-    def back_to_studies_frame(self) -> None:
+    def from_addstudy_to_studies_frame(self) -> None:
         """
         Back to the studies frame.
         """
         self.manager.manager.header.reset_modifications()
         self.add_study.pack_forget()
         self.add_study = None
+        self.setup_studies_frame()
+        self.setup_off_days_frame()
+
+    def from_adddaysoff_to_studies_frame(self) -> None:
+        """
+        Back to the studies frame.
+        """
+        self.manager.manager.header.reset_modifications()
+        self.add_days_off.pack_forget()
+        self.add_days_off = None
         self.setup_studies_frame()
         self.setup_off_days_frame()
 
@@ -65,6 +76,18 @@ class StudiesTemplate(Frame):
         self.days_off_frame.pack_forget()
         self.add_study = AddStudyTemplate(self)
         self.add_study.pack(fill='both', expand=True, side='top', padx=10, pady=10)
+
+    def setup_add_days_off(self) -> None:
+        """
+        Setup the template of days off.
+        """
+        if self.add_days_off is not None:
+            return
+        self.study_frame.pack_forget()
+        self.days_off_frame.pack_forget()
+        self.add_days_off = AddDaysOffTemplate(self)
+        self.add_days_off.pack(fill='both', expand=True, side='top', padx=10, pady=10)
+
 
 #-------------------------------------------------------------------#
 
@@ -206,9 +229,9 @@ class AddStudyTemplate(Frame):
         self.bottom_frame = Frame(self, bg="white")
         self.bottom_frame.pack(fill='both', side='bottom', padx=10, pady=10)
         self.confirm_btn = ButtonApp(self.bottom_frame, text="Confirm",
-                                     command=self.manager.back_to_studies_frame)
+                                     command=self.manager.from_addstudy_to_studies_frame)
         self.back_btn = ButtonApp(self.bottom_frame, text="Back",
-                                  command=self.manager.back_to_studies_frame)
+                                  command=self.manager.from_addstudy_to_studies_frame)
         self.confirm_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
         self.back_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
 
@@ -217,4 +240,49 @@ class AddStudyTemplate(Frame):
         Jump a line in the description entrybox.
         """
         self.description.insert('end', '\n')
-        print("sexe")
+
+#-------------------------------------------------------------------#
+
+class AddDaysOffTemplate(Frame):
+    """
+    Templates displayed when the user wants to add a study.
+    """
+    parameters = ["Title", "Operator", "Color"]
+    def __init__(self, study_template) -> None:
+        super().__init__(study_template)
+        self.manager = study_template
+        self.configure(bg="#FFFFFF")
+
+        self.checkbox_var = IntVar()
+
+        # Parameters of the study
+        for parameter in self.parameters:
+            LabelEntryPair(self, parameter).pack(fill='both', side='top', padx=10)
+
+        self.checkbox = Checkbutton(self, text="Force", bg="#FFFFFF", activebackground="#FFFFFF",
+                               variable=self.checkbox_var, command=None)
+        self.checkbox.pack(side='top', padx=10, pady=10, anchor="w")
+
+        # Description of the study
+        self.agenda_canvas = Canvas(self, bg="gold")
+        self.agenda_canvas.pack(fill='both', side='top', padx=10, pady=10)
+
+        # Duration of the days off
+        duration_frame = Frame(self, bg="gold")
+        duration_frame.pack(fill='both', side='top', padx=10, pady=10)
+        Label(duration_frame, text="Schedule", bg="white").pack(fill='both', side='left', padx=10, pady=10)
+        self.starting_time = Entry(duration_frame, text="Starting time")
+        self.ending_time = Entry(duration_frame, text="Ending time")
+        self.starting_time.pack(fill='both', side='left', padx=10, pady=10)
+        self.ending_time.pack(fill='both', side='left', padx=10, pady=10)
+
+
+        # Bottom widget
+        self.bottom_frame = Frame(self, bg="white")
+        self.bottom_frame.pack(fill='both', side='bottom', padx=10, pady=10)
+        self.confirm_btn = ButtonApp(self.bottom_frame, text="Confirm",
+                                     command=self.manager.from_adddaysoff_to_studies_frame)
+        self.back_btn = ButtonApp(self.bottom_frame, text="Back",
+                                  command=self.manager.from_adddaysoff_to_studies_frame)
+        self.confirm_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
+        self.back_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)

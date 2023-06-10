@@ -32,7 +32,7 @@ class Header(Frame):
         self.add_study_btn = ButtonApp(self, "Green", text="Add study",
                                        command=self.display_add_study)
         self.add_days_off_btn = ButtonApp(self, "Green", text="Add days off",
-                                            command=lambda: self.toggle("Add days off"))
+                                            command=self.display_add_days_off)
 
         self.add_study_btn.pack(side="left", fill="x", expand=True,
                                 padx=10, pady=10)
@@ -52,6 +52,7 @@ class Header(Frame):
             return
 
         self.current_toggle = toggle
+
         # Update button's colors
         for toggle in self.toggles:
             btn_name = toggle.lower().replace(" ", "_")
@@ -68,10 +69,21 @@ class Header(Frame):
         Resets the modifications made by the user.
         """
         self.toggle(None)
+        self.add_days_off_btn.config(state="normal")
+        self.add_study_btn.config(state="normal")
 
     def display_add_study(self) -> None:
         """
         Displays the add study template.
         """
         self.toggle("Add study")
+        self.add_days_off_btn.config(state="disabled")
         self.manager.body.studies_template.setup_add_study()
+
+    def display_add_days_off(self) -> None:
+        """
+        Displays the add days off template.
+        """
+        self.toggle("Add days off")
+        self.add_study_btn.config(state="disabled")
+        self.manager.body.studies_template.setup_add_days_off()
