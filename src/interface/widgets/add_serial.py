@@ -20,9 +20,9 @@ class Serials(Frame):
     MAX_SERIALS = 10
     def __init__(self, study_template) -> None:
         super().__init__(study_template)
+        self.configure(bg="#FFFFFF")
         self.manager = study_template
         self.displayed_serial = 0
-        self.configure(bg="#888888")
         Label(self, text="Serials: ", bg="#FFFFFF",
               fg="#000000").pack(fill='both', side='left', pady=10)
         ButtonApp(self, text="+", bg="#FFFFFF",
@@ -34,16 +34,14 @@ class Serials(Frame):
         """
         if self.displayed_serial >= self.MAX_SERIALS:
             return
-        line_frame = Frame(self, bg="#4440ae")
-        line_frame.pack(fill='both', side='top', pady=10)
+        line_frame = Frame(self, bg="white")
+        line_frame.pack(fill='both', side='top')
         for parameter in self.parameters:
-            LabelEntryPair(line_frame, parameter).pack(fill='both', side='left', padx=10, pady=10)
+            LabelEntryPair(line_frame, parameter).pack(fill='both', side='left')
 
         ButtonApp(line_frame, text="X", bg="#FFFFFF",
                     command=lambda: self.remove_serial_line(line_frame)).pack(fill='both',
-                                                                              side='left',
-                                                                              padx=10,
-                                                                              pady=10)
+                                                                              side='left')
         self.displayed_serial += 1
 
     def remove_serial_line(self, line_frame) -> None:

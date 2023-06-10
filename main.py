@@ -5,7 +5,7 @@ Entrypoint of the application.
 It launches the application.
 """
 
-#------------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#d
 
 from src.cilcare_agenda import Agenda
 

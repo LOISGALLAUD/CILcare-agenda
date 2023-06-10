@@ -6,7 +6,7 @@ Studies template for the body
 
 #-------------------------------------------------------------------#
 
-from src.utils.graphical_utils import Frame, Canvas, Label, ButtonApp
+from src.utils.graphical_utils import Frame, Canvas, Label, ButtonApp, Entry
 from src.utils.graphical_utils import LabelEntryPair, Serials, IntVar, Checkbutton
 from src.interface.widgets.right_click import RCMSerial, RCMStudy
 
@@ -36,14 +36,14 @@ class StudiesTemplate(Frame):
         Setup the template of days off.
         """
         self.days_off_frame = DaysOffTimelineTemplate(self)
-        self.days_off_frame.pack(fill='both', expand=True, side='top', padx=10, pady=10)
+        self.days_off_frame.pack(fill='both', expand=True, side='top')
 
     def setup_studies_frame(self) -> None:
         """
         Setup the template of studies.
         """
         self.study_frame = StudyTimelineTemplate(self)
-        self.study_frame.pack(fill='both', expand=True, side='top', padx=10, pady=10)
+        self.study_frame.pack(fill='both', expand=True, side='top')
 
     def back_to_studies_frame(self) -> None:
         """
@@ -75,7 +75,6 @@ class DaysOffTimelineTemplate(Frame):
     def __init__(self, body=None):
         super().__init__(body)
         self.manager = body
-        self.configure(bg="red")
         self.timeline_width = None
         self.timeline_height = None
         self.timeline = None
@@ -125,7 +124,6 @@ class StudyTimelineTemplate(Frame):
     def __init__(self, body=None):
         super().__init__(body)
         self.manager = body
-        self.configure(bg="blue")
         self.timeline_width = None
         self.timeline_height = None
         self.timeline = None
@@ -196,14 +194,16 @@ class AddStudyTemplate(Frame):
         self.checkbox.pack(side='top', padx=10, pady=10, anchor="w")
 
         # Description of the study
-        LabelEntryPair(self, "Description").pack(fill='both', side='top', padx=10)
+        self.description = Entry(self, text="Description")
+        self.description.bind('<Return>', self.line_break)
+        self.description.pack(fill='both', side='top', padx=10)
 
         # Serials of the study
         self.serials = Serials(self)
         self.serials.pack(fill='both', side='top', padx=10, pady=10)
 
         # Bottom widget
-        self.bottom_frame = Frame(self, bg="turquoise1")
+        self.bottom_frame = Frame(self, bg="white")
         self.bottom_frame.pack(fill='both', side='bottom', padx=10, pady=10)
         self.confirm_btn = ButtonApp(self.bottom_frame, text="Confirm",
                                      command=self.manager.back_to_studies_frame)
@@ -211,3 +211,10 @@ class AddStudyTemplate(Frame):
                                   command=self.manager.back_to_studies_frame)
         self.confirm_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
         self.back_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
+
+    def line_break(self, _event) -> None:
+        """
+        Jump a line in the description entrybox.
+        """
+        self.description.insert('end', '\n')
+        print("sexe")

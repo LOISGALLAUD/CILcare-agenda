@@ -18,7 +18,6 @@ class Body(Frame):
     def __init__(self, right_grid=None):
         super().__init__(right_grid)
         self.manager = right_grid
-        self.configure(bg="purple")
         self.width = None
         self.height = None
         self.studies_template = None
@@ -29,4 +28,4 @@ class Body(Frame):
         Setup the studies page.
         """
         self.studies_template = StudiesTemplate(self)
-        self.studies_template.pack(fill='both', expand=True, side='top', padx=10, pady=10)
+        self.studies_template.pack(fill='both', expand=True, side='top')
