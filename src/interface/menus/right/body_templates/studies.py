@@ -79,7 +79,7 @@ class StudiesTemplate(Frame):
 
     def setup_add_days_off(self) -> None:
         """
-        Setup the template of days off.
+        Setup the template of adding days off.
         """
         if self.add_days_off is not None:
             return
@@ -217,6 +217,7 @@ class AddStudyTemplate(Frame):
         self.checkbox.pack(side='top', padx=10, pady=10, anchor="w")
 
         # Description of the study
+        Label(self, text="Description", bg="#FFFFFF").pack(fill='both', side='top', padx=10)
         self.description = Entry(self, text="Description")
         self.description.bind('<Return>', self.line_break)
         self.description.pack(fill='both', side='top', padx=10)
@@ -254,8 +255,6 @@ class AddDaysOffTemplate(Frame):
         self.configure(bg="#FFFFFF")
 
         self.checkbox_var = IntVar()
-
-        # Parameters of the study
         for parameter in self.parameters:
             LabelEntryPair(self, parameter).pack(fill='both', side='top', padx=10)
 
@@ -263,14 +262,16 @@ class AddDaysOffTemplate(Frame):
                                variable=self.checkbox_var, command=None)
         self.checkbox.pack(side='top', padx=10, pady=10, anchor="w")
 
-        # Description of the study
-        self.agenda_canvas = Canvas(self, bg="gold")
+        # agenda of the study
+        self.agenda_canvas = Canvas(self, bg="white")
         self.agenda_canvas.pack(fill='both', side='top', padx=10, pady=10)
 
         # Duration of the days off
-        duration_frame = Frame(self, bg="gold")
+        duration_frame = Frame(self, bg="white")
         duration_frame.pack(fill='both', side='top', padx=10, pady=10)
-        Label(duration_frame, text="Schedule", bg="white").pack(fill='both', side='left', padx=10, pady=10)
+        Label(duration_frame, text="Schedule", bg="white").pack(fill='both',
+                                                                side='left',
+                                                                padx=10, pady=10)
         self.starting_time = Entry(duration_frame, text="Starting time")
         self.ending_time = Entry(duration_frame, text="Ending time")
         self.starting_time.pack(fill='both', side='left', padx=10, pady=10)

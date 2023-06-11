@@ -82,8 +82,7 @@ class Header(Frame):
         Displays the add operator template.
         """
         print("Displaying add operator template.")
-        return
-        self.manager.body.operators_template.setup_add_operator()
+        self.manager.body.operators_template.from_timeline_to_add_operators()
 
     def update_header(self, toggle):
         """
