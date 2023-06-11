@@ -15,17 +15,21 @@ class Header(Frame):
     """
     Top section of the shopping menu.
     """
-    toggles = ["Add study", "Add days off"]
     def __init__(self, manager=None) -> None:
         super().__init__(manager)
         self.manager = manager
         # Default toggle
         self.current_toggle = None
-        self.grid_propagate(False)
+        self.propagate(False)
         self.configure(bg="#2bb5a6")
-        self.setup_widgets()
 
-    def setup_widgets(self) -> bool:
+        self.add_study_btn = None
+        self.add_days_off_btn = None
+        self.add_operator_btn = None
+
+        self.setup_widgets_studies()
+
+    def setup_widgets_studies(self) -> bool:
         """
         Setup the widgets of the header.
         """
@@ -40,35 +44,22 @@ class Header(Frame):
                                    padx=10, pady=10)
         return True
 
-    def toggle(self, toggle: str) -> None:
+    def setup_widgets_operators(self) -> bool:
         """
-        Changes the current toggle of the navbar.
+        Setup the widgets of the header.
         """
-        # If toggle is None, reset the navbar
-        if toggle is None:
-            for toggle in self.toggles:
-                button = getattr(self, f"{toggle.lower().replace(' ', '_')}_btn")
-                button.configure(bg=ButtonApp.DEFAULT_BG_GREEN)
-            return
+        self.add_operator_btn = ButtonApp(self, "Green", text="Add operator",
+                                          command=self.display_add_operator)
+        self.add_operator_btn.pack(side="left",
+                                   fill="x",expand=True,
+                                   padx=10, pady=10)
+        return True
 
-        self.current_toggle = toggle
-
-        # Update button's colors
-        for toggle in self.toggles:
-            btn_name = toggle.lower().replace(" ", "_")
-            button = getattr(self, f"{btn_name}_btn")
-            if toggle == self.current_toggle:
-                button.configure(bg=ButtonApp.ACTIVE_TOGGLE_GREEN)  # set active toggle color
-            else:
-                button.configure(bg=ButtonApp.DEFAULT_BG_GREEN)  # set default color
-
-        # <update body>
 
     def reset_modifications(self) -> None:
         """
         Resets the modifications made by the user.
         """
-        self.toggle(None)
         self.add_days_off_btn.config(state="normal")
         self.add_study_btn.config(state="normal")
 
@@ -76,7 +67,6 @@ class Header(Frame):
         """
         Displays the add study template.
         """
-        self.toggle("Add study")
         self.add_days_off_btn.config(state="disabled")
         self.manager.body.studies_template.setup_add_study()
 
@@ -84,6 +74,32 @@ class Header(Frame):
         """
         Displays the add days off template.
         """
-        self.toggle("Add days off")
         self.add_study_btn.config(state="disabled")
         self.manager.body.studies_template.setup_add_days_off()
+
+    def display_add_operator(self) -> None:
+        """
+        Displays the add operator template.
+        """
+        print("Displaying add operator template.")
+        return
+        self.manager.body.operators_template.setup_add_operator()
+
+    def update_header(self, toggle):
+        """
+        Updates the header.
+        """
+        self.clear_header()
+        print(f"Updating header with {toggle}.")
+        match toggle:
+            case "Studies":
+                self.setup_widgets_studies()
+            case "Operators":
+                self.setup_widgets_operators()
+
+    def clear_header(self):
+        """
+        Clears the header.
+        """
+        for widget in self.winfo_children():
+            widget.destroy()

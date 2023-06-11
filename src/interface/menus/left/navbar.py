@@ -22,22 +22,26 @@ class Navbar(Frame):
         super().__init__(left_grid)
         self.manager = left_grid
         # Default toggle
-        self.current_toggle = "Studies"
+        self.current_toggle = self.toggles[0]
 
         self.grid_propagate(False)
         self.configure(bg="#F40B7C")
         self.setup_buttons()
-        self.toggle(self.current_toggle)
 
     def setup_buttons(self) -> bool:
         """
         Defines the buttons used in the menu.
         """
+        buttons = []
         for toggle in self.toggles:
             button = ButtonApp(self, text=toggle.upper(),
                                command=lambda toggle=toggle: self.toggle(toggle))
             setattr(self, f"{toggle.lower()}_btn", button)
             button.pack(fill='both', expand=True, side='top', padx=10, pady=10)
+            buttons.append(button)
+        if buttons:
+            buttons[0].configure(bg=ButtonApp.ACTIVE_TOGGLE_RED)  # set active toggle color
+
 
         self.export_btn = ButtonApp(self, text="EXPORT",
                                     command=None)
@@ -51,6 +55,7 @@ class Navbar(Frame):
     def toggle(self, toggle: str) -> None:
         """
         Changes the current toggle of the navbar.
+        Updates the right_grid accordingly.
         """
         self.current_toggle = toggle
 
@@ -62,7 +67,8 @@ class Navbar(Frame):
             else:
                 button.configure(bg=ButtonApp.DEFAULT_BG_RED)  # set default color
 
-        # <update right_grid>
+        self.manager.manager.right_grid.body.update_body(self.current_toggle)
+        self.manager.manager.right_grid.header.update_header(self.current_toggle)
 
     def disconnect(self) -> None:
         """
