@@ -1,5 +1,5 @@
 """
-room.py
+rooms.py
 
 Contains the room page.
 """

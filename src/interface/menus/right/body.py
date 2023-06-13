@@ -8,8 +8,8 @@ Configure MarcoNeo's body on its shopping menu.
 
 from src.utils.graphical_utils import Frame
 from src.interface.menus.right.body_templates.studies import StudiesTemplate
-from src.interface.menus.right.body_templates.rooms import RoomsTemplate
 from src.interface.menus.right.body_templates.operators import OperatorsTemplate
+from src.interface.menus.right.body_templates.rooms import RoomsTemplate # pylint: disable=E0611, E0401
 
 #-------------------------------------------------------------------#
 
