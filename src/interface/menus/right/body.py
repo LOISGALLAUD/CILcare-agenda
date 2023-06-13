@@ -8,6 +8,7 @@ Configure MarcoNeo's body on its shopping menu.
 
 from src.utils.graphical_utils import Frame
 from src.interface.menus.right.body_templates.studies import StudiesTemplate
+from src.interface.menus.right.body_templates.rooms import RoomsTemplate
 from src.interface.menus.right.body_templates.operators import OperatorsTemplate
 
 #-------------------------------------------------------------------#
@@ -23,6 +24,7 @@ class Body(Frame):
         self.height = None
         self.studies_template = None
         self.operators_template = None
+        self.rooms_template = None
         self.setup_studies()
 
     def setup_studies(self) -> None:
@@ -36,9 +38,15 @@ class Body(Frame):
         """
         Setup the operators page.
         """
-        print("Operators page setup.")
         self.operators_template = OperatorsTemplate(self)
         self.operators_template.pack(fill='both', expand=True, side='top')
+
+    def setup_rooms(self):
+        """
+        Setup the rooms page.
+        """
+        self.rooms_template = RoomsTemplate(self)
+        self.rooms_template.pack(fill='both', expand=True, side='top')
 
     def update_body(self, toggle):
         """
@@ -51,6 +59,8 @@ class Body(Frame):
                 self.setup_studies()
             case "Operators":
                 self.setup_operators()
+            case "Rooms":
+                self.setup_rooms()
 
     def clear_body(self):
         """

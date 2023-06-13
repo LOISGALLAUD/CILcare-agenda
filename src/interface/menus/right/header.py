@@ -26,6 +26,7 @@ class Header(Frame):
         self.add_study_btn = None
         self.add_days_off_btn = None
         self.add_operator_btn = None
+        self.add_room_btn = None
 
         self.setup_widgets_studies()
 
@@ -55,6 +56,16 @@ class Header(Frame):
                                    padx=10, pady=10)
         return True
 
+    def setup_widgets_rooms(self) -> bool:
+        """
+        Setup the widgets of the header.
+        """
+        self.add_room_btn = ButtonApp(self, "Green", text="Add room",
+                                      command=self.display_add_room)
+        self.add_room_btn.pack(side="left",
+                               fill="x",expand=True,
+                               padx=10, pady=10)
+        return True
 
     def reset_modifications(self) -> None:
         """
@@ -81,8 +92,13 @@ class Header(Frame):
         """
         Displays the add operator template.
         """
-        print("Displaying add operator template.")
         self.manager.body.operators_template.from_timeline_to_add_operators()
+
+    def display_add_room(self) -> None:
+        """
+        Displays the add room template.
+        """
+        self.manager.body.rooms_template.from_timeline_to_add_room()
 
     def update_header(self, toggle):
         """
@@ -95,6 +111,8 @@ class Header(Frame):
                 self.setup_widgets_studies()
             case "Operators":
                 self.setup_widgets_operators()
+            case "Rooms":
+                self.setup_widgets_rooms()
 
     def clear_header(self):
         """

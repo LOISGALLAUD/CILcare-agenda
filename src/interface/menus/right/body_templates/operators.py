@@ -6,7 +6,8 @@ Contains the operators page.
 
 #-------------------------------------------------------------------#
 
-from src.utils.graphical_utils import Frame, Label, Canvas, LabelEntryPair, Checkbutton, IntVar, ButtonApp, Entry
+from src.utils.graphical_utils import Frame, Label, Canvas, LabelEntryPair
+from src.utils.graphical_utils import Checkbutton, IntVar, ButtonApp, Entry
 
 #-------------------------------------------------------------------#
 
@@ -126,7 +127,7 @@ class ExpirationQualifications(Frame):
 
         Label(self, text="Expiration date: ", bg="#FFFFFF",
               fg="#000000").pack(fill='both', side='left', pady=10)
-        self.expiration_frame = Frame(self, bg="red")
+        self.expiration_frame = Frame(self)
         self.expiration_frame.pack(fill='both', side='top', expand=True)
 
         for qualification in self.qualifications:
