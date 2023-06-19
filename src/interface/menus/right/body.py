@@ -9,7 +9,8 @@ Configure MarcoNeo's body on its shopping menu.
 from src.utils.graphical_utils import Frame
 from src.interface.menus.right.body_templates.studies import StudiesTemplate
 from src.interface.menus.right.body_templates.operators import OperatorsTemplate
-from src.interface.menus.right.body_templates.rooms import RoomsTemplate # pylint: disable=E0611, E0401
+from src.interface.menus.right.body_templates.rooms import RoomsTemplate
+from src.interface.menus.right.body_templates.equipment import EquipmentTemplate
 
 #-------------------------------------------------------------------#
 
@@ -25,6 +26,7 @@ class Body(Frame):
         self.studies_template = None
         self.operators_template = None
         self.rooms_template = None
+        self.equipment_template = None
         self.setup_studies()
 
     def setup_studies(self) -> None:
@@ -48,6 +50,13 @@ class Body(Frame):
         self.rooms_template = RoomsTemplate(self)
         self.rooms_template.pack(fill='both', expand=True, side='top')
 
+    def setup_equipment(self):
+        """
+        Setup the equipment page.
+        """
+        self.equipment_template = EquipmentTemplate(self)
+        self.equipment_template.pack(fill='both', expand=True, side='top')
+
     def update_body(self, toggle):
         """
         Updates the items displayed in the body.
@@ -60,6 +69,10 @@ class Body(Frame):
                 self.setup_operators()
             case "Rooms":
                 self.setup_rooms()
+            case "Equipment":
+                self.setup_equipment()
+            case _:
+                print("Error: Invalid toggle.")
 
     def clear_body(self):
         """
