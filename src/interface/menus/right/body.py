@@ -53,7 +53,6 @@ class Body(Frame):
         Updates the items displayed in the body.
         """
         self.clear_body()
-        print(f"Updating body with {toggle}.")
         match toggle:
             case "Studies":
                 self.setup_studies()
