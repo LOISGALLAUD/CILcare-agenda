@@ -27,6 +27,7 @@ class Header(Frame):
         self.add_days_off_btn = None
         self.add_operator_btn = None
         self.add_room_btn = None
+        self.add_equipment_btn = None
 
         self.setup_widgets_studies()
 
@@ -67,6 +68,17 @@ class Header(Frame):
                                padx=10, pady=10)
         return True
 
+    def setup_widgets_equipments(self) -> bool:
+        """
+        Setup the widgets of the header.
+        """
+        self.add_equipment_btn = ButtonApp(self, "Green", text="Add equipment",
+                                      command=self.display_add_equipment)
+        self.add_equipment_btn.pack(side="left",
+                               fill="x",expand=True,
+                               padx=10, pady=10)
+        return True
+
     def reset_modifications(self) -> None:
         """
         Resets the modifications made by the user.
@@ -100,6 +112,12 @@ class Header(Frame):
         """
         self.manager.body.rooms_template.from_timeline_to_add_room()
 
+    def display_add_equipment(self) -> None:
+        """
+        Displays the add equipments template.
+        """
+        self.manager.body.equipment_template.from_timeline_to_add_equipments()
+
     def update_header(self, toggle):
         """
         Updates the header.
@@ -112,6 +130,8 @@ class Header(Frame):
                 self.setup_widgets_operators()
             case "Rooms":
                 self.setup_widgets_rooms()
+            case "Equipment":
+                self.setup_widgets_equipments()
 
     def clear_header(self):
         """

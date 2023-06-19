@@ -69,6 +69,14 @@ class DBCursor:
             );
         """)
 
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS equipment (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                archived BOOLEAN NOT NULL,
+                description TEXT
+            );
+            """)
 
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS study (
@@ -186,6 +194,30 @@ class DBCursor:
         ]
         return qualifications
 
+    def get_equipments(self, name:str=None) -> list:
+        """
+        Returns the equipments.
+        """
+        if name is None:
+            self.cursor.execute("""
+                SELECT * FROM `equipment`;
+            """)
+        else:
+            self.cursor.execute("""
+                SELECT * FROM `equipment` WHERE `name` = ?;
+            """, (name,))
+        rows = self.cursor.fetchall()
+        equipments = [
+            {
+                'id': row[0],
+                'name': row[1],
+                'archived': row[2],
+                'description': row[3]
+            }
+            for row in rows
+        ]
+        return equipments
+
     def set_random_values(self) -> bool:
         """
         Sets random values in the database.
@@ -226,8 +258,7 @@ class DBCursor:
         for client_name in clients:
             query = "INSERT INTO client (name) VALUES (?)"
             values = (client_name,)
-            cursor = self.connection.cursor()
-            cursor.execute(query, values)
+            self.cursor.execute(query, values)
             self.connection.commit()
 
         operators = [
@@ -251,6 +282,26 @@ class DBCursor:
             self.cursor.execute(query, values)
             self.connection.commit()
 
+
+        equipments = [
+            {'name': 'Equipment1', 'archived': random.choice([1, 0]),
+             "description": 'Lorem ipsum dolor sit amet'},
+            {'name': 'Equipment2', 'archived': random.choice([1, 0]),
+             "description": 'Consectetur adipiscing elit'},
+            {'name': 'Equipment3', 'archived': random.choice([1, 0]),
+             "description": 'Sed do eiusmod tempor incididunt'},
+        ]
+
+        for equipment in equipments:
+            query = """INSERT INTO equipment (name, archived, description)
+            VALUES (?, ?, ?)"""
+            values = (
+                equipment['name'],
+                equipment['archived'],
+                equipment['description']
+            )
+            self.cursor.execute(query, values)
+            self.connection.commit()
 
         studies = [
             {'name': 'Study 1',
@@ -282,8 +333,7 @@ class DBCursor:
                 study['animal_count'],
                 study['description']
             )
-            cursor = self.connection.cursor()
-            cursor.execute(query, values)
+            self.cursor.execute(query, values)
             self.connection.commit()
 
         # Générer des valeurs aléatoires pour la table "series"
@@ -304,8 +354,7 @@ class DBCursor:
                 series_data['number'],
                 series_data['ears']
             )
-            cursor = self.connection.cursor()
-            cursor.execute(query, values)
+            self.cursor.execute(query, values)
             self.connection.commit()
 
     def close_connection(self) -> bool:
