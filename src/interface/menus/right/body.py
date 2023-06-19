@@ -11,6 +11,7 @@ from src.interface.menus.right.body_templates.studies import StudiesTemplate
 from src.interface.menus.right.body_templates.operators import OperatorsTemplate
 from src.interface.menus.right.body_templates.rooms import RoomsTemplate
 from src.interface.menus.right.body_templates.equipment import EquipmentTemplate
+from src.interface.menus.right.body_templates.qualifications import QualificationTemplate
 
 #-------------------------------------------------------------------#
 
@@ -27,6 +28,8 @@ class Body(Frame):
         self.operators_template = None
         self.rooms_template = None
         self.equipment_template = None
+        self.qualification_template = None
+
         self.setup_studies()
 
     def setup_studies(self) -> None:
@@ -57,6 +60,13 @@ class Body(Frame):
         self.equipment_template = EquipmentTemplate(self)
         self.equipment_template.pack(fill='both', expand=True, side='top')
 
+    def setup_qualification(self):
+        """
+        Setup the qualification page.
+        """
+        self.qualification_template = QualificationTemplate(self)
+        self.qualification_template.pack(fill='both', expand=True, side='top')
+
     def update_body(self, toggle):
         """
         Updates the items displayed in the body.
@@ -71,6 +81,8 @@ class Body(Frame):
                 self.setup_rooms()
             case "Equipment":
                 self.setup_equipment()
+            case "Qualifications":
+                self.setup_qualification()
             case _:
                 print("Error: Invalid toggle.")
 

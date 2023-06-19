@@ -47,7 +47,9 @@ class DBCursor:
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS `qualifications` (
                 `id` INTEGER PRIMARY KEY AUTOINCREMENT,
-                `qualification` TEXT NOT NULL
+                `name` TEXT NOT NULL,
+                `archived` BOOLEAN NOT NULL,
+                `description` TEXT
             );
         """)
 
@@ -182,13 +184,15 @@ class DBCursor:
             """)
         else:
             self.cursor.execute("""
-                SELECT * FROM `qualifications` WHERE `qualification` = ?;
+                SELECT * FROM `qualifications` WHERE `name` = ?;
             """, (qualification,))
         rows = self.cursor.fetchall()
         qualifications = [
             {
                 'id': row[0],
-                'qualification': row[1]
+                'name': row[1],
+                'archived': row[2],
+                'description': row[3]
             }
             for row in rows
         ]
@@ -222,11 +226,23 @@ class DBCursor:
         """
         Sets random values in the database.
         """
-        qualifications = ['Qualification A', 'Qualification B', 'Qualification C']
+        qualifications = [
+            {"name":'Qualification A',
+             "archived": random.randint(0, 1),
+             "description": 'Description A'},
+            {"name":'Qualification B',
+             "archived": random.randint(0, 1),
+             "description": 'Description B'},
+            {"name":'Qualification C',
+             "archived": random.randint(0, 1),
+             "description": 'Description C'}
+        ]
 
         for qualification in qualifications:
-            query = "INSERT INTO qualifications (qualification) VALUES (?)"
-            values = (qualification,)
+            query = "INSERT INTO qualifications (name, archived, description) VALUES (?, ?, ?)"
+            values = (qualification["name"],
+                      qualification["archived"],
+                      qualification["description"])
             self.cursor.execute(query, values)
             self.connection.commit()
 
