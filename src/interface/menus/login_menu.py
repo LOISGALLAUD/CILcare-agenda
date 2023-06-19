@@ -47,7 +47,10 @@ class LoginMenu(Frame):
         """
         username = self.login_container.username_entry.get()
         password = self.login_container.pwd_entry.get()
-        if username == "admin" and password == "admin":
+
+        _oid, _username, _password, _qualifications = self.gui.app.db_cursor.get_user(username)
+
+        if password == _password:
             self.gui.change_menu(self.gui.main_menu)
             self.login_container.username_entry.reset()
             self.login_container.pwd_entry.reset()

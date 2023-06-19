@@ -7,9 +7,7 @@ It will be used to interact with the database.
 
 #------------------------------------------------------------------------------#
 
-import mysql.connector as mysql
-from src.utils.decorators import setup_service
-from src.database.logins import Logins
+import sqlite3 as sql
 
 #------------------------------------------------------------------------------#
 
@@ -24,24 +22,66 @@ class DBCursor:
     def __init__(self, app) -> None:
         self.loggers = app.loggers
         self.connection = None
-        self._logins = Logins() # gets the logins from the logins.txt file
-        #self.setup_connection()
+        self.cursor = None
+        self.setup_connection()
+        self.setup_tables()
+        self.setup_admin()
 
-    @setup_service(max_attempts=5)
     def setup_connection(self) -> bool:
         """
         Connects to the database.
         """
-        self.connection = mysql.connect(host=self._logins.get_host(),
-                                        database=self._logins.get_database(),
-                                        user=self._logins.get_user(),
-                                        password=self._logins.get_password(),
-                                        port=self._logins.get_port())
+        self.connection = sql.connect("./data/cilcare.sqlite")
+        self.cursor = self.connection.cursor()
         return True
+
+    def setup_tables(self) -> bool:
+        """
+        Creates the tables if they don't exist.
+        """
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS `users` (
+                `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+                `username` TEXT NOT NULL UNIQUE,
+                `password` TEXT NOT NULL,
+                `qualification_id` INTEGER,
+                FOREIGN KEY (`qualification_id`) REFERENCES `qualifications` (`id`)
+            );
+        """)
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS `qualifications` (
+                `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+                `qualification` TEXT NOT NULL
+            );
+        """)
+        return True
+
+    def setup_admin(self) -> bool:
+        """
+        Creates the admin user if it doesn't exist.
+        """
+        self.cursor.execute("""
+            SELECT * FROM `users` WHERE `username` = 'admin';
+        """)
+        if self.cursor.fetchone() is None:
+            self.cursor.execute("""
+                INSERT INTO `users` (`username`, `password`, `qualification_id`)
+                VALUES ('admin', 'admin', NULL);
+            """)
+        return True
+
+    def get_user(self, username: str) -> tuple:
+        """
+        Returns the user with the given username.
+        """
+        self.cursor.execute("""
+            SELECT * FROM `users` WHERE `username` = ?;
+        """, (username,))
+        return self.cursor.fetchone()
 
     def close_connection(self) -> bool:
         """
         Ferme la session MySQL.
         """
-        #self.connection.close()
+        self.connection.close()
         return True
