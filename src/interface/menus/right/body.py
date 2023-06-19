@@ -29,7 +29,7 @@ class Body(Frame):
 
     def setup_studies(self) -> None:
         """
-        Setup the studies page.
+        Setup the studies page
         """
         self.studies_template = StudiesTemplate(self)
         self.studies_template.pack(fill='both', expand=True, side='top')
