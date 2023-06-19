@@ -16,12 +16,14 @@ class OperatorsTemplate(Frame):
     Contains the Frame in which will be displayed every
     templates related to the operators.
     """
-    operators_examples = ["Operator 1", "Operator 2", "Operator 3"]
     def __init__(self, body=None):
         super().__init__(body)
         self.manager = body
+        self.operators_examples = self.manager.manager.manager.gui.app.db_cursor.get_operators()
         self.configure(bg="white")
         self.propagate(False)
+
+
         self.operators_timeline = OperatorsTimeline(self)
         self.operators_timeline.pack(fill="both", expand=True, side="top")
         self.add_operators_template = None
@@ -70,7 +72,7 @@ class OperatorsTimeline(Frame):
             line_frame.columnconfigure(0, weight=1)
             line_frame.columnconfigure(1, weight=4)
             line_frame.pack(fill="both", expand=True, side="top")
-            Label(line_frame, text=operators).pack(side="left", fill="both")
+            Label(line_frame, text=operators["name"]).pack(side="left", fill="both")
             Canvas(line_frame, width=100,  height=100, bg="red").pack(side="right",
                                                                       fill="both",
                                                                       expand=True)
@@ -119,11 +121,12 @@ class ExpirationQualifications(Frame):
     """
     Contains the expiration of the qualifications.
     """
-    qualifications = ["Qualification 1", "Qualification 2", "Qualification 3", "Qualification 4"]
     def __init__(self, add_operator_frame) -> None:
         super().__init__(add_operator_frame)
         self.configure(bg="white")
         self.manager = add_operator_frame
+        self.operator_menu_manager = self.manager.manager.manager.manager.manager
+        self.qualifications = self.operator_menu_manager.gui.app.db_cursor.get_qualifications()
 
         Label(self, text="Expiration date: ", bg="#FFFFFF",
               fg="#000000").pack(fill='both', side='left', pady=10)
@@ -131,7 +134,8 @@ class ExpirationQualifications(Frame):
         self.expiration_frame.pack(fill='both', side='top', expand=True)
 
         for qualification in self.qualifications:
-            QualificationLine(self.expiration_frame, qualification).pack(fill='both',
+            QualificationLine(self.expiration_frame,
+                              qualification["qualification"]).pack(fill='both',
                                                                          side='top',
                                                                          expand=True)
 
@@ -146,7 +150,6 @@ class QualificationLine(Frame):
         self.label = Label(self, text=f"{qualification} expired on ", fg="#000000", bg="#FFFFFF")
         self.label.pack(fill='both', side='left')
         self.entry = Entry(self)
-        self.entry.insert('0', self.qualification)
         self.entry.pack(fill='both', side='left', expand=True)
         ButtonApp(self, text="reset", bg="#FFFFFF",
                   command=self.reset_qualification).pack(fill='both', side='left')

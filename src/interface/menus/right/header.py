@@ -105,7 +105,6 @@ class Header(Frame):
         Updates the header.
         """
         self.clear_header()
-        print(f"Updating header with {toggle}.")
         match toggle:
             case "Studies":
                 self.setup_widgets_studies()

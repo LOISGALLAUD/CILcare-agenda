@@ -48,18 +48,21 @@ class LoginMenu(Frame):
         username = self.login_container.username_entry.get()
         password = self.login_container.pwd_entry.get()
 
-        _oid, _username, _password, _qualifications = self.gui.app.db_cursor.get_user(username)
+        users = self.gui.app.db_cursor.get_users(username)
 
-        if password == _password:
-            self.gui.change_menu(self.gui.main_menu)
-            self.login_container.username_entry.reset()
-            self.login_container.pwd_entry.reset()
-            self.wrong_label.pack_forget()
-            return True
+        if users:
+            user_data = users[0]
+            if password == user_data["password"]:
+                self.gui.change_menu(self.gui.main_menu)
+                self.login_container.username_entry.reset()
+                self.login_container.pwd_entry.reset()
+                self.wrong_label.pack_forget()
+                return True
 
         self.login_container.pwd_entry.reset()
         self.wrong_label.pack(pady=50)
         return False
+
 
 class LoginContainer(Frame):
     """

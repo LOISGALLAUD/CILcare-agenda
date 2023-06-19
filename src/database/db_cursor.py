@@ -27,8 +27,10 @@ class DBCursor:
         self.setup_connection()
         self.setup_tables()
         self.setup_admin()
-        self.set_random_values()
-        self.show_tables()
+
+        # if tables are empty, fill them with random values
+        if self.cursor.execute("SELECT COUNT(*) FROM `users`").fetchone()[0] == 1:
+            self.set_random_values()
 
     def setup_connection(self) -> bool:
         """
@@ -53,11 +55,20 @@ class DBCursor:
             CREATE TABLE IF NOT EXISTS `users` (
                 `id` INTEGER PRIMARY KEY AUTOINCREMENT,
                 `username` TEXT NOT NULL UNIQUE,
-                `password` TEXT NOT NULL,
-                `qualification_id` INTEGER,
-                FOREIGN KEY (`qualification_id`) REFERENCES `qualifications` (`id`)
+                `password` TEXT NOT NULL
             );
         """)
+
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS operators (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                archived BOOLEAN NOT NULL,
+                qualification_id INTEGER,
+                FOREIGN KEY (qualification_id) REFERENCES qualifications(id)
+            );
+        """)
+
 
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS study (
@@ -100,19 +111,80 @@ class DBCursor:
         """)
         if self.cursor.fetchone() is None:
             self.cursor.execute("""
-                INSERT INTO `users` (`username`, `password`, `qualification_id`)
-                VALUES ('admin', 'admin', NULL);
+                INSERT INTO `users` (`username`, `password`)
+                VALUES ('admin', 'admin');
             """)
         return True
 
-    def get_user(self, username: str) -> tuple:
+    def get_users(self, username:str=None) -> list:
+        """
+        Returns the user(s) with the given username.
+        """
+        if username is None:
+            self.cursor.execute("""
+                SELECT * FROM `users`;
+            """)
+        else:
+            self.cursor.execute("""
+                SELECT * FROM `users` WHERE `username` = ?;
+            """, (username,))
+
+        rows = self.cursor.fetchall()
+        users = [
+            {
+                'id': row[0],
+                'username': row[1],
+                'password': row[2]
+            }
+            for row in rows
+        ]
+        return users
+
+    def get_operators(self, name:str=None) -> list:
         """
         Returns the user with the given username.
         """
-        self.cursor.execute("""
-            SELECT * FROM `users` WHERE `username` = ?;
-        """, (username,))
-        return self.cursor.fetchone()
+        if name is None:
+            self.cursor.execute("""
+                SELECT * FROM `operators`;
+            """)
+        else:
+            self.cursor.execute("""
+                SELECT * FROM `operators` WHERE `name` = ?;
+            """, (name,))
+        rows = self.cursor.fetchall()
+        operators = [
+            {
+                'id': row[0],
+                'name': row[1],
+                'archived': row[2],
+                'qualification_id': row[3]
+            }
+            for row in rows
+        ]
+        return operators
+
+    def get_qualifications(self, qualification:str=None) -> list:
+        """
+        Returns the qualifications.
+        """
+        if qualification is None:
+            self.cursor.execute("""
+                SELECT * FROM `qualifications`;
+            """)
+        else:
+            self.cursor.execute("""
+                SELECT * FROM `qualifications` WHERE `qualification` = ?;
+            """, (qualification,))
+        rows = self.cursor.fetchall()
+        qualifications = [
+            {
+                'id': row[0],
+                'qualification': row[1]
+            }
+            for row in rows
+        ]
+        return qualifications
 
     def set_random_values(self) -> bool:
         """
@@ -127,29 +199,24 @@ class DBCursor:
             self.connection.commit()
 
         users = [
-        {'username': 'User1',
-         'password': 'password1',
-         'qualification_id': random.randint(1, len(qualifications))},
+            {'username': 'User1', 'password': 'password1',
+             'qualification_id': random.randint(1, len(qualifications))},
 
-        {'username': 'User2',
-         'password': 'password2',
-         'qualification_id': random.randint(1, len(qualifications))},
+            {'username': 'User2', 'password': 'password2',
+             'qualification_id': random.randint(1, len(qualifications))},
 
-        {'username': 'User3',
-         'password': 'password3',
-         'qualification_id': random.randint(1, len(qualifications))},
+            {'username': 'User3', 'password': 'password3',
+             'qualification_id': random.randint(1, len(qualifications))},
         ]
 
         for user in users:
-            query = "INSERT INTO users (username, password, qualification_id) VALUES (?, ?, ?)"
+            if self.get_users(user['username']) != []:
+                continue
+            query = "INSERT INTO users (username, password) VALUES (?, ?)"
             values = (
                 user['username'],
-                user['password'],
-                user['qualification_id']
+                user['password']
             )
-            # Verify if the user already exists
-            if self.get_user(user['username'])[1] == user['username']:
-                continue
             self.cursor.execute(query, values)
             self.connection.commit()
 
@@ -163,7 +230,28 @@ class DBCursor:
             cursor.execute(query, values)
             self.connection.commit()
 
-        # Générer des valeurs aléatoires pour la table "study"
+        operators = [
+            {'name': 'Operator1', 'archived': random.choice([1, 0]),
+             'qualification_id': random.randint(1, 3)},
+
+            {'name': 'Operator2', 'archived': random.choice([1, 0]),
+             'qualification_id': random.randint(1, 3)},
+
+            {'name': 'Operator3', 'archived': random.choice([1, 0]),
+             'qualification_id': random.randint(1, 3)},
+        ]
+
+        for operator in operators:
+            query = "INSERT INTO operators (name, archived, qualification_id) VALUES (?, ?, ?)"
+            values = (
+                operator['name'],
+                operator['archived'],
+                operator['qualification_id']
+            )
+            self.cursor.execute(query, values)
+            self.connection.commit()
+
+
         studies = [
             {'name': 'Study 1',
              'archived': random.choice([True, False]),
@@ -219,25 +307,6 @@ class DBCursor:
             cursor = self.connection.cursor()
             cursor.execute(query, values)
             self.connection.commit()
-
-    def show_tables(self) -> bool:
-        """
-        Shows the tables.
-        """
-        self.cursor.execute("""
-            SELECT * FROM `users`;
-        """)
-        self.loggers.log.debug(self.cursor.fetchall())
-
-        self.cursor.execute("""
-            SELECT * FROM `qualifications`;
-        """)
-        self.loggers.log.debug(self.cursor.fetchall())
-
-        self.cursor.execute("""
-            SELECT * FROM `study`;
-        """)
-        self.loggers.log.debug(self.cursor.fetchall())
 
     def close_connection(self) -> bool:
         """
