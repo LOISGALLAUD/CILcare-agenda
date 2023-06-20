@@ -19,11 +19,10 @@ class EquipmentTemplate(Frame):
         super().__init__(body)
         self.configure(bg='red')
         self.manager = body
-        self.gui_manager = self.manager.manager.manager.gui
-        self.equipment_examples = self.gui_manager.app.db_cursor.get_equipments()
+        self.db_cursor_manager = self.manager.manager.manager.gui.app.db_cursor
+        self.equipment_examples = self.db_cursor_manager.get_equipments()
         self.configure(bg="white")
         self.propagate(False)
-
 
         self.equipments_timeline = EquipmentTimeline(self)
         self.equipments_timeline.pack(fill="both", expand=True, side="top")
@@ -95,11 +94,14 @@ class AddEquipmentTemplate(Frame):
         """
         Setup the widgets of the add equipments template.
         """
-        LabelEntryPair(self, "Equipment name").pack(fill="both", side="top")
+        self.equipment_name = LabelEntryPair(self, "Equipment name")
+        self.equipment_name.pack(fill="both", side="top")
+
         LabelEntryPair(self, "Rooms available").pack(fill="both", side="top")
         LabelEntryPair(self, "Constraint").pack(fill="both", side="top")
         Label(self, text="Description", bg="#FFFFFF").pack(side='top', padx=10)
-        Entry(self, text="Description", width=10).pack(fill='both', side='top', padx=10)
+        self.description = Entry(self, text="Description", width=10)
+        self.description.pack(fill='both', side='top', padx=10)
 
         self.checkbox_var = IntVar()
         self.checkbox = Checkbutton(self, text="Archived", bg="#FFFFFF", activebackground="#FFFFFF",
@@ -110,8 +112,22 @@ class AddEquipmentTemplate(Frame):
         self.bottom_frame = Frame(self, bg="white")
         self.bottom_frame.pack(fill='both', side='bottom', padx=10, pady=10)
         self.confirm_btn = ButtonApp(self.bottom_frame, text="Confirm",
-                                     command=None)
+                                     command=self.confirm)
         self.back_btn = ButtonApp(self.bottom_frame, text="Back",
                                   command=self.manager.from_add_equipments_to_timeline)
         self.confirm_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
         self.back_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
+
+    def confirm(self):
+        """
+        Inserts a room in the database.
+        """
+        name = self.equipment_name.entry.get()
+        archived = self.checkbox_var.get()
+        description = self.description.get()
+
+        self.manager.db_cursor_manager.insert_room(name, archived, description)
+        self.manager.room_examples = self.manager.db_cursor_manager.get_rooms()
+        self.manager.clear_timeline()
+        self.manager.room_timeline.setup_timeline()
+        self.manager.from_add_room_to_timeline()

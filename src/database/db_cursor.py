@@ -317,6 +317,16 @@ class DBCursor:
         ]
         return equipments
 
+    def insert_room(self, name:str, archived:int, description:str) -> bool:
+        """
+        Inserts a room in the database.
+        """
+        self.cursor.execute("""
+            INSERT INTO `rooms` (`name`, `archived`, `description`)
+            VALUES (?, ?, ?);
+            """, (name, archived, description))
+        self.connection.commit()
+
     def set_random_values(self) -> bool:
         """
         Sets random values in the database.
