@@ -29,6 +29,7 @@ class Header(Frame):
         self.add_room_btn = None
         self.add_equipment_btn = None
         self.add_qualification_btn = None
+        self.add_animal_types_btn = None
 
         self.setup_widgets_studies()
 
@@ -91,6 +92,17 @@ class Header(Frame):
                                padx=10, pady=10)
         return True
 
+    def setup_widgets_animal_types(self) -> bool:
+        """
+        Setup the widgets of the header.
+        """
+        self.add_animal_types_btn = ButtonApp(self, "Green", text="Add an animal type",
+                                      command=self.display_add_animal_types)
+        self.add_animal_types_btn.pack(side="left",
+                               fill="x",expand=True,
+                               padx=10, pady=10)
+        return True
+
     def reset_modifications(self) -> None:
         """
         Resets the modifications made by the user.
@@ -136,6 +148,12 @@ class Header(Frame):
         """
         self.manager.body.qualification_template.from_timeline_to_add_qualifications()
 
+    def display_add_animal_types(self) -> None:
+        """
+        Displays the add animal_types template.
+        """
+        self.manager.body.animal_types_template.from_timeline_to_add_animal_types()
+
     def update_header(self, toggle):
         """
         Updates the header.
@@ -152,6 +170,8 @@ class Header(Frame):
                 self.setup_widgets_equipments()
             case "Qualifications":
                 self.setup_widgets_qualifications()
+            case "Animal types":
+                self.setup_widgets_animal_types()
 
     def clear_header(self):
         """

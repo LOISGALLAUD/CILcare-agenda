@@ -17,12 +17,11 @@ class QualificationTemplate(Frame):
     """
     def __init__(self, body:Frame) -> None:
         super().__init__(body)
-        self.configure(bg='red')
+        self.configure(bg='white')
         self.manager = body
         self.gui_manager = self.manager.manager.manager.gui
         self.db_cursor_manager = self.gui_manager.app.db_cursor
         self.qualification_examples = self.gui_manager.app.db_cursor.get_qualifications()
-        self.configure(bg="white")
         self.propagate(False)
 
 
@@ -84,7 +83,7 @@ class QualificationList(Frame):
         """
         Shows the operators having the qualification.
         """
-        operators_qualified = self.manager.db_cursor_manager.get_operators(
+        operators_qualified = self.manager.db_cursor_manager.get_qualified_operators(
             qualification_id=qualification["id"])
         for operator in operators_qualified:
             text_var = f"{operator['name']} (expiration on {qualification['expiration_date']})"

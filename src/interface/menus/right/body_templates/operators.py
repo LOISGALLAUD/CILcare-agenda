@@ -20,9 +20,9 @@ class OperatorsTemplate(Frame):
         super().__init__(body)
         self.manager = body
         self.operators_examples = self.manager.manager.manager.gui.app.db_cursor.get_operators()
+        print(self.operators_examples)
         self.configure(bg="white")
         self.propagate(False)
-
 
         self.operators_timeline = OperatorsTimeline(self)
         self.operators_timeline.pack(fill="both", expand=True, side="top")
@@ -135,7 +135,7 @@ class ExpirationQualifications(Frame):
 
         for qualification in self.qualifications:
             QualificationLine(self.expiration_frame,
-                              qualification["qualification"]).pack(fill='both',
+                              qualification["name"]).pack(fill='both',
                                                                          side='top',
                                                                          expand=True)
 

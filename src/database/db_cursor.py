@@ -121,7 +121,7 @@ class DBCursor:
             """)
 
         self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS animal_type (
+            CREATE TABLE IF NOT EXISTS animal_types (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name VARCHAR(255) NOT NULL
             );
@@ -167,7 +167,31 @@ class DBCursor:
         ]
         return users
 
-    def get_operators(self, qualification_id:int=None) -> list:
+    def get_operators(self, name:str=None) -> list:
+        """
+        Returns the operator(s) with the given username.
+        """
+        if name is None:
+            self.cursor.execute("""
+                SELECT * FROM `operators`;
+            """)
+        else:
+            self.cursor.execute("""
+                SELECT * FROM `operators` WHERE `username` = ?;
+            """, (name,))
+
+        rows = self.cursor.fetchall()
+        operators = [
+            {
+                'id': row[0],
+                'name': row[1],
+                'archived': row[2]
+            }
+            for row in rows
+        ]
+        return operators
+
+    def get_qualified_operators(self, qualification_id:int=None) -> list:
         """
         Returns the operators with the given criteria.
         """
@@ -181,7 +205,11 @@ class DBCursor:
         self.cursor.execute(query, (qualification_id,))
         rows = self.cursor.fetchall()
         return [
-            {"id": row[0], "name": row[1], "archived": row[2]} for row in rows
+            {
+                "id": row[0],
+                "name": row[1],
+                "archived": row[2]
+            } for row in rows
         ]
 
     def get_qualifications(self, qualification:str=None) -> list:
@@ -209,7 +237,28 @@ class DBCursor:
         ]
         return qualifications
 
+    def get_animal_types(self, animal_type_name:str=None) -> list:
+        """
+        Returns the animal type(s) with the given name.
+        """
+        if animal_type_name is None:
+            self.cursor.execute("""
+                SELECT * FROM `animal_types`;
+            """)
+        else:
+            self.cursor.execute("""
+                SELECT * FROM `animal_types` WHERE `name` = ?;
+            """, (animal_type_name,))
 
+        rows = self.cursor.fetchall()
+        animal_types = [
+            {
+                'id': row[0],
+                'name': row[1]
+            }
+            for row in rows
+        ]
+        return animal_types
 
     def get_equipments(self, name:str=None) -> list:
         """
@@ -239,7 +288,6 @@ class DBCursor:
         """
         Sets random values in the database.
         """
-
         qualifications = [
             {
                 "name": 'Qualification A',
@@ -423,6 +471,14 @@ class DBCursor:
                 series_data['number'],
                 series_data['ears']
             )
+            self.cursor.execute(query, values)
+            self.connection.commit()
+
+        animal_types = ['Dog', 'Cat', 'Bird', 'Fish', 'Rabbit']
+
+        for animal_type in animal_types:
+            query = "INSERT INTO animal_types (name) VALUES (?)"
+            values = (animal_type,)
             self.cursor.execute(query, values)
             self.connection.commit()
 
