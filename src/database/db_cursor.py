@@ -82,6 +82,15 @@ class DBCursor:
         """)
 
         self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS rooms (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                archived BOOLEAN NOT NULL,
+                description TEXT
+            );
+        """)
+
+        self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS equipment (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name VARCHAR(255) NOT NULL,
@@ -260,18 +269,42 @@ class DBCursor:
         ]
         return animal_types
 
-    def get_equipments(self, name:str=None) -> list:
+    def get_rooms(self, room_name:str=None) -> list:
         """
         Returns the equipments.
         """
-        if name is None:
+        if room_name is None:
+            self.cursor.execute("""
+                SELECT * FROM `rooms`;
+            """)
+        else:
+            self.cursor.execute("""
+                SELECT * FROM `rooms` WHERE `name` = ?;
+            """, (room_name,))
+        rows = self.cursor.fetchall()
+        rooms = [
+            {
+                'id': row[0],
+                'name': row[1],
+                'archived': row[2],
+                'description': row[3]
+            }
+            for row in rows
+        ]
+        return rooms
+
+    def get_equipments(self, equipment_name:str=None) -> list:
+        """
+        Returns the equipments.
+        """
+        if equipment_name is None:
             self.cursor.execute("""
                 SELECT * FROM `equipment`;
             """)
         else:
             self.cursor.execute("""
                 SELECT * FROM `equipment` WHERE `name` = ?;
-            """, (name,))
+            """, (equipment_name,))
         rows = self.cursor.fetchall()
         equipments = [
             {
@@ -453,7 +486,6 @@ class DBCursor:
             self.cursor.execute(query, values)
             self.connection.commit()
 
-        # Générer des valeurs aléatoires pour la table "series"
         series = [
             {'name': 'Series 1', 'number': random.randint(1, 5),
              'ears': random.choice(['Two', 'Four'])},
@@ -479,6 +511,30 @@ class DBCursor:
         for animal_type in animal_types:
             query = "INSERT INTO animal_types (name) VALUES (?)"
             values = (animal_type,)
+            self.cursor.execute(query, values)
+            self.connection.commit()
+
+        rooms = [
+            {
+                'name': 'Room A',
+                'archived': random.choice([0, 1]),
+                'description': 'Description A'
+            },
+            {
+                'name': 'Room B',
+                'archived': random.choice([0, 1]),
+                'description': 'Description B'
+            },
+            {
+                'name': 'Room C',
+                'archived': random.choice([0, 1]),
+                'description': 'Description C'
+            }
+        ]
+
+        for room in rooms:
+            query = "INSERT INTO rooms (name, archived, description) VALUES (?, ?, ?)"
+            values = (room['name'], room['archived'], room['description'])
             self.cursor.execute(query, values)
             self.connection.commit()
 
