@@ -9,6 +9,7 @@ It will be used to interact with the database.
 
 import random
 import sqlite3 as sql
+from datetime import datetime
 
 #------------------------------------------------------------------------------#
 
@@ -46,35 +47,44 @@ class DBCursor:
         """
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS `qualifications` (
-                `id` INTEGER PRIMARY KEY AUTOINCREMENT,
-                `name` TEXT NOT NULL,
-                `archived` BOOLEAN NOT NULL,
-                `description` TEXT
-            );
-        """)
-
-        self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS `users` (
-                `id` INTEGER PRIMARY KEY AUTOINCREMENT,
-                `username` TEXT NOT NULL UNIQUE,
-                `password` TEXT NOT NULL
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name VARCHAR(255) NOT NULL,
+                archived BOOLEAN NOT NULL,
+                description TEXT,
+                expiration_date DATE
             );
         """)
 
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS operators (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                archived BOOLEAN NOT NULL,
+                name VARCHAR(255) NOT NULL,
+                archived BOOLEAN NOT NULL
+            );
+        """)
+
+        # Join table between operators and qualifications
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS operator_qualification (
+                operator_id INTEGER,
                 qualification_id INTEGER,
+                FOREIGN KEY (operator_id) REFERENCES operators(id),
                 FOREIGN KEY (qualification_id) REFERENCES qualifications(id)
+            );
+        """)
+
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS `users` (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT NOT NULL UNIQUE,
+                password TEXT NOT NULL
             );
         """)
 
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS equipment (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
+                name VARCHAR(255) NOT NULL,
                 archived BOOLEAN NOT NULL,
                 description TEXT
             );
@@ -105,6 +115,13 @@ class DBCursor:
 
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS client (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name VARCHAR(255) NOT NULL
+            );
+            """)
+
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS animal_type (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name VARCHAR(255) NOT NULL
             );
@@ -150,29 +167,22 @@ class DBCursor:
         ]
         return users
 
-    def get_operators(self, name:str=None) -> list:
+    def get_operators(self, qualification_id:int=None) -> list:
         """
-        Returns the user with the given username.
+        Returns the operators with the given criteria.
         """
-        if name is None:
-            self.cursor.execute("""
-                SELECT * FROM `operators`;
-            """)
-        else:
-            self.cursor.execute("""
-                SELECT * FROM `operators` WHERE `name` = ?;
-            """, (name,))
+        query = """
+            SELECT operators.id, operators.name, operators.archived
+            FROM operators
+            LEFT JOIN operator_qualification ON operators.id = operator_qualification.operator_id
+            LEFT JOIN qualifications ON operator_qualification.qualification_id = qualifications.id
+            WHERE qualifications.id = ?
+        """
+        self.cursor.execute(query, (qualification_id,))
         rows = self.cursor.fetchall()
-        operators = [
-            {
-                'id': row[0],
-                'name': row[1],
-                'archived': row[2],
-                'qualification_id': row[3]
-            }
-            for row in rows
+        return [
+            {"id": row[0], "name": row[1], "archived": row[2]} for row in rows
         ]
-        return operators
 
     def get_qualifications(self, qualification:str=None) -> list:
         """
@@ -192,11 +202,14 @@ class DBCursor:
                 'id': row[0],
                 'name': row[1],
                 'archived': row[2],
-                'description': row[3]
+                'description': row[3],
+                'expiration_date': row[4]
             }
             for row in rows
         ]
         return qualifications
+
+
 
     def get_equipments(self, name:str=None) -> list:
         """
@@ -226,25 +239,41 @@ class DBCursor:
         """
         Sets random values in the database.
         """
+
         qualifications = [
-            {"name":'Qualification A',
-             "archived": random.randint(0, 1),
-             "description": 'Description A'},
-            {"name":'Qualification B',
-             "archived": random.randint(0, 1),
-             "description": 'Description B'},
-            {"name":'Qualification C',
-             "archived": random.randint(0, 1),
-             "description": 'Description C'}
+            {
+                "name": 'Qualification A',
+                "archived": random.randint(0, 1),
+                "description": 'Description A',
+                "expiration_date": datetime.now()
+            },
+            {
+                "name": 'Qualification B',
+                "archived": random.randint(0, 1),
+                "description": 'Description B',
+                "expiration_date": datetime.now()
+            },
+            {
+                "name": 'Qualification C',
+                "archived": random.randint(0, 1),
+                "description": 'Description C',
+                "expiration_date": datetime.now()
+            }
         ]
 
         for qualification in qualifications:
-            query = "INSERT INTO qualifications (name, archived, description) VALUES (?, ?, ?)"
-            values = (qualification["name"],
-                      qualification["archived"],
-                      qualification["description"])
+            query = """INSERT INTO qualifications
+            (name, archived, description, expiration_date)
+            VALUES (?, ?, ?, ?)"""
+            values = (
+                qualification["name"],
+                qualification["archived"],
+                qualification["description"],
+                qualification["expiration_date"].strftime("%d/%m/%Y")
+            )
             self.cursor.execute(query, values)
             self.connection.commit()
+
 
         users = [
             {'username': 'User1', 'password': 'password1',
@@ -289,11 +318,35 @@ class DBCursor:
         ]
 
         for operator in operators:
-            query = "INSERT INTO operators (name, archived, qualification_id) VALUES (?, ?, ?)"
+            query = "INSERT INTO operators (name, archived) VALUES (?, ?)"
             values = (
                 operator['name'],
-                operator['archived'],
-                operator['qualification_id']
+                operator['archived']
+            )
+            self.cursor.execute(query, values)
+            self.connection.commit()
+
+        operator_qualifications = [
+            {
+                'operator_id': 1,
+                'qualification_id': 2
+            },
+            {
+                'operator_id': 2,
+                'qualification_id': 2
+            },
+            {
+                'operator_id': 3,
+                'qualification_id': 3
+            }
+        ]
+
+        for operator_qualification in operator_qualifications:
+            query = """INSERT INTO operator_qualification
+            (operator_id, qualification_id) VALUES (?, ?)"""
+            values = (
+                operator_qualification['operator_id'],
+                operator_qualification['qualification_id']
             )
             self.cursor.execute(query, values)
             self.connection.commit()

@@ -20,6 +20,7 @@ class QualificationTemplate(Frame):
         self.configure(bg='red')
         self.manager = body
         self.gui_manager = self.manager.manager.manager.gui
+        self.db_cursor_manager = self.gui_manager.app.db_cursor
         self.qualification_examples = self.gui_manager.app.db_cursor.get_qualifications()
         self.configure(bg="white")
         self.propagate(False)
@@ -71,12 +72,26 @@ class QualificationList(Frame):
             line_frame.rowconfigure(0, weight=1)
             line_frame.columnconfigure(0, weight=1)
             line_frame.columnconfigure(1, weight=4)
-            line_frame.pack(fill="both", expand=True, side="top")
+            line_frame.pack(expand=True, side="top", fill="both")
 
             # Inside the line frame
             Label(line_frame, text=qualification["name"]).pack(side="left", fill="both")
             ButtonApp(line_frame, "Red", text="Details",
-            command=lambda: print("details")).pack(side="right", fill="both")
+            command=lambda lf=line_frame, q=qualification:
+                self.show_op_qualified(lf, q)).pack(side="right", fill="both")
+
+    def show_op_qualified(self, frame:Frame, qualification:dict) -> None:
+        """
+        Shows the operators having the qualification.
+        """
+        operators_qualified = self.manager.db_cursor_manager.get_operators(
+            qualification_id=qualification["id"])
+        for operator in operators_qualified:
+            text_var = f"{operator['name']} (expiration on {qualification['expiration_date']})"
+            Label(frame,
+                  text=text_var).pack(side="top", fill="both")
+
+
 
 #-------------------------------------------------------------------#
 
