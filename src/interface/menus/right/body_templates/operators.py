@@ -6,7 +6,7 @@ Contains the operators page.
 
 #-------------------------------------------------------------------#
 
-from src.utils.graphical_utils import Frame, Label, Canvas, LabelEntryPair
+from src.utils.graphical_utils import Frame, Label, Canvas, LabelEntryPair, Scrollbar
 from src.utils.graphical_utils import Checkbutton, IntVar, ButtonApp, Entry
 
 #-------------------------------------------------------------------#
@@ -19,7 +19,8 @@ class OperatorsTemplate(Frame):
     def __init__(self, body=None):
         super().__init__(body)
         self.manager = body
-        self.operators_examples = self.manager.manager.manager.gui.app.db_cursor.get_operators()
+        self.db_cursor_manager = self.manager.manager.manager.gui.app.db_cursor
+        self.operators_examples = self.db_cursor_manager.get_operators()
         self.configure(bg="white")
         self.propagate(False)
 
@@ -94,13 +95,39 @@ class AddOperatorsTemplate(Frame):
         """
         Setup the widgets of the add operators template.
         """
-        LabelEntryPair(self, "Operator name").pack(fill="both", side="top")
-        LabelEntryPair(self, "Qualifications").pack(fill="both", side="top")
+        self.name = LabelEntryPair(self, "Operator name")
+        self.name.pack(fill="both", side="top")
 
         self.checkbox_var = IntVar()
         self.checkbox = Checkbutton(self, text="Archived", bg="#FFFFFF", activebackground="#FFFFFF",
                                variable=self.checkbox_var, command=None)
         self.checkbox.pack(side='top', padx=10, pady=10, anchor="w")
+
+        # Qualifications allowed
+        frame = Frame(self, bg="pink")
+        frame.pack(fill='both', side='top', expand=True)
+        scrollbar = Scrollbar(frame)
+        scrollbar.pack(side="right", fill="y")
+        canvas = Canvas(frame, yscrollcommand=scrollbar.set)
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.config(command=canvas.yview)
+        inner_frame = Frame(canvas)
+        canvas.create_window((0, 0), window=inner_frame, anchor='nw')
+
+        # Adding the checkboxes
+        checked_vars = []
+        items = self.manager.db_cursor_manager.get_qualifications()
+        for item in items:
+            var = IntVar()
+            checked_vars.append(var)
+
+            checkbutton = Checkbutton(inner_frame, text=item["name"], variable=var)
+            checkbutton.pack(anchor='w')
+
+        inner_frame.bind('<Configure>',
+                         lambda event: canvas.configure(scrollregion=canvas.bbox('all')))
+        canvas.bind('<Configure>',
+                    lambda event: canvas.configure(scrollregion=canvas.bbox('all')))
 
         # Expiration qualifications
         self.expiration_qualifications = ExpirationQualifications(self)
