@@ -135,8 +135,8 @@ class ExpirationQualifications(Frame):
         for qualification in self.qualifications:
             QualificationLine(self.expiration_frame,
                               qualification["name"]).pack(fill='both',
-                                                                         side='top',
-                                                                         expand=True)
+                                                        side='top',
+                                                        expand=True)
 
 class QualificationLine(Frame):
     """

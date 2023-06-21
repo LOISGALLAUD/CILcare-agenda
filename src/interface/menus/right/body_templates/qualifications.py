@@ -6,8 +6,8 @@ Frame containing the qualifications needed for a study.
 
 #------------------------------------------------------------------------------#
 
-from src.utils.graphical_utils import Frame, Label
-from src.utils.graphical_utils import LabelEntryPair, IntVar, Checkbutton, ButtonApp, Entry
+from src.utils.graphical_utils import Frame, Label, ButtonApp, Text
+from src.utils.graphical_utils import LabelEntryPair, IntVar, Checkbutton
 
 #------------------------------------------------------------------------------#
 
@@ -38,7 +38,7 @@ class QualificationTemplate(Frame):
         self.qualifications_timeline.pack_forget()
         self.setup_add_qualification()
 
-    def from_add_qualifications_to_timeline(self):
+    def from_add_qualification_to_timeline(self):
         """
         Switches from the add qualifications template to the timeline.
         """
@@ -51,6 +51,13 @@ class QualificationTemplate(Frame):
         """
         self.add_qualifications_template = AddQualificationTemplate(self)
         self.add_qualifications_template.pack(fill='both', expand=True, side='top')
+
+    def clear_timeline(self):
+        """
+        Clears the timeline.
+        """
+        for widget in self.qualifications_timeline.winfo_children():
+            widget.destroy()
 
 class QualificationList(Frame):
     """
@@ -65,6 +72,12 @@ class QualificationList(Frame):
         """
         super().__init__(manager)
         self.manager = manager
+        self.setup_timeline()
+
+    def setup_timeline(self):
+        """
+        Setup the timeline.
+        """
         for qualification in self.manager.qualification_examples:
             line_frame = Frame(self)
             line_frame.propagate(False)
@@ -86,11 +99,11 @@ class QualificationList(Frame):
         operators_qualified = self.manager.db_cursor_manager.get_qualified_operators(
             qualification_id=qualification["id"])
         for operator in operators_qualified:
-            text_var = f"{operator['name']} (expiration on {qualification['expiration_date']})"
+            expiration_date = self.manager.db_cursor_manager.get_expiration_date(
+                operator_id=operator["id"], qualification_id=qualification["id"])
+            text_var = f"{operator['name']} (expiration on {expiration_date})"
             Label(frame,
                   text=text_var).pack(side="top", fill="both")
-
-
 
 #-------------------------------------------------------------------#
 
@@ -110,11 +123,11 @@ class AddQualificationTemplate(Frame):
         """
         Setup the widgets of the add qualifications template.
         """
-        LabelEntryPair(self, "Qualification name").pack(fill="both", side="top")
-        LabelEntryPair(self, "Rooms available").pack(fill="both", side="top")
-        LabelEntryPair(self, "Constraint").pack(fill="both", side="top")
+        self.qualification_name = LabelEntryPair(self, "Qualification name")
+        self.qualification_name.pack(fill="both", side="top")
         Label(self, text="Description", bg="#FFFFFF").pack(side='top', padx=10)
-        Entry(self, text="Description", width=10).pack(fill='both', side='top', padx=10)
+        self.description = Text(self, width=50)
+        self.description.pack(fill='both', side='top', padx=10)
 
         self.checkbox_var = IntVar()
         self.checkbox = Checkbutton(self, text="Archived", bg="#FFFFFF", activebackground="#FFFFFF",
@@ -125,8 +138,23 @@ class AddQualificationTemplate(Frame):
         self.bottom_frame = Frame(self, bg="white")
         self.bottom_frame.pack(fill='both', side='bottom', padx=10, pady=10)
         self.confirm_btn = ButtonApp(self.bottom_frame, text="Confirm",
-                                     command=None)
+                                     command=self.confirm)
         self.back_btn = ButtonApp(self.bottom_frame, text="Back",
-                                  command=self.manager.from_add_qualifications_to_timeline)
+                                  command=self.manager.from_add_qualification_to_timeline)
         self.confirm_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
         self.back_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
+
+    def confirm(self) -> None:
+        """
+        Inserts a qualification in the database.
+        """
+        name = self.qualification_name.entry.get()
+        archived = self.checkbox_var.get()
+        description = self.description.get("1.0", "end-1c")
+
+        self.manager.db_cursor_manager.insert_qualification(name, archived,
+                                                            description)
+        self.manager.qualification_examples = self.manager.db_cursor_manager.get_qualifications()
+        self.manager.clear_timeline()
+        self.manager.qualifications_timeline.setup_timeline()
+        self.manager.from_add_qualification_to_timeline()

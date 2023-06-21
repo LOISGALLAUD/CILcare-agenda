@@ -50,8 +50,7 @@ class DBCursor:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name VARCHAR(255) NOT NULL,
                 archived BOOLEAN NOT NULL,
-                description TEXT,
-                expiration_date DATE
+                description TEXT
             );
         """)
 
@@ -68,6 +67,7 @@ class DBCursor:
             CREATE TABLE IF NOT EXISTS operator_qualification (
                 operator_id INTEGER,
                 qualification_id INTEGER,
+                expiration_date DATE,
                 FOREIGN KEY (operator_id) REFERENCES operators(id),
                 FOREIGN KEY (qualification_id) REFERENCES qualifications(id)
             );
@@ -221,6 +221,17 @@ class DBCursor:
             } for row in rows
         ]
 
+    def get_expiration_date(self, operator_id:int, qualification_id:int) -> str:
+        """
+        Returns the expiration date of the operator's qualification.
+        """
+        self.cursor.execute("""
+            SELECT expiration_date FROM operator_qualification
+            WHERE operator_id = ? AND qualification_id = ?;
+        """, (operator_id, qualification_id))
+        self.connection.commit()
+        return self.cursor.fetchone()[0]
+
     def get_qualifications(self, qualification:str=None) -> list:
         """
         Returns the qualifications.
@@ -239,8 +250,7 @@ class DBCursor:
                 'id': row[0],
                 'name': row[1],
                 'archived': row[2],
-                'description': row[3],
-                'expiration_date': row[4]
+                'description': row[3]
             }
             for row in rows
         ]
@@ -326,6 +336,42 @@ class DBCursor:
             VALUES (?, ?, ?);
             """, (name, archived, description))
         self.connection.commit()
+        return True
+
+    def insert_qualification(self, name:str, archived:int,
+                             description:str) -> bool:
+        """
+        Inserts a qualification in the database.
+        """
+        self.cursor.execute("""
+            INSERT INTO `qualifications` (`name`, `archived`, `description`)
+            VALUES (?, ?, ?);
+            """, (name, archived, description))
+        self.connection.commit()
+        return True
+
+    def insert_operator(self, name:str, archived:int) -> bool:
+        """
+        Inserts an operator in the database.
+        """
+        self.cursor.execute("""
+            INSERT INTO `operators` (`name`, `archived`)
+            VALUES (?, ?);
+            """, (name, archived))
+        self.connection.commit()
+        return True
+
+    def insert_bound_operator_qualification(self, operator_id:int, qualification_id:int,
+                                            expiration_date:datetime.date) -> bool:
+        """
+        Inserts a bound operator qualification in the database.
+        """
+        self.cursor.execute("""
+            INSERT INTO `operator_qualification` (`operator_id`, `qualification_id`, `expiration_date`)
+            VALUES (?, ?, ?);
+            """, (operator_id, qualification_id, expiration_date))
+        self.connection.commit()
+        return True
 
     def set_random_values(self) -> bool:
         """
@@ -354,13 +400,12 @@ class DBCursor:
 
         for qualification in qualifications:
             query = """INSERT INTO qualifications
-            (name, archived, description, expiration_date)
-            VALUES (?, ?, ?, ?)"""
+            (name, archived, description)
+            VALUES (?, ?, ?)"""
             values = (
                 qualification["name"],
                 qualification["archived"],
-                qualification["description"],
-                qualification["expiration_date"].strftime("%d/%m/%Y")
+                qualification["description"]
             )
             self.cursor.execute(query, values)
             self.connection.commit()
@@ -420,24 +465,28 @@ class DBCursor:
         operator_qualifications = [
             {
                 'operator_id': 1,
-                'qualification_id': 2
+                'qualification_id': 2,
+                'expiration_date': datetime.strptime("22/09/2003", '%d/%m/%Y').date()
             },
             {
                 'operator_id': 2,
-                'qualification_id': 2
+                'qualification_id': 2,
+                'expiration_date': datetime.strptime("02/04/2002", '%d/%m/%Y').date()
             },
             {
                 'operator_id': 3,
-                'qualification_id': 3
+                'qualification_id': 3,
+                'expiration_date': datetime.strptime("02/04/2023", '%d/%m/%Y').date()
             }
         ]
 
         for operator_qualification in operator_qualifications:
             query = """INSERT INTO operator_qualification
-            (operator_id, qualification_id) VALUES (?, ?)"""
+            (operator_id, qualification_id, expiration_date) VALUES (?, ?, ?)"""
             values = (
                 operator_qualification['operator_id'],
-                operator_qualification['qualification_id']
+                operator_qualification['qualification_id'],
+                operator_qualification["expiration_date"].strftime("%d/%m/%Y")
             )
             self.cursor.execute(query, values)
             self.connection.commit()

@@ -8,7 +8,7 @@ Contains the room page.
 #-------------------------------------------------------------------#
 
 from src.utils.graphical_utils import Frame, Label, Canvas, LabelEntryPair
-from src.utils.graphical_utils import Checkbutton, IntVar, ButtonApp, Entry
+from src.utils.graphical_utils import Checkbutton, IntVar, ButtonApp, Text
 
 #-------------------------------------------------------------------#
 
@@ -115,7 +115,7 @@ class AddRoomsTemplate(Frame):
                                variable=self.checkbox_var, command=None)
         self.checkbox.pack(side='top', padx=10, pady=10, anchor="w")
 
-        self.description = Entry(self, width=50)
+        self.description = Text(self, width=50)
         self.description.pack(fill="both", side="top", padx=10, pady=10)
 
         # Bottom widget
@@ -135,7 +135,7 @@ class AddRoomsTemplate(Frame):
         """
         name = self.room_name_entry.entry.get()
         archived = self.checkbox_var.get()
-        description = self.description.get()
+        description = self.description.get("1.0", "end-1c")
 
         self.manager.db_cursor_manager.insert_room(name, archived, description)
         self.manager.room_examples = self.manager.db_cursor_manager.get_rooms()
