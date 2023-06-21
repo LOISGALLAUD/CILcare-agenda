@@ -186,7 +186,7 @@ class DBCursor:
             """)
         else:
             self.cursor.execute("""
-                SELECT * FROM `operators` WHERE `username` = ?;
+                SELECT * FROM `operators` WHERE `name` = ?;
             """, (name,))
 
         rows = self.cursor.fetchall()
@@ -361,10 +361,10 @@ class DBCursor:
         self.connection.commit()
         return True
 
-    def insert_bound_operator_qualification(self, operator_id:int, qualification_id:int,
+    def insert_link_operator_qualification(self, operator_id:int, qualification_id:int,
                                             expiration_date:datetime.date) -> bool:
         """
-        Inserts a bound operator qualification in the database.
+        Inserts a link operator qualification in the database.
         """
         self.cursor.execute("""
             INSERT INTO `operator_qualification` (`operator_id`, `qualification_id`, `expiration_date`)
