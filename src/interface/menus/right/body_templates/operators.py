@@ -132,12 +132,12 @@ class AddOperatorsTemplate(Frame):
 
         # Adding the checkboxes
         self.checkboxes = []
-        for item in self.manager.db_cursor_manager.get_qualifications():
+        for qual in self.manager.db_cursor_manager.get_qualifications():
             var = IntVar()
-            checkbutton = Checkbutton(inner_frame, text=item["name"],
+            checkbutton = Checkbutton(inner_frame, text=qual["name"],
                                       variable=var,
                                       command=self.expiration_qualifications.setup_qualifications)
-            self.checkboxes.append((item["id"], var))
+            self.checkboxes.append((qual["id"], var))
             checkbutton.pack(anchor='w')
         inner_frame.bind('<Configure>',
                          lambda event: canvas.configure(scrollregion=canvas.bbox('all')))

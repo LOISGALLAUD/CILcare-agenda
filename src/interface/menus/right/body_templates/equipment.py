@@ -6,8 +6,8 @@ This file contains the equipment template.
 
 #------------------------------------------------------------------------------#
 
-from src.utils.graphical_utils import Frame, Label, Canvas
-from src.utils.graphical_utils import LabelEntryPair, IntVar, Checkbutton, ButtonApp, Entry
+from src.utils.graphical_utils import Frame, Label, Canvas, Scrollbar, Radiobutton
+from src.utils.graphical_utils import LabelEntryPair, IntVar, Checkbutton, ButtonApp, Text
 
 #------------------------------------------------------------------------------#
 
@@ -97,10 +97,33 @@ class AddEquipmentTemplate(Frame):
         self.equipment_name = LabelEntryPair(self, "Equipment name")
         self.equipment_name.pack(fill="both", side="top")
 
-        LabelEntryPair(self, "Rooms available").pack(fill="both", side="top")
+        # Selection of the room
+        frame = Frame(self)
+        frame.pack(side='left')
+        scrollbar = Scrollbar(frame)
+        scrollbar.pack(side="right", fill="y")
+        canvas = Canvas(frame, yscrollcommand=scrollbar.set)
+        canvas.pack(side="left", fill="both")
+        scrollbar.config(command=canvas.yview)
+        inner_frame = Frame(canvas)
+        canvas.create_window((0, 0), window=inner_frame, anchor='nw')
+
+        # Adding the checkboxes
+        self.selected_room_id = IntVar()
+        for room in self.manager.db_cursor_manager.get_rooms():
+            room_radio = Radiobutton(inner_frame,
+                                     text=room["name"],
+                                     value=room["id"],
+                                     variable=self.selected_room_id)
+            room_radio.pack(anchor='w')
+        inner_frame.bind('<Configure>',
+                         lambda event: canvas.configure(scrollregion=canvas.bbox('all')))
+        canvas.bind('<Configure>',
+                    lambda event: canvas.configure(scrollregion=canvas.bbox('all')))
+
         LabelEntryPair(self, "Constraint").pack(fill="both", side="top")
         Label(self, text="Description", bg="#FFFFFF").pack(side='top', padx=10)
-        self.description = Entry(self, text="Description", width=10)
+        self.description = Text(self)
         self.description.pack(fill='both', side='top', padx=10)
 
         self.checkbox_var = IntVar()
@@ -124,7 +147,8 @@ class AddEquipmentTemplate(Frame):
         """
         name = self.equipment_name.entry.get()
         archived = self.checkbox_var.get()
-        description = self.description.get()
+        room_id = self.selected_room_id.get()
+        description = self.description.get("1.0", "end-1c")
 
         self.manager.db_cursor_manager.insert_room(name, archived, description)
         self.manager.room_examples = self.manager.db_cursor_manager.get_rooms()
