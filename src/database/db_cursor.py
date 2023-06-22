@@ -91,7 +91,7 @@ class DBCursor:
         """)
 
         self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS equipment (
+            CREATE TABLE IF NOT EXISTS equipments (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name VARCHAR(255) NOT NULL,
                 archived BOOLEAN NOT NULL,
@@ -100,7 +100,16 @@ class DBCursor:
             """)
 
         self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS study (
+            CREATE TABLE IF NOT EXISTS room_equipment (
+            room_id INTEGER,
+            equipment_id INTEGER,
+            FOREIGN KEY (room_id) REFERENCES rooms (id),
+            FOREIGN KEY (equipment_id) REFERENCES equipments (id)
+        );
+        """)
+
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS studies (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name VARCHAR(255) NOT NULL,
                 archived BOOLEAN NOT NULL,
@@ -119,11 +128,11 @@ class DBCursor:
                 name VARCHAR(255),
                 number INT,
                 ears VARCHAR(255),
-                FOREIGN KEY (study_id) REFERENCES study(id)
+                FOREIGN KEY (study_id) REFERENCES studies(id)
             );""")
 
         self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS client (
+            CREATE TABLE IF NOT EXISTS clients (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name VARCHAR(255) NOT NULL
             );
@@ -309,11 +318,11 @@ class DBCursor:
         """
         if equipment_name is None:
             self.cursor.execute("""
-                SELECT * FROM `equipment`;
+                SELECT * FROM `equipments`;
             """)
         else:
             self.cursor.execute("""
-                SELECT * FROM `equipment` WHERE `name` = ?;
+                SELECT * FROM `equipments` WHERE `name` = ?;
             """, (equipment_name,))
         rows = self.cursor.fetchall()
         equipments = [
@@ -437,7 +446,7 @@ class DBCursor:
         random.shuffle(clients)
 
         for client_name in clients:
-            query = "INSERT INTO client (name) VALUES (?)"
+            query = "INSERT INTO clients (name) VALUES (?)"
             values = (client_name,)
             self.cursor.execute(query, values)
             self.connection.commit()
@@ -491,6 +500,30 @@ class DBCursor:
             self.cursor.execute(query, values)
             self.connection.commit()
 
+        room_equipments = [
+            {
+                'room_id': 1,
+                'equipment_id': 2,
+            },
+            {
+                'room_id': 2,
+                'equipment_id': 1,
+            },
+            {
+                'room_id': 3,
+                'equipment_id': 3,
+            }
+        ]
+
+        for room_equipment in room_equipments:
+            query = """INSERT INTO room_equipment
+            (room_id, equipment_id) VALUES (?, ?)"""
+            values = (
+                room_equipment['room_id'],
+                room_equipment['equipment_id']
+            )
+            self.cursor.execute(query, values)
+            self.connection.commit()
 
         equipments = [
             {'name': 'Equipment1', 'archived': random.choice([1, 0]),
@@ -502,7 +535,7 @@ class DBCursor:
         ]
 
         for equipment in equipments:
-            query = """INSERT INTO equipment (name, archived, description)
+            query = """INSERT INTO equipments (name, archived, description)
             VALUES (?, ?, ?)"""
             values = (
                 equipment['name'],
@@ -531,7 +564,7 @@ class DBCursor:
         ]
 
         for study in studies:
-            query = """INSERT INTO study
+            query = """INSERT INTO studies
             (name, archived, client_id, animal_type, animal_count, description)
             VALUES (?, ?, ?, ?, ?, ?)"""
             values = (

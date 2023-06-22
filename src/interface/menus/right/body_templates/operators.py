@@ -132,13 +132,12 @@ class AddOperatorsTemplate(Frame):
 
         # Adding the checkboxes
         self.checkboxes = []
-        items = self.manager.db_cursor_manager.get_qualifications()
-        for item in items:
+        for item in self.manager.db_cursor_manager.get_qualifications():
             var = IntVar()
             checkbutton = Checkbutton(inner_frame, text=item["name"],
                                       variable=var,
                                       command=self.expiration_qualifications.setup_qualifications)
-            self.checkboxes.append((item["name"], var))
+            self.checkboxes.append((item["id"], var))
             checkbutton.pack(anchor='w')
         inner_frame.bind('<Configure>',
                          lambda event: canvas.configure(scrollregion=canvas.bbox('all')))
@@ -160,9 +159,9 @@ class AddOperatorsTemplate(Frame):
         Returns the checked vars of the checkboxes.
         """
         checked_vars = []
-        for name, var in self.checkboxes:
+        for qual_id, var in self.checkboxes:
             if var.get():
-                checked_vars.append(name)
+                checked_vars.append(qual_id)
         return checked_vars
 
     def confirm(self) -> None:
@@ -174,14 +173,14 @@ class AddOperatorsTemplate(Frame):
         expiration_qualifications = self.expiration_qualifications.qualifications
         qualifications = self.get_checked_vars()
         qualif_selected = [item for item in expiration_qualifications
-                           if item["name"] in qualifications]
+                           if item["id"] in qualifications]
 
         self.manager.db_cursor_manager.insert_operator(name, archived)
         new_operator = self.manager.db_cursor_manager.get_operators(name)[0]
         for qualif in qualif_selected:
             self.manager.db_cursor_manager.insert_link_operator_qualification(
                 new_operator["id"], qualif['id'],
-                self.expiration_qualifications.get_expiration_date(qualif["name"]))
+                self.expiration_qualifications.get_expiration_date(qualif["id"]))
 
         self.manager.operators_examples = self.manager.db_cursor_manager.get_operators()
         self.manager.clear_timeline()
@@ -207,9 +206,9 @@ class ExpirationQualifications(Frame):
         checked_vars = self.manager.get_checked_vars()
         self.qualifications = self.operator_menu_manager.gui.app.db_cursor.get_qualifications()
         for qualification in self.qualifications:
-            if any(name == qualification["name"]
-                   for name in checked_vars):
-                QualificationLine(self, qualification["name"]).pack(fill='both',
+            if any(qual_id == qualification["id"]
+                   for qual_id in checked_vars):
+                QualificationLine(self, qualification).pack(fill='both',
                                                                     side='top',
                                                                     expand=True)
 
@@ -220,12 +219,12 @@ class ExpirationQualifications(Frame):
         for qualification in self.winfo_children():
             qualification.destroy()
 
-    def get_expiration_date(self, qualification_name:str) -> str:
+    def get_expiration_date(self, qualification_id:str) -> str:
         """
         Returns the date of the qualification.
         """
         for qualification_line in self.winfo_children():
-            if qualification_line.qualification_name == qualification_name:
+            if qualification_line.qualification_id == qualification_id:
                 return qualification_line.date_entry.get()
         return None
 
@@ -233,11 +232,12 @@ class QualificationLine(Frame):
     """
     Contains a qualification.
     """
-    def __init__(self, expiration_qualifications_frame:Frame, qualification_name:str) -> None:
+    def __init__(self, expiration_qualifications_frame:Frame, qualification:dict) -> None:
         super().__init__(expiration_qualifications_frame)
         self.manager = expiration_qualifications_frame
-        self.qualification_name = qualification_name
-        self.label = Label(self, text=f"{qualification_name} expired on ",
+        self.qualification_name = qualification["name"]
+        self.qualification_id = qualification["id"]
+        self.label = Label(self, text=f'{qualification["name"]} expire on ',
                            fg="#000000", bg="#FFFFFF")
         self.label.pack(fill='both', side='left')
         self.date_entry = DateEntry(self, width=20, background='#A91B60',
