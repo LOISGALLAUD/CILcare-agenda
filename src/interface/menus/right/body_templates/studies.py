@@ -6,7 +6,7 @@ Studies template for the body
 
 #-------------------------------------------------------------------#
 
-from src.utils.graphical_utils import Frame, Canvas, Label, ButtonApp, Entry
+from src.utils.graphical_utils import Frame, Canvas, Label, ButtonApp, Entry, Text
 from src.utils.graphical_utils import LabelEntryPair, Serials, IntVar, Checkbutton
 from src.interface.widgets.right_click import RCMSerial, RCMStudy
 
@@ -218,8 +218,7 @@ class AddStudyTemplate(Frame):
 
         # Description of the study
         Label(self, text="Description", bg="#FFFFFF").pack(fill='both', side='top', padx=10)
-        self.description = Entry(self, text="Description")
-        self.description.bind('<Return>', self.line_break)
+        self.description = Text(self)
         self.description.pack(fill='both', side='top', padx=10)
 
         # Serials of the study
@@ -235,12 +234,6 @@ class AddStudyTemplate(Frame):
                                   command=self.manager.from_addstudy_to_studies_frame)
         self.confirm_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
         self.back_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
-
-    def line_break(self, _event) -> None:
-        """
-        Jump a line in the description entrybox.
-        """
-        self.description.insert('end', '\n')
 
 #-------------------------------------------------------------------#
 

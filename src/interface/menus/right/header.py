@@ -172,6 +172,12 @@ class Header(Frame):
         """
         self.manager.body.templates_template.from_timeline_to_add_templates()
 
+    def display_add_task(self) -> None:
+        """
+        Displays the add task template.
+        """
+        self.manager.body.templates_template.from_timeline_to_add_tasks()
+
     def update_header(self, toggle):
         """
         Updates the header.

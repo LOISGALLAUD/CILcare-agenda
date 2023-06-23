@@ -6,8 +6,10 @@ This file contains the template template.
 
 #------------------------------------------------------------------------------#
 
-from src.utils.graphical_utils import Frame, Label, Canvas, Combobox
-from src.utils.graphical_utils import LabelEntryPair, IntVar, Checkbutton, ButtonApp, Text, StringVar
+from tkcolorpicker import ColorPicker
+from src.utils.graphical_utils import Frame, Label, Canvas, Combobox, Text, StringVar, Scrollbar
+from src.utils.graphical_utils import LabelEntryPair, IntVar, Checkbutton, ButtonApp
+from src.interface.widgets.right_click import RCMTemplates
 
 #------------------------------------------------------------------------------#
 
@@ -25,6 +27,7 @@ class TemplatesTemplate(Frame):
         self.propagate(False)
 
         self.templates_timeline = TemplateTimeline(self)
+        self.add_task_template = TaskTemplate(self)
         self.templates_timeline.pack(fill="both", expand=True, side="top")
         self.add_templates_template = None
 
@@ -58,6 +61,13 @@ class TemplatesTemplate(Frame):
         for child in self.templates_timeline.winfo_children():
             child.destroy()
 
+    def from_timeline_to_add_tasks(self):
+        """
+        Switch from timeline to add tasks.
+        """
+        self.templates_timeline.destroy()
+        self.add_task_template.pack(fill="both", expand=True, side="top")
+
 class TemplateTimeline(Frame):
     """
     Contains templates names and their disponibilities
@@ -71,6 +81,7 @@ class TemplateTimeline(Frame):
         """
         super().__init__(manager)
         self.manager = manager
+        self.right_click_menu = RCMTemplates(self)
         self.setup_timeline()
 
     def setup_timeline(self) -> None:
@@ -85,9 +96,78 @@ class TemplateTimeline(Frame):
             line_frame.columnconfigure(1, weight=4)
             line_frame.pack(fill="both", expand=True, side="top")
             Label(line_frame, text=template["study_name"]).pack(side="left", fill="both")
-            Canvas(line_frame, width=100,  height=100, bg="red").pack(side="right",
-                                                                      fill="both",
-                                                                      expand=True)
+            canvas = Canvas(line_frame, width=100,  height=100, bg="red")
+            canvas.pack(side="right", fill="both", expand=True)
+            canvas.bind("<Button-3>", self.right_click_menu.show)
+
+class TaskTemplate(Frame):
+    """
+    Task frame displayed when right clicked.
+    """
+    def __init__(self, manager):
+        super().__init__(manager)
+        self.manager = manager
+        self.config(bg="gold")
+        self.task_name = None
+        self.checkboxes = None
+        self.setup_widgets()
+
+    def setup_widgets(self):
+        """
+        Setup the widgets of the task template.
+        """
+        self.task_name = LabelEntryPair(self, "Task name")
+        self.task_name.pack(fill="both", side="top")
+        Label(self, text="Template name (where is clicked)", bg="#FFFFFF").pack(side='top', padx=10)
+        ButtonApp(self, text="COLOR",
+                  command=self.choose_color).pack(side="top", fill="both", expand=True)
+
+        # Qualifications allowed
+        frame = Frame(self, bg="pink")
+        frame.pack(side='left')
+        scrollbar = Scrollbar(frame)
+        scrollbar.pack(side="right", fill="y")
+        canvas = Canvas(frame, yscrollcommand=scrollbar.set)
+        canvas.pack(side="left", fill="both")
+        scrollbar.config(command=canvas.yview)
+        inner_frame = Frame(canvas)
+        canvas.create_window((0, 0), window=inner_frame, anchor='nw')
+
+        # Adding the checkboxes
+        self.checkboxes = []
+        for qual in self.manager.db_cursor_manager.get_qualifications():
+            var = IntVar()
+            checkbutton = Checkbutton(inner_frame, text=qual["name"],
+                                      variable=var)
+            self.checkboxes.append((qual["id"], var))
+            checkbutton.pack(anchor='w')
+        inner_frame.bind('<Configure>',
+                         lambda event: canvas.configure(scrollregion=canvas.bbox('all')))
+        canvas.bind('<Configure>',
+                    lambda event: canvas.configure(scrollregion=canvas.bbox('all')))
+        canvas.bind_all("<MouseWheel>",
+                        lambda event: canvas.yview_scroll(int(-1*(event.delta/120)), "units"))
+
+    def get_checked_vars(self) -> list:
+        """
+        Returns the checked vars of the checkboxes.
+        """
+        checked_vars = []
+        for qual_id, var in self.checkboxes:
+            if var.get():
+                checked_vars.append(qual_id)
+        return checked_vars
+
+    def choose_color(self):
+        """
+        Opens a color picker.
+        returns the color chosen.
+        """
+        ColorPicker(self)
+
+        apply_button = ButtonApp(self, text="Apply", command=None)
+        apply_button.pack(pady=10)
+
 
 #-------------------------------------------------------------------#
 
