@@ -6,10 +6,11 @@ This file contains the template template.
 
 #------------------------------------------------------------------------------#
 
-from tkcolorpicker import ColorPicker
+from tkcolorpicker import askcolor
 from src.utils.graphical_utils import Frame, Label, Canvas, Combobox, Text, StringVar, Scrollbar
 from src.utils.graphical_utils import LabelEntryPair, IntVar, Checkbutton, ButtonApp
 from src.interface.widgets.right_click import RCMTemplates
+from src.interface.widgets.schedule_picker import SchedulePicker
 
 #------------------------------------------------------------------------------#
 
@@ -68,6 +69,13 @@ class TemplatesTemplate(Frame):
         self.templates_timeline.destroy()
         self.add_task_template.pack(fill="both", expand=True, side="top")
 
+    def from_add_task_to_timeline(self):
+        """
+        Switches from the add tasks template to the timeline.
+        """
+        self.add_task_template.destroy()
+        self.templates_timeline.pack(fill="both", expand=True, side="top")
+
 class TemplateTimeline(Frame):
     """
     Contains templates names and their disponibilities
@@ -107,7 +115,7 @@ class TaskTemplate(Frame):
     def __init__(self, manager):
         super().__init__(manager)
         self.manager = manager
-        self.config(bg="gold")
+        self.config(bg="white")
         self.task_name = None
         self.checkboxes = None
         self.setup_widgets()
@@ -120,11 +128,11 @@ class TaskTemplate(Frame):
         self.task_name.pack(fill="both", side="top")
         Label(self, text="Template name (where is clicked)", bg="#FFFFFF").pack(side='top', padx=10)
         ButtonApp(self, text="COLOR",
-                  command=self.choose_color).pack(side="top", fill="both", expand=True)
+                  command=self.choose_color).pack(side="top")
 
         # Qualifications allowed
-        frame = Frame(self, bg="pink")
-        frame.pack(side='left')
+        frame = Frame(self, bg="white")
+        frame.pack(side='top')
         scrollbar = Scrollbar(frame)
         scrollbar.pack(side="right", fill="y")
         canvas = Canvas(frame, yscrollcommand=scrollbar.set)
@@ -148,6 +156,30 @@ class TaskTemplate(Frame):
         canvas.bind_all("<MouseWheel>",
                         lambda event: canvas.yview_scroll(int(-1*(event.delta/120)), "units"))
 
+        agenda_canvas = Canvas(self, width=100, height=100, bg="gold")
+        agenda_canvas.pack(side="top")
+
+        # Schedule picker
+        self.schedule_selector = SchedulePicker(self)
+        self.schedule_selector.pack(side="left")
+
+        # Force checkbox
+        self.checkbox_var = IntVar()
+        self.checkbox_force = Checkbutton(self, text="Force",
+                                          bg="#FFFFFF", activebackground="#FFFFFF",
+                                          variable=self.checkbox_var, command=None)
+        self.checkbox_force.pack(side='left', padx=10, pady=10, anchor="w")
+
+        # Bottom widget
+        self.bottom_frame = Frame(self, bg="white")
+        self.bottom_frame.pack(fill='both', side='bottom', padx=10, pady=10)
+        self.confirm_btn = ButtonApp(self.bottom_frame, text="Confirm",
+                                     command=None)
+        self.back_btn = ButtonApp(self.bottom_frame, text="Back",
+                                  command=self.manager.from_add_task_to_timeline)
+        self.confirm_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
+        self.back_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
+
     def get_checked_vars(self) -> list:
         """
         Returns the checked vars of the checkboxes.
@@ -163,11 +195,9 @@ class TaskTemplate(Frame):
         Opens a color picker.
         returns the color chosen.
         """
-        ColorPicker(self)
-
-        apply_button = ButtonApp(self, text="Apply", command=None)
-        apply_button.pack(pady=10)
-
+        color = askcolor()
+        if color:
+            self.config(bg=color[1])
 
 #-------------------------------------------------------------------#
 
