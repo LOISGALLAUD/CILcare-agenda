@@ -142,7 +142,8 @@ class DBCursor:
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS animal_types (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name VARCHAR(255) NOT NULL
+                name VARCHAR(255) NOT NULL,
+                description TEXT
             );
             """)
 
@@ -404,6 +405,17 @@ class DBCursor:
             INSERT INTO `room_equipment` (`equipment_id`, `room_id`)
             VALUES (?, ?);
             """, (equipment_id, room_id))
+        self.connection.commit()
+        return True
+
+    def insert_animal_type(self, name:str, description:str) -> bool:
+        """
+        Inserts an animal type in the database.
+        """
+        self.cursor.execute("""
+            INSERT INTO `animal_types` (`name`, `description`)
+            VALUES (?, ?);
+            """, (name, description))
         self.connection.commit()
         return True
 
