@@ -95,9 +95,10 @@ class DBCursor:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name VARCHAR(255) NOT NULL,
                 archived BOOLEAN NOT NULL,
+                constraint_value INTEGER CHECK (constraint_value IN (1, 2, NULL)),
                 description TEXT
             );
-            """)
+        """)
 
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS room_equipment (
@@ -330,6 +331,7 @@ class DBCursor:
                 'id': row[0],
                 'name': row[1],
                 'archived': row[2],
+                'constraint': row[3],
                 'description': row[3]
             }
             for row in rows
@@ -379,6 +381,29 @@ class DBCursor:
             INSERT INTO `operator_qualification` (`operator_id`, `qualification_id`, `expiration_date`)
             VALUES (?, ?, ?);
             """, (operator_id, qualification_id, expiration_date))
+        self.connection.commit()
+        return True
+
+    def insert_equipment(self, name:str, archived:int, constraint:str,
+                            description:str) -> bool:
+        """
+        Inserts an equipment in the database.
+        """
+        self.cursor.execute("""
+            INSERT INTO `equipments` (`name`, `archived`, `constraint_value`, `description`)
+            VALUES (?, ?, ?, ?);
+            """, (name, archived, constraint, description))
+        self.connection.commit()
+        return True
+
+    def insert_link_room_equipment(self, equipment_id:int, room_id:int) -> bool:
+        """
+        Inserts a link equipment room in the database.
+        """
+        self.cursor.execute("""
+            INSERT INTO `room_equipment` (`equipment_id`, `room_id`)
+            VALUES (?, ?);
+            """, (equipment_id, room_id))
         self.connection.commit()
         return True
 

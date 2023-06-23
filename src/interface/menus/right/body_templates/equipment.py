@@ -6,8 +6,8 @@ This file contains the equipment template.
 
 #------------------------------------------------------------------------------#
 
-from src.utils.graphical_utils import Frame, Label, Canvas, Scrollbar, Radiobutton
-from src.utils.graphical_utils import LabelEntryPair, IntVar, Checkbutton, ButtonApp, Text
+from src.utils.graphical_utils import Frame, Label, Canvas, Scrollbar, Radiobutton, Combobox
+from src.utils.graphical_utils import LabelEntryPair, IntVar, Checkbutton, ButtonApp, Text, StringVar
 
 #------------------------------------------------------------------------------#
 
@@ -51,6 +51,13 @@ class EquipmentTemplate(Frame):
         self.add_equipments_template = AddEquipmentTemplate(self)
         self.add_equipments_template.pack(fill='both', expand=True, side='top')
 
+    def clear_timeline(self):
+        """
+        Clears the timeline.
+        """
+        for child in self.equipments_timeline.winfo_children():
+            child.destroy()
+
 class EquipmentTimeline(Frame):
     """
     Contains equipments names and their disponibilities
@@ -64,6 +71,12 @@ class EquipmentTimeline(Frame):
         """
         super().__init__(manager)
         self.manager = manager
+        self.setup_timeline()
+
+    def setup_timeline(self) -> None:
+        """
+        Setup the timeline of the equipments page.
+        """
         for equipment in self.manager.equipment_examples:
             line_frame = Frame(self)
             line_frame.propagate(False)
@@ -121,7 +134,14 @@ class AddEquipmentTemplate(Frame):
         canvas.bind('<Configure>',
                     lambda event: canvas.configure(scrollregion=canvas.bbox('all')))
 
-        LabelEntryPair(self, "Constraint").pack(fill="both", side="top")
+        # Constraint widget
+        options = ["Different animal types in the room",
+                   "Privatize the room",
+                   None]
+        self.constraint = StringVar()
+        Combobox(self, textvariable=self.constraint, values=options,
+                               state="readonly", width=30).pack()
+
         Label(self, text="Description", bg="#FFFFFF").pack(side='top', padx=10)
         self.description = Text(self)
         self.description.pack(fill='both', side='top', padx=10)
@@ -141,6 +161,18 @@ class AddEquipmentTemplate(Frame):
         self.confirm_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
         self.back_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
 
+    def get_constraint_id(self):
+        """
+        Given the str constraint return the int id of the constraint.
+        """
+        match self.constraint.get():
+            case "Different animal types in the room":
+                return 1
+            case "Privatize the room":
+                return 2
+            case _:
+                return None
+
     def confirm(self):
         """
         Inserts a room in the database.
@@ -148,10 +180,15 @@ class AddEquipmentTemplate(Frame):
         name = self.equipment_name.entry.get()
         archived = self.checkbox_var.get()
         room_id = self.selected_room_id.get()
+        constraint = self.get_constraint_id()
         description = self.description.get("1.0", "end-1c")
 
-        self.manager.db_cursor_manager.insert_room(name, archived, description)
-        self.manager.room_examples = self.manager.db_cursor_manager.get_rooms()
+        self.manager.db_cursor_manager.insert_equipment(name, archived,  constraint, description)
+        new_equipment = self.manager.db_cursor_manager.get_equipments(name)[0]
+        self.manager.db_cursor_manager.insert_link_room_equipment(room_id,
+                                            new_equipment["id"])
+
+        self.manager.equipment_examples = self.manager.db_cursor_manager.get_equipments()
         self.manager.clear_timeline()
-        self.manager.room_timeline.setup_timeline()
-        self.manager.from_add_room_to_timeline()
+        self.manager.equipments_timeline.setup_timeline()
+        self.manager.from_add_equipments_to_timeline()
