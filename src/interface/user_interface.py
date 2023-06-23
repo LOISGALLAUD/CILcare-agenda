@@ -23,7 +23,7 @@ class GUI(Tk):
         super().__init__()
         self.app = app
         self.loggers = app.loggers
-        self.title = app.NAME
+        self.title(app.NAME)
         self.attributes("-fullscreen", True)
         self.resizable = False
         self.config(bg="black")

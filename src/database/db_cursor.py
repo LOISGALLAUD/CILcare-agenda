@@ -50,8 +50,7 @@ class DBCursor:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name VARCHAR(255) NOT NULL,
                 archived BOOLEAN NOT NULL,
-                description TEXT,
-                expiration_date DATE
+                description TEXT
             );
         """)
 
@@ -68,6 +67,7 @@ class DBCursor:
             CREATE TABLE IF NOT EXISTS operator_qualification (
                 operator_id INTEGER,
                 qualification_id INTEGER,
+                expiration_date DATE,
                 FOREIGN KEY (operator_id) REFERENCES operators(id),
                 FOREIGN KEY (qualification_id) REFERENCES qualifications(id)
             );
@@ -82,16 +82,35 @@ class DBCursor:
         """)
 
         self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS equipment (
+            CREATE TABLE IF NOT EXISTS rooms (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name VARCHAR(255) NOT NULL,
+                name TEXT NOT NULL,
                 archived BOOLEAN NOT NULL,
                 description TEXT
             );
-            """)
+        """)
 
         self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS study (
+            CREATE TABLE IF NOT EXISTS equipments (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name VARCHAR(255) NOT NULL,
+                archived BOOLEAN NOT NULL,
+                constraint_value INTEGER CHECK (constraint_value IN (1, 2, NULL)),
+                description TEXT
+            );
+        """)
+
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS room_equipment (
+            room_id INTEGER,
+            equipment_id INTEGER,
+            FOREIGN KEY (room_id) REFERENCES rooms (id),
+            FOREIGN KEY (equipment_id) REFERENCES equipments (id)
+        );
+        """)
+
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS studies (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name VARCHAR(255) NOT NULL,
                 archived BOOLEAN NOT NULL,
@@ -110,11 +129,11 @@ class DBCursor:
                 name VARCHAR(255),
                 number INT,
                 ears VARCHAR(255),
-                FOREIGN KEY (study_id) REFERENCES study(id)
+                FOREIGN KEY (study_id) REFERENCES studies(id)
             );""")
 
         self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS client (
+            CREATE TABLE IF NOT EXISTS clients (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name VARCHAR(255) NOT NULL
             );
@@ -123,7 +142,8 @@ class DBCursor:
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS animal_types (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name VARCHAR(255) NOT NULL
+                name VARCHAR(255) NOT NULL,
+                description TEXT
             );
             """)
 
@@ -177,7 +197,7 @@ class DBCursor:
             """)
         else:
             self.cursor.execute("""
-                SELECT * FROM `operators` WHERE `username` = ?;
+                SELECT * FROM `operators` WHERE `name` = ?;
             """, (name,))
 
         rows = self.cursor.fetchall()
@@ -212,6 +232,17 @@ class DBCursor:
             } for row in rows
         ]
 
+    def get_expiration_date(self, operator_id:int, qualification_id:int) -> str:
+        """
+        Returns the expiration date of the operator's qualification.
+        """
+        self.cursor.execute("""
+            SELECT expiration_date FROM operator_qualification
+            WHERE operator_id = ? AND qualification_id = ?;
+        """, (operator_id, qualification_id))
+        self.connection.commit()
+        return self.cursor.fetchone()[0]
+
     def get_qualifications(self, qualification:str=None) -> list:
         """
         Returns the qualifications.
@@ -230,8 +261,7 @@ class DBCursor:
                 'id': row[0],
                 'name': row[1],
                 'archived': row[2],
-                'description': row[3],
-                'expiration_date': row[4]
+                'description': row[3]
             }
             for row in rows
         ]
@@ -260,20 +290,20 @@ class DBCursor:
         ]
         return animal_types
 
-    def get_equipments(self, name:str=None) -> list:
+    def get_rooms(self, room_name:str=None) -> list:
         """
         Returns the equipments.
         """
-        if name is None:
+        if room_name is None:
             self.cursor.execute("""
-                SELECT * FROM `equipment`;
+                SELECT * FROM `rooms`;
             """)
         else:
             self.cursor.execute("""
-                SELECT * FROM `equipment` WHERE `name` = ?;
-            """, (name,))
+                SELECT * FROM `rooms` WHERE `name` = ?;
+            """, (room_name,))
         rows = self.cursor.fetchall()
-        equipments = [
+        rooms = [
             {
                 'id': row[0],
                 'name': row[1],
@@ -282,7 +312,112 @@ class DBCursor:
             }
             for row in rows
         ]
+        return rooms
+
+    def get_equipments(self, equipment_name:str=None) -> list:
+        """
+        Returns the equipments.
+        """
+        if equipment_name is None:
+            self.cursor.execute("""
+                SELECT * FROM `equipments`;
+            """)
+        else:
+            self.cursor.execute("""
+                SELECT * FROM `equipments` WHERE `name` = ?;
+            """, (equipment_name,))
+        rows = self.cursor.fetchall()
+        equipments = [
+            {
+                'id': row[0],
+                'name': row[1],
+                'archived': row[2],
+                'constraint': row[3],
+                'description': row[3]
+            }
+            for row in rows
+        ]
         return equipments
+
+    def insert_room(self, name:str, archived:int, description:str) -> bool:
+        """
+        Inserts a room in the database.
+        """
+        self.cursor.execute("""
+            INSERT INTO `rooms` (`name`, `archived`, `description`)
+            VALUES (?, ?, ?);
+            """, (name, archived, description))
+        self.connection.commit()
+        return True
+
+    def insert_qualification(self, name:str, archived:int,
+                             description:str) -> bool:
+        """
+        Inserts a qualification in the database.
+        """
+        self.cursor.execute("""
+            INSERT INTO `qualifications` (`name`, `archived`, `description`)
+            VALUES (?, ?, ?);
+            """, (name, archived, description))
+        self.connection.commit()
+        return True
+
+    def insert_operator(self, name:str, archived:int) -> bool:
+        """
+        Inserts an operator in the database.
+        """
+        self.cursor.execute("""
+            INSERT INTO `operators` (`name`, `archived`)
+            VALUES (?, ?);
+            """, (name, archived))
+        self.connection.commit()
+        return True
+
+    def insert_link_operator_qualification(self, operator_id:int, qualification_id:int,
+                                            expiration_date:datetime.date) -> bool:
+        """
+        Inserts a link operator qualification in the database.
+        """
+        self.cursor.execute("""
+            INSERT INTO `operator_qualification` (`operator_id`, `qualification_id`, `expiration_date`)
+            VALUES (?, ?, ?);
+            """, (operator_id, qualification_id, expiration_date))
+        self.connection.commit()
+        return True
+
+    def insert_equipment(self, name:str, archived:int, constraint:str,
+                            description:str) -> bool:
+        """
+        Inserts an equipment in the database.
+        """
+        self.cursor.execute("""
+            INSERT INTO `equipments` (`name`, `archived`, `constraint_value`, `description`)
+            VALUES (?, ?, ?, ?);
+            """, (name, archived, constraint, description))
+        self.connection.commit()
+        return True
+
+    def insert_link_room_equipment(self, equipment_id:int, room_id:int) -> bool:
+        """
+        Inserts a link equipment room in the database.
+        """
+        self.cursor.execute("""
+            INSERT INTO `room_equipment` (`equipment_id`, `room_id`)
+            VALUES (?, ?);
+            """, (equipment_id, room_id))
+        self.connection.commit()
+        return True
+
+    def insert_animal_type(self, name:str, description:str) -> bool:
+        """
+        Inserts an animal type in the database.
+        """
+        self.cursor.execute("""
+            INSERT INTO `animal_types` (`name`, `description`)
+            VALUES (?, ?);
+            """, (name, description))
+        self.connection.commit()
+        return True
 
     def set_random_values(self) -> bool:
         """
@@ -311,13 +446,12 @@ class DBCursor:
 
         for qualification in qualifications:
             query = """INSERT INTO qualifications
-            (name, archived, description, expiration_date)
-            VALUES (?, ?, ?, ?)"""
+            (name, archived, description)
+            VALUES (?, ?, ?)"""
             values = (
                 qualification["name"],
                 qualification["archived"],
-                qualification["description"],
-                qualification["expiration_date"].strftime("%d/%m/%Y")
+                qualification["description"]
             )
             self.cursor.execute(query, values)
             self.connection.commit()
@@ -349,7 +483,7 @@ class DBCursor:
         random.shuffle(clients)
 
         for client_name in clients:
-            query = "INSERT INTO client (name) VALUES (?)"
+            query = "INSERT INTO clients (name) VALUES (?)"
             values = (client_name,)
             self.cursor.execute(query, values)
             self.connection.commit()
@@ -377,28 +511,56 @@ class DBCursor:
         operator_qualifications = [
             {
                 'operator_id': 1,
-                'qualification_id': 2
+                'qualification_id': 2,
+                'expiration_date': datetime.strptime("22/09/2003", '%d/%m/%Y').date()
             },
             {
                 'operator_id': 2,
-                'qualification_id': 2
+                'qualification_id': 2,
+                'expiration_date': datetime.strptime("02/04/2002", '%d/%m/%Y').date()
             },
             {
                 'operator_id': 3,
-                'qualification_id': 3
+                'qualification_id': 3,
+                'expiration_date': datetime.strptime("02/04/2023", '%d/%m/%Y').date()
             }
         ]
 
         for operator_qualification in operator_qualifications:
             query = """INSERT INTO operator_qualification
-            (operator_id, qualification_id) VALUES (?, ?)"""
+            (operator_id, qualification_id, expiration_date) VALUES (?, ?, ?)"""
             values = (
                 operator_qualification['operator_id'],
-                operator_qualification['qualification_id']
+                operator_qualification['qualification_id'],
+                operator_qualification["expiration_date"].strftime("%d/%m/%Y")
             )
             self.cursor.execute(query, values)
             self.connection.commit()
 
+        room_equipments = [
+            {
+                'room_id': 1,
+                'equipment_id': 2,
+            },
+            {
+                'room_id': 2,
+                'equipment_id': 1,
+            },
+            {
+                'room_id': 3,
+                'equipment_id': 3,
+            }
+        ]
+
+        for room_equipment in room_equipments:
+            query = """INSERT INTO room_equipment
+            (room_id, equipment_id) VALUES (?, ?)"""
+            values = (
+                room_equipment['room_id'],
+                room_equipment['equipment_id']
+            )
+            self.cursor.execute(query, values)
+            self.connection.commit()
 
         equipments = [
             {'name': 'Equipment1', 'archived': random.choice([1, 0]),
@@ -410,7 +572,7 @@ class DBCursor:
         ]
 
         for equipment in equipments:
-            query = """INSERT INTO equipment (name, archived, description)
+            query = """INSERT INTO equipments (name, archived, description)
             VALUES (?, ?, ?)"""
             values = (
                 equipment['name'],
@@ -439,7 +601,7 @@ class DBCursor:
         ]
 
         for study in studies:
-            query = """INSERT INTO study
+            query = """INSERT INTO studies
             (name, archived, client_id, animal_type, animal_count, description)
             VALUES (?, ?, ?, ?, ?, ?)"""
             values = (
@@ -453,7 +615,6 @@ class DBCursor:
             self.cursor.execute(query, values)
             self.connection.commit()
 
-        # Générer des valeurs aléatoires pour la table "series"
         series = [
             {'name': 'Series 1', 'number': random.randint(1, 5),
              'ears': random.choice(['Two', 'Four'])},
@@ -479,6 +640,30 @@ class DBCursor:
         for animal_type in animal_types:
             query = "INSERT INTO animal_types (name) VALUES (?)"
             values = (animal_type,)
+            self.cursor.execute(query, values)
+            self.connection.commit()
+
+        rooms = [
+            {
+                'name': 'Room A',
+                'archived': random.choice([0, 1]),
+                'description': 'Description A'
+            },
+            {
+                'name': 'Room B',
+                'archived': random.choice([0, 1]),
+                'description': 'Description B'
+            },
+            {
+                'name': 'Room C',
+                'archived': random.choice([0, 1]),
+                'description': 'Description C'
+            }
+        ]
+
+        for room in rooms:
+            query = "INSERT INTO rooms (name, archived, description) VALUES (?, ?, ?)"
+            values = (room['name'], room['archived'], room['description'])
             self.cursor.execute(query, values)
             self.connection.commit()
 

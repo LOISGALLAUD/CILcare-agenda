@@ -6,8 +6,8 @@ Contains the operators page.
 
 #-------------------------------------------------------------------#
 
-from src.utils.graphical_utils import Frame, Label, Canvas, LabelEntryPair
-from src.utils.graphical_utils import Checkbutton, IntVar, ButtonApp, Entry
+from src.utils.graphical_utils import Frame, Label, Canvas, LabelEntryPair, Scrollbar
+from src.utils.graphical_utils import Checkbutton, IntVar, ButtonApp, DateEntry
 
 #-------------------------------------------------------------------#
 
@@ -19,8 +19,8 @@ class OperatorsTemplate(Frame):
     def __init__(self, body=None):
         super().__init__(body)
         self.manager = body
-        self.operators_examples = self.manager.manager.manager.gui.app.db_cursor.get_operators()
-        print(self.operators_examples)
+        self.db_cursor_manager = self.manager.manager.manager.gui.app.db_cursor
+        self.operators_examples = self.db_cursor_manager.get_operators()
         self.configure(bg="white")
         self.propagate(False)
 
@@ -51,6 +51,12 @@ class OperatorsTemplate(Frame):
         self.add_operators_template = AddOperatorsTemplate(self)
         self.add_operators_template.pack(fill='both', expand=True, side='top')
 
+    def clear_timeline(self):
+        """
+        Clears the timeline.
+        """
+        for widget in self.operators_timeline.winfo_children():
+            widget.destroy()
 
 class OperatorsTimeline(Frame):
     """
@@ -65,6 +71,12 @@ class OperatorsTimeline(Frame):
         """
         super().__init__(manager)
         self.manager = manager
+        self.setup_timeline()
+
+    def setup_timeline(self):
+        """
+        setup the timeline.
+        """
         for operators in self.manager.operators_examples:
             line_frame = Frame(self)
             line_frame.propagate(False)
@@ -95,8 +107,8 @@ class AddOperatorsTemplate(Frame):
         """
         Setup the widgets of the add operators template.
         """
-        LabelEntryPair(self, "Operator name").pack(fill="both", side="top")
-        LabelEntryPair(self, "Qualifications").pack(fill="both", side="top")
+        self.name = LabelEntryPair(self, "Operator name")
+        self.name.pack(fill="both", side="top")
 
         self.checkbox_var = IntVar()
         self.checkbox = Checkbutton(self, text="Archived", bg="#FFFFFF", activebackground="#FFFFFF",
@@ -107,15 +119,73 @@ class AddOperatorsTemplate(Frame):
         self.expiration_qualifications = ExpirationQualifications(self)
         self.expiration_qualifications.pack(fill='both', side='top', expand=True)
 
+        # Qualifications allowed
+        frame = Frame(self, bg="pink")
+        frame.pack(side='left')
+        scrollbar = Scrollbar(frame)
+        scrollbar.pack(side="right", fill="y")
+        canvas = Canvas(frame, yscrollcommand=scrollbar.set)
+        canvas.pack(side="left", fill="both")
+        scrollbar.config(command=canvas.yview)
+        inner_frame = Frame(canvas)
+        canvas.create_window((0, 0), window=inner_frame, anchor='nw')
+
+        # Adding the checkboxes
+        self.checkboxes = []
+        for qual in self.manager.db_cursor_manager.get_qualifications():
+            var = IntVar()
+            checkbutton = Checkbutton(inner_frame, text=qual["name"],
+                                      variable=var,
+                                      command=self.expiration_qualifications.setup_qualifications)
+            self.checkboxes.append((qual["id"], var))
+            checkbutton.pack(anchor='w')
+        inner_frame.bind('<Configure>',
+                         lambda event: canvas.configure(scrollregion=canvas.bbox('all')))
+        canvas.bind('<Configure>',
+                    lambda event: canvas.configure(scrollregion=canvas.bbox('all')))
+
         # Bottom widget
         self.bottom_frame = Frame(self, bg="white")
         self.bottom_frame.pack(fill='both', side='bottom', padx=10, pady=10)
         self.confirm_btn = ButtonApp(self.bottom_frame, text="Confirm",
-                                     command=None)
+                                     command=self.confirm)
         self.back_btn = ButtonApp(self.bottom_frame, text="Back",
                                   command=self.manager.from_add_operators_to_timeline)
         self.confirm_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
         self.back_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
+
+    def get_checked_vars(self) -> list:
+        """
+        Returns the checked vars of the checkboxes.
+        """
+        checked_vars = []
+        for qual_id, var in self.checkboxes:
+            if var.get():
+                checked_vars.append(qual_id)
+        return checked_vars
+
+    def confirm(self) -> None:
+        """
+        Add the operator to the database.
+        """
+        name = self.name.entry.get()
+        archived = self.checkbox_var.get()
+        expiration_qualifications = self.expiration_qualifications.qualifications
+        qualifications = self.get_checked_vars()
+        qualif_selected = [item for item in expiration_qualifications
+                           if item["id"] in qualifications]
+
+        self.manager.db_cursor_manager.insert_operator(name, archived)
+        new_operator = self.manager.db_cursor_manager.get_operators(name)[0]
+        for qualif in qualif_selected:
+            self.manager.db_cursor_manager.insert_link_operator_qualification(
+                new_operator["id"], qualif['id'],
+                self.expiration_qualifications.get_expiration_date(qualif["id"]))
+
+        self.manager.operators_examples = self.manager.db_cursor_manager.get_operators()
+        self.manager.clear_timeline()
+        self.manager.operators_timeline.setup_timeline()
+        self.manager.from_add_operators_to_timeline()
 
 class ExpirationQualifications(Frame):
     """
@@ -126,37 +196,50 @@ class ExpirationQualifications(Frame):
         self.configure(bg="white")
         self.manager = add_operator_frame
         self.operator_menu_manager = self.manager.manager.manager.manager.manager
+        self.qualifications = None
+
+    def setup_qualifications(self) -> None:
+        """
+        Setup the qualifications.
+        """
+        self.clear_qualifications()
+        checked_vars = self.manager.get_checked_vars()
         self.qualifications = self.operator_menu_manager.gui.app.db_cursor.get_qualifications()
-
-        Label(self, text="Expiration date: ", bg="#FFFFFF",
-              fg="#000000").pack(fill='both', side='left', pady=10)
-        self.expiration_frame = Frame(self)
-        self.expiration_frame.pack(fill='both', side='top', expand=True)
-
         for qualification in self.qualifications:
-            QualificationLine(self.expiration_frame,
-                              qualification["name"]).pack(fill='both',
-                                                                         side='top',
-                                                                         expand=True)
+            if any(qual_id == qualification["id"]
+                   for qual_id in checked_vars):
+                QualificationLine(self, qualification).pack(fill='both',
+                                                                    side='top',
+                                                                    expand=True)
+
+    def clear_qualifications(self) -> None:
+        """
+        Clears the qualifications.
+        """
+        for qualification in self.winfo_children():
+            qualification.destroy()
+
+    def get_expiration_date(self, qualification_id:str) -> str:
+        """
+        Returns the date of the qualification.
+        """
+        for qualification_line in self.winfo_children():
+            if qualification_line.qualification_id == qualification_id:
+                return qualification_line.date_entry.get()
+        return None
 
 class QualificationLine(Frame):
     """
     Contains a qualification.
     """
-    def __init__(self, expiration_qualifications_frame:Frame, qualification:str) -> None:
+    def __init__(self, expiration_qualifications_frame:Frame, qualification:dict) -> None:
         super().__init__(expiration_qualifications_frame)
         self.manager = expiration_qualifications_frame
-        self.qualification = qualification
-        self.label = Label(self, text=f"{qualification} expired on ", fg="#000000", bg="#FFFFFF")
+        self.qualification_name = qualification["name"]
+        self.qualification_id = qualification["id"]
+        self.label = Label(self, text=f'{qualification["name"]} expire on ',
+                           fg="#000000", bg="#FFFFFF")
         self.label.pack(fill='both', side='left')
-        self.entry = Entry(self)
-        self.entry.pack(fill='both', side='left', expand=True)
-        ButtonApp(self, text="reset", bg="#FFFFFF",
-                  command=self.reset_qualification).pack(fill='both', side='left')
-
-    def reset_qualification(self):
-        """
-        Resets the qualification.
-        """
-        self.entry.delete('0', 'end')
-        self.entry.insert('0', self.qualification)
+        self.date_entry = DateEntry(self, width=20, background='#A91B60',
+                                    foreground='white', borderwidth=2)
+        self.date_entry.pack(fill='both', side='left')

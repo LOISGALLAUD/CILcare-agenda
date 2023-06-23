@@ -6,8 +6,8 @@ This file contains the equipment template.
 
 #------------------------------------------------------------------------------#
 
-from src.utils.graphical_utils import Frame, Label, Canvas
-from src.utils.graphical_utils import LabelEntryPair, IntVar, Checkbutton, ButtonApp, Entry
+from src.utils.graphical_utils import Frame, Label, Canvas, Scrollbar, Radiobutton, Combobox
+from src.utils.graphical_utils import LabelEntryPair, IntVar, Checkbutton, ButtonApp, Text, StringVar
 
 #------------------------------------------------------------------------------#
 
@@ -19,11 +19,10 @@ class EquipmentTemplate(Frame):
         super().__init__(body)
         self.configure(bg='red')
         self.manager = body
-        self.gui_manager = self.manager.manager.manager.gui
-        self.equipment_examples = self.gui_manager.app.db_cursor.get_equipments()
+        self.db_cursor_manager = self.manager.manager.manager.gui.app.db_cursor
+        self.equipment_examples = self.db_cursor_manager.get_equipments()
         self.configure(bg="white")
         self.propagate(False)
-
 
         self.equipments_timeline = EquipmentTimeline(self)
         self.equipments_timeline.pack(fill="both", expand=True, side="top")
@@ -52,6 +51,13 @@ class EquipmentTemplate(Frame):
         self.add_equipments_template = AddEquipmentTemplate(self)
         self.add_equipments_template.pack(fill='both', expand=True, side='top')
 
+    def clear_timeline(self):
+        """
+        Clears the timeline.
+        """
+        for child in self.equipments_timeline.winfo_children():
+            child.destroy()
+
 class EquipmentTimeline(Frame):
     """
     Contains equipments names and their disponibilities
@@ -65,6 +71,12 @@ class EquipmentTimeline(Frame):
         """
         super().__init__(manager)
         self.manager = manager
+        self.setup_timeline()
+
+    def setup_timeline(self) -> None:
+        """
+        Setup the timeline of the equipments page.
+        """
         for equipment in self.manager.equipment_examples:
             line_frame = Frame(self)
             line_frame.propagate(False)
@@ -95,11 +107,44 @@ class AddEquipmentTemplate(Frame):
         """
         Setup the widgets of the add equipments template.
         """
-        LabelEntryPair(self, "Equipment name").pack(fill="both", side="top")
-        LabelEntryPair(self, "Rooms available").pack(fill="both", side="top")
-        LabelEntryPair(self, "Constraint").pack(fill="both", side="top")
+        self.equipment_name = LabelEntryPair(self, "Equipment name")
+        self.equipment_name.pack(fill="both", side="top")
+
+        # Selection of the room
+        frame = Frame(self)
+        frame.pack(side='left')
+        scrollbar = Scrollbar(frame)
+        scrollbar.pack(side="right", fill="y")
+        canvas = Canvas(frame, yscrollcommand=scrollbar.set)
+        canvas.pack(side="left", fill="both")
+        scrollbar.config(command=canvas.yview)
+        inner_frame = Frame(canvas)
+        canvas.create_window((0, 0), window=inner_frame, anchor='nw')
+
+        # Adding the checkboxes
+        self.selected_room_id = IntVar()
+        for room in self.manager.db_cursor_manager.get_rooms():
+            room_radio = Radiobutton(inner_frame,
+                                     text=room["name"],
+                                     value=room["id"],
+                                     variable=self.selected_room_id)
+            room_radio.pack(anchor='w')
+        inner_frame.bind('<Configure>',
+                         lambda event: canvas.configure(scrollregion=canvas.bbox('all')))
+        canvas.bind('<Configure>',
+                    lambda event: canvas.configure(scrollregion=canvas.bbox('all')))
+
+        # Constraint widget
+        options = ["Different animal types in the room",
+                   "Privatize the room",
+                   None]
+        self.constraint = StringVar()
+        Combobox(self, textvariable=self.constraint, values=options,
+                               state="readonly", width=30).pack()
+
         Label(self, text="Description", bg="#FFFFFF").pack(side='top', padx=10)
-        Entry(self, text="Description", width=10).pack(fill='both', side='top', padx=10)
+        self.description = Text(self)
+        self.description.pack(fill='both', side='top', padx=10)
 
         self.checkbox_var = IntVar()
         self.checkbox = Checkbutton(self, text="Archived", bg="#FFFFFF", activebackground="#FFFFFF",
@@ -110,8 +155,40 @@ class AddEquipmentTemplate(Frame):
         self.bottom_frame = Frame(self, bg="white")
         self.bottom_frame.pack(fill='both', side='bottom', padx=10, pady=10)
         self.confirm_btn = ButtonApp(self.bottom_frame, text="Confirm",
-                                     command=None)
+                                     command=self.confirm)
         self.back_btn = ButtonApp(self.bottom_frame, text="Back",
                                   command=self.manager.from_add_equipments_to_timeline)
         self.confirm_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
         self.back_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
+
+    def get_constraint_id(self):
+        """
+        Given the str constraint return the int id of the constraint.
+        """
+        match self.constraint.get():
+            case "Different animal types in the room":
+                return 1
+            case "Privatize the room":
+                return 2
+            case _:
+                return None
+
+    def confirm(self):
+        """
+        Inserts a room in the database.
+        """
+        name = self.equipment_name.entry.get()
+        archived = self.checkbox_var.get()
+        room_id = self.selected_room_id.get()
+        constraint = self.get_constraint_id()
+        description = self.description.get("1.0", "end-1c")
+
+        self.manager.db_cursor_manager.insert_equipment(name, archived,  constraint, description)
+        new_equipment = self.manager.db_cursor_manager.get_equipments(name)[0]
+        self.manager.db_cursor_manager.insert_link_room_equipment(room_id,
+                                            new_equipment["id"])
+
+        self.manager.equipment_examples = self.manager.db_cursor_manager.get_equipments()
+        self.manager.clear_timeline()
+        self.manager.equipments_timeline.setup_timeline()
+        self.manager.from_add_equipments_to_timeline()

@@ -8,7 +8,7 @@ Contains the room page.
 #-------------------------------------------------------------------#
 
 from src.utils.graphical_utils import Frame, Label, Canvas, LabelEntryPair
-from src.utils.graphical_utils import Checkbutton, IntVar, ButtonApp, Entry
+from src.utils.graphical_utils import Checkbutton, IntVar, ButtonApp, Text
 
 #-------------------------------------------------------------------#
 
@@ -17,11 +17,12 @@ class RoomsTemplate(Frame):
     Contains the Frame in which will be displayed every
     templates related to the rooms.
     """
-    room_examples = ["Room 1", "Room 2", "Room 3"]
     def __init__(self, body=None):
         super().__init__(body)
         self.manager = body
         self.configure(bg="white")
+        self.db_cursor_manager = self.manager.manager.manager.gui.app.db_cursor
+        self.room_examples = self.db_cursor_manager.get_rooms()
         self.propagate(False)
         self.room_timeline = RoomsTimeline(self)
         self.room_timeline.pack(fill="both", expand=True, side="top")
@@ -50,6 +51,12 @@ class RoomsTemplate(Frame):
         self.add_room_template = AddRoomsTemplate(self)
         self.add_room_template.pack(fill='both', expand=True, side='top')
 
+    def clear_timeline(self):
+        """
+        Clears the timeline.
+        """
+        for widget in self.room_timeline.winfo_children():
+            widget.destroy()
 
 class RoomsTimeline(Frame):
     """
@@ -64,6 +71,12 @@ class RoomsTimeline(Frame):
         """
         super().__init__(manager)
         self.manager = manager
+        self.setup_timeline()
+
+    def setup_timeline(self):
+        """
+        Setup the timeline.
+        """
         for rooms in self.manager.room_examples:
             line_frame = Frame(self)
             line_frame.propagate(False)
@@ -71,7 +84,7 @@ class RoomsTimeline(Frame):
             line_frame.columnconfigure(0, weight=1)
             line_frame.columnconfigure(1, weight=4)
             line_frame.pack(fill="both", expand=True, side="top")
-            Label(line_frame, text=rooms).pack(side="left", fill="both")
+            Label(line_frame, text=rooms["name"]).pack(side="left", fill="both")
             Canvas(line_frame, width=100,  height=100, bg="red").pack(side="right",
                                                                       fill="both",
                                                                       expand=True)
@@ -94,23 +107,38 @@ class AddRoomsTemplate(Frame):
         """
         Setup the widgets of the add rooms template.
         """
-        LabelEntryPair(self, "Room name").pack(fill="both", side="top")
+        self.room_name_entry = LabelEntryPair(self, "Room name")
+        self.room_name_entry.pack(fill="both", side="top")
 
         self.checkbox_var = IntVar()
         self.checkbox = Checkbutton(self, text="Archived", bg="#FFFFFF", activebackground="#FFFFFF",
                                variable=self.checkbox_var, command=None)
         self.checkbox.pack(side='top', padx=10, pady=10, anchor="w")
 
-        self.description = Entry(self, width=50)
+        self.description = Text(self, width=50)
         self.description.pack(fill="both", side="top", padx=10, pady=10)
 
         # Bottom widget
         self.bottom_frame = Frame(self, bg="white")
         self.confirm_btn = ButtonApp(self.bottom_frame, text="Confirm",
-                                     command=None)
+                                     command=self.confirm)
         self.back_btn = ButtonApp(self.bottom_frame, text="Back",
                                   command=self.manager.from_add_room_to_timeline)
 
         self.bottom_frame.pack(fill='both', side='bottom', padx=10, pady=10)
         self.confirm_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
         self.back_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
+
+    def confirm(self):
+        """
+        Inserts a room in the database.
+        """
+        name = self.room_name_entry.entry.get()
+        archived = self.checkbox_var.get()
+        description = self.description.get("1.0", "end-1c")
+
+        self.manager.db_cursor_manager.insert_room(name, archived, description)
+        self.manager.room_examples = self.manager.db_cursor_manager.get_rooms()
+        self.manager.clear_timeline()
+        self.manager.room_timeline.setup_timeline()
+        self.manager.from_add_room_to_timeline()

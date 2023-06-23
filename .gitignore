@@ -4,3 +4,6 @@ data/logs
 logins.txt
 reu.txt
 cilcare.sqlite
+rectangle_drag.py
+color_chooser.py
+expiration_date.py
