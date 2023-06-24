@@ -37,7 +37,7 @@ class TemplatesTemplate(Frame):
         Switches from the timeline to the add templates template.
         """
         if self.add_templates_template:
-            self.add_templates_template.destroy()
+            self.add_templates_template.pack_forget()
         self.templates_timeline.pack_forget()
         self.setup_add_template()
 
@@ -45,7 +45,7 @@ class TemplatesTemplate(Frame):
         """
         Switches from the add templates template to the timeline.
         """
-        self.add_templates_template.destroy()
+        self.add_templates_template.pack_forget()
         self.templates_timeline.pack(fill="both", expand=True, side="top")
 
     def setup_add_template(self):
@@ -66,14 +66,14 @@ class TemplatesTemplate(Frame):
         """
         Switch from timeline to add tasks.
         """
-        self.templates_timeline.destroy()
+        self.templates_timeline.pack_forget()
         self.add_task_template.pack(fill="both", expand=True, side="top")
 
     def from_add_task_to_timeline(self):
         """
         Switches from the add tasks template to the timeline.
         """
-        self.add_task_template.destroy()
+        self.add_task_template.pack_forget()
         self.templates_timeline.pack(fill="both", expand=True, side="top")
 
 class TemplateTimeline(Frame):
@@ -89,7 +89,6 @@ class TemplateTimeline(Frame):
         """
         super().__init__(manager)
         self.manager = manager
-        self.right_click_menu = RCMTemplates(self)
         self.setup_timeline()
 
     def setup_timeline(self) -> None:
@@ -106,7 +105,7 @@ class TemplateTimeline(Frame):
             Label(line_frame, text=template["study_name"]).pack(side="left", fill="both")
             canvas = Canvas(line_frame, width=100,  height=100, bg="red")
             canvas.pack(side="right", fill="both", expand=True)
-            canvas.bind("<Button-3>", self.right_click_menu.show)
+            canvas.bind("<Button-3>", RCMTemplates(self).show)
 
 class TaskTemplate(Frame):
     """
@@ -117,7 +116,7 @@ class TaskTemplate(Frame):
         self.manager = manager
         self.config(bg="white")
         self.task_name = None
-        self.checkboxes = None
+        self.room_options = None
         self.setup_widgets()
 
     def setup_widgets(self):
@@ -131,33 +130,62 @@ class TaskTemplate(Frame):
                   command=self.choose_color).pack(side="top")
 
         # Qualifications allowed
-        frame = Frame(self, bg="white")
-        frame.pack(side='top')
-        scrollbar = Scrollbar(frame)
-        scrollbar.pack(side="right", fill="y")
-        canvas = Canvas(frame, yscrollcommand=scrollbar.set)
-        canvas.pack(side="left", fill="both")
-        scrollbar.config(command=canvas.yview)
-        inner_frame = Frame(canvas)
-        canvas.create_window((0, 0), window=inner_frame, anchor='nw')
+        qual_frame = Frame(self, bg="white")
+        qual_frame.pack(side='top')
+        qual_scrollbar = Scrollbar(qual_frame)
+        qual_scrollbar.pack(side="right", fill="y")
+        qual_canvas = Canvas(qual_frame, yscrollcommand=qual_scrollbar.set)
+        qual_canvas.pack(side="left", fill="both")
+        qual_scrollbar.config(command=qual_canvas.yview)
+        qual_inner_frame = Frame(qual_canvas)
+        qual_canvas.create_window((0, 0), window=qual_inner_frame, anchor='nw')
 
         # Adding the checkboxes
-        self.checkboxes = []
+        self.qual_checkboxes = []
         for qual in self.manager.db_cursor_manager.get_qualifications():
-            var = IntVar()
-            checkbutton = Checkbutton(inner_frame, text=qual["name"],
-                                      variable=var)
-            self.checkboxes.append((qual["id"], var))
-            checkbutton.pack(anchor='w')
-        inner_frame.bind('<Configure>',
-                         lambda event: canvas.configure(scrollregion=canvas.bbox('all')))
-        canvas.bind('<Configure>',
-                    lambda event: canvas.configure(scrollregion=canvas.bbox('all')))
-        canvas.bind_all("<MouseWheel>",
-                        lambda event: canvas.yview_scroll(int(-1*(event.delta/120)), "units"))
+            qual_var = IntVar()
+            qual_checkbutton = Checkbutton(qual_inner_frame, text=qual["name"],
+                                      variable=qual_var)
+            self.qual_checkboxes.append((qual["id"], qual_var))
+            qual_checkbutton.pack(anchor='w')
+        qual_inner_frame.bind('<Configure>',
+                         lambda event: qual_canvas.configure(scrollregion=qual_canvas.bbox('all')))
+        qual_canvas.bind('<Configure>',
+                    lambda event: qual_canvas.configure(scrollregion=qual_canvas.bbox('all')))
+
+        # Equipment needed
+        eqpt_frame = Frame(self)
+        eqpt_frame.pack(side='left')
+        eqpt_scrollbar = Scrollbar(eqpt_frame)
+        eqpt_scrollbar.pack(side="right", fill="y")
+        eqpt_canvas = Canvas(eqpt_frame, yscrollcommand=eqpt_scrollbar.set)
+        eqpt_canvas.pack(side="left", fill="both")
+        eqpt_scrollbar.config(command=eqpt_canvas.yview)
+        eqpt_inner_frame = Frame(eqpt_canvas)
+        eqpt_canvas.create_window((0, 0), window=eqpt_inner_frame, anchor='nw')
+
+        # Adding the checkboxes
+        self.eqpt_checkboxes = []
+        for eqpt in self.manager.db_cursor_manager.get_equipments():
+            eqpt_var = IntVar()
+            eqpt_checkbutton = Checkbutton(eqpt_inner_frame, text=eqpt["name"],
+                                      variable=eqpt_var, command=self.update_allowed_rooms)
+            self.eqpt_checkboxes.append((eqpt["id"], eqpt_var))
+            eqpt_checkbutton.pack(anchor='w')
+        eqpt_inner_frame.bind('<Configure>',
+                         lambda event: eqpt_canvas.configure(scrollregion=eqpt_canvas.bbox('all')))
+        eqpt_canvas.bind('<Configure>',
+                    lambda event: eqpt_canvas.configure(scrollregion=eqpt_canvas.bbox('all')))
 
         agenda_canvas = Canvas(self, width=100, height=100, bg="gold")
         agenda_canvas.pack(side="top")
+
+        # Rooms allowed
+        self.room_label = LabelEntryPair(self, "Rooms allowed")
+        self.room_label.entry.delete(0, "end")
+        self.room_label.entry.insert(0, 'No room')
+        self.room_label.entry.config(state="readonly")
+        self.room_label.pack(side="top", fill="both")
 
         # Schedule picker
         self.schedule_selector = SchedulePicker(self)
@@ -180,17 +208,27 @@ class TaskTemplate(Frame):
         self.confirm_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
         self.back_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
 
-    def get_checked_vars(self) -> list:
+    def get_qual_checked_vars(self) -> list:
         """
         Returns the checked vars of the checkboxes.
         """
         checked_vars = []
-        for qual_id, var in self.checkboxes:
+        for qual_id, var in self.qual_checkboxes:
             if var.get():
                 checked_vars.append(qual_id)
         return checked_vars
 
-    def choose_color(self):
+    def get_eqpt_checked_vars(self) -> list:
+        """
+        Returns the checked vars of the checkboxes.
+        """
+        checked_vars = []
+        for eqpt_id, eqpt_var in self.eqpt_checkboxes:
+            if eqpt_var.get():
+                checked_vars.append(eqpt_id)
+        return checked_vars
+
+    def choose_color(self) -> None:
         """
         Opens a color picker.
         returns the color chosen.
@@ -198,6 +236,33 @@ class TaskTemplate(Frame):
         color = askcolor()
         if color:
             self.config(bg=color[1])
+
+    def update_allowed_rooms(self) -> None:
+        """
+        Updates the allowed rooms combobox.
+        It will show every room which has
+        every equipment needed for the task.
+        """
+        eqpt_checked_vars = self.get_eqpt_checked_vars()
+
+        rooms_allowed_id = []
+        for eqpt_id in eqpt_checked_vars:
+            rooms_allowed_id.append(self.manager.db_cursor_manager.get_room_equipment(eqpt_id))
+
+        # Checks if every id is the same
+        if rooms_allowed_id:
+            common_id = rooms_allowed_id[0] if all(element == rooms_allowed_id[0]
+                                                for element in rooms_allowed_id) else None
+            room = self.manager.db_cursor_manager.get_rooms(room_id=common_id)[0] if common_id else None
+            self.room_label.entry.config(state="normal")
+            self.room_label.entry.delete(0, "end")
+            self.room_label.entry.insert(0, room["name"] if room else 'None')
+            self.room_label.entry.config(state="readonly")
+        else:
+            self.room_label.entry.config(state="normal")
+            self.room_label.entry.delete(0, "end")
+            self.room_label.entry.insert(0, 'No room')
+            self.room_label.entry.config(state="readonly")
 
 #-------------------------------------------------------------------#
 

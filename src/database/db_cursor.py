@@ -301,15 +301,19 @@ class DBCursor:
         ]
         return animal_types
 
-    def get_rooms(self, room_name:str=None) -> list:
+    def get_rooms(self, room_name:str=None, room_id:int=None) -> list:
         """
         Returns the equipments.
         """
-        if room_name is None:
+        if room_name is None and room_id is None:
             self.cursor.execute("""
                 SELECT * FROM `rooms`;
             """)
-        else:
+        elif room_id is not None:
+            self.cursor.execute("""
+                SELECT * FROM `rooms` WHERE `id` = ?;
+            """, (room_id,))
+        elif room_name is not None:
             self.cursor.execute("""
                 SELECT * FROM `rooms` WHERE `name` = ?;
             """, (room_name,))
@@ -374,6 +378,16 @@ class DBCursor:
             for row in rows
         ]
         return templates
+
+    def get_room_equipment(self, eqpt_id:int) -> list:
+        """
+        Returns the room of the given equipment.
+        """
+        self.cursor.execute("""
+            SELECT room_id FROM room_equipment WHERE equipment_id = ?
+        """, (eqpt_id,))
+        self.connection.commit()
+        return self.cursor.fetchone()[0]
 
     def insert_room(self, name:str, archived:int, description:str) -> bool:
         """

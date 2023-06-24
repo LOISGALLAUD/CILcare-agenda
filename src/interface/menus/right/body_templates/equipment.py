@@ -185,8 +185,8 @@ class AddEquipmentTemplate(Frame):
 
         self.manager.db_cursor_manager.insert_equipment(name, archived,  constraint, description)
         new_equipment = self.manager.db_cursor_manager.get_equipments(name)[0]
-        self.manager.db_cursor_manager.insert_link_room_equipment(room_id,
-                                            new_equipment["id"])
+        self.manager.db_cursor_manager.insert_link_room_equipment(new_equipment["id"],
+                                                                  room_id)
 
         self.manager.equipment_examples = self.manager.db_cursor_manager.get_equipments()
         self.manager.clear_timeline()
