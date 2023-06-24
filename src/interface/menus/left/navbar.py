@@ -6,6 +6,9 @@ Configure MarcoNeo's navbar on its shopping menu.
 
 #-------------------------------------------------------------------#
 
+import os
+import shutil
+from tkinter.filedialog import asksaveasfilename
 from src.utils.graphical_utils import Frame, ButtonApp
 
 #-------------------------------------------------------------------#
@@ -44,7 +47,7 @@ class Navbar(Frame):
 
 
         self.export_btn = ButtonApp(self, text="EXPORT",
-                                    command=None)
+                                    command=self.export)
         self.disconnect_btn = ButtonApp(self, text="DISCONNECT",
                                   command=self.disconnect)
 
@@ -84,3 +87,23 @@ class Navbar(Frame):
         """
         current_toggle = "Studies"
         self.toggle(current_toggle)
+
+    def export(self) -> None:
+        """
+        Downloads the database file.
+        """
+        file_path = "./data/cilcare.sqlite"
+        default_filename = os.path.basename(file_path)
+        default_download_dir = os.path.expanduser("~/Downloads")
+        initial_dir = os.path.dirname(default_download_dir)
+
+        save_path = asksaveasfilename(
+            initialfile=default_filename,
+            initialdir=initial_dir,
+            defaultextension=".sqlite",
+            filetypes=[("SQLite Database", "*.sqlite")]
+        )
+
+        # Copy the file to the selected save path
+        if save_path:
+            shutil.copy(file_path, save_path)
