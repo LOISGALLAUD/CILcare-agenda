@@ -147,6 +147,17 @@ class DBCursor:
             );
             """)
 
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS templates (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                study_name VARCHAR(255) NOT NULL,
+                archived BOOLEAN NOT NULL,
+                animal_type_id INTEGER,
+                description TEXT,
+                FOREIGN KEY (animal_type_id) REFERENCES animal_types(id)
+            );
+        """)
+
         return True
 
     def setup_admin(self) -> bool:
@@ -290,15 +301,19 @@ class DBCursor:
         ]
         return animal_types
 
-    def get_rooms(self, room_name:str=None) -> list:
+    def get_rooms(self, room_name:str=None, room_id:int=None) -> list:
         """
         Returns the equipments.
         """
-        if room_name is None:
+        if room_name is None and room_id is None:
             self.cursor.execute("""
                 SELECT * FROM `rooms`;
             """)
-        else:
+        elif room_id is not None:
+            self.cursor.execute("""
+                SELECT * FROM `rooms` WHERE `id` = ?;
+            """, (room_id,))
+        elif room_name is not None:
             self.cursor.execute("""
                 SELECT * FROM `rooms` WHERE `name` = ?;
             """, (room_name,))
@@ -333,11 +348,46 @@ class DBCursor:
                 'name': row[1],
                 'archived': row[2],
                 'constraint': row[3],
-                'description': row[3]
+                'description': row[4]
             }
             for row in rows
         ]
         return equipments
+
+    def get_templates(self, study_name:str=None) -> list:
+        """
+        Returns the templates.
+        """
+        if study_name is None:
+            self.cursor.execute("""
+                SELECT * FROM `templates`;
+            """)
+        else:
+            self.cursor.execute("""
+                SELECT * FROM `templates` WHERE `study_name` = ?;
+            """, (study_name,))
+        rows = self.cursor.fetchall()
+        templates = [
+            {
+                'id': row[0],
+                'study_name': row[1],
+                'archived': row[2],
+                'animal_type_id': row[3],
+                'description': row[4]
+            }
+            for row in rows
+        ]
+        return templates
+
+    def get_room_equipment(self, eqpt_id:int) -> list:
+        """
+        Returns the room of the given equipment.
+        """
+        self.cursor.execute("""
+            SELECT room_id FROM room_equipment WHERE equipment_id = ?
+        """, (eqpt_id,))
+        self.connection.commit()
+        return self.cursor.fetchone()[0]
 
     def insert_room(self, name:str, archived:int, description:str) -> bool:
         """
@@ -416,6 +466,18 @@ class DBCursor:
             INSERT INTO `animal_types` (`name`, `description`)
             VALUES (?, ?);
             """, (name, description))
+        self.connection.commit()
+        return True
+
+    def insert_template(self, study_name:str, archived:bool,
+                        animal_type_id:int, description:str) -> bool:
+        """
+        Inserts a template in the database.
+        """
+        self.cursor.execute("""
+            INSERT INTO `templates` (`study_name`, `archived`, `animal_type_id`, `description`)
+            VALUES (?, ?, ?, ?);
+            """, (study_name, archived, animal_type_id, description))
         self.connection.commit()
         return True
 

@@ -30,6 +30,7 @@ class Header(Frame):
         self.add_equipment_btn = None
         self.add_qualification_btn = None
         self.add_animal_types_btn = None
+        self.add_templates_btn = None
 
         self.setup_widgets_studies()
 
@@ -103,6 +104,17 @@ class Header(Frame):
                                padx=10, pady=10)
         return True
 
+    def setup_widgets_templates(self) -> bool:
+        """
+        Setup the widgets of the header.
+        """
+        self.add_templates_btn = ButtonApp(self, "Green", text="Add a template",
+                                      command=self.display_add_templates)
+        self.add_templates_btn.pack(side="left",
+                               fill="x",expand=True,
+                               padx=10, pady=10)
+        return True
+
     def reset_modifications(self) -> None:
         """
         Resets the modifications made by the user.
@@ -154,6 +166,18 @@ class Header(Frame):
         """
         self.manager.body.animal_types_template.from_timeline_to_add_animal_types()
 
+    def display_add_templates(self) -> None:
+        """
+        Displays the add templates template.
+        """
+        self.manager.body.templates_template.from_timeline_to_add_templates()
+
+    def display_add_task(self) -> None:
+        """
+        Displays the add task template.
+        """
+        self.manager.body.templates_template.from_timeline_to_add_tasks()
+
     def update_header(self, toggle):
         """
         Updates the header.
@@ -172,6 +196,11 @@ class Header(Frame):
                 self.setup_widgets_qualifications()
             case "Animal types":
                 self.setup_widgets_animal_types()
+            case "Templates":
+                self.setup_widgets_templates()
+            case _:
+                self.manager.gui.loggers.log.error("No toggle match found")
+                print("Error: No match found")
 
     def clear_header(self):
         """
