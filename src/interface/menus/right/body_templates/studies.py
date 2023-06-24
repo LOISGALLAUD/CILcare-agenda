@@ -6,8 +6,10 @@ Studies template for the body
 
 #-------------------------------------------------------------------#
 
-from src.utils.graphical_utils import Frame, Canvas, Label, ButtonApp, Entry, Text
+from tkcolorpicker import askcolor
+from src.utils.graphical_utils import Frame, Canvas, Label, ButtonApp, Text
 from src.utils.graphical_utils import LabelEntryPair, Serials, IntVar, Checkbutton
+from src.interface.widgets.schedule_picker import SchedulePicker
 from src.interface.widgets.right_click import RCMSerial, RCMStudy
 
 #-------------------------------------------------------------------#
@@ -206,12 +208,12 @@ class AddStudyTemplate(Frame):
         self.manager = study_template
         self.configure(bg="#FFFFFF")
 
-        self.checkbox_var = IntVar()
 
         # Parameters of the study
         for parameter in self.parameters:
             LabelEntryPair(self, parameter).pack(fill='both', side='top', padx=10)
 
+        self.checkbox_var = IntVar()
         self.checkbox = Checkbutton(self, text="Archived", bg="#FFFFFF", activebackground="#FFFFFF",
                                variable=self.checkbox_var, command=None)
         self.checkbox.pack(side='top', padx=10, pady=10, anchor="w")
@@ -247,29 +249,26 @@ class AddDaysOffTemplate(Frame):
         self.manager = study_template
         self.configure(bg="#FFFFFF")
 
-        self.checkbox_var = IntVar()
-        for parameter in self.parameters:
-            LabelEntryPair(self, parameter).pack(fill='both', side='top', padx=10)
+        self.daysoff_title = LabelEntryPair(self, "Title")
+        self.daysoff_title.pack(fill='both', side='top', padx=10)
+        self.daysoff_operator = LabelEntryPair(self, "Operator")
+        self.daysoff_operator.pack(fill='both', side='top', padx=10)
 
+        ButtonApp(self, text="COLOR",
+                  command=self.choose_color).pack(side="top")
+
+        self.checkbox_var = IntVar()
         self.checkbox = Checkbutton(self, text="Force", bg="#FFFFFF", activebackground="#FFFFFF",
                                variable=self.checkbox_var, command=None)
         self.checkbox.pack(side='top', padx=10, pady=10, anchor="w")
 
         # agenda of the study
-        self.agenda_canvas = Canvas(self, bg="white")
+        self.agenda_canvas = Canvas(self, bg="gold")
         self.agenda_canvas.pack(fill='both', side='top', padx=10, pady=10)
 
-        # Duration of the days off
-        duration_frame = Frame(self, bg="white")
-        duration_frame.pack(fill='both', side='top', padx=10, pady=10)
-        Label(duration_frame, text="Schedule", bg="white").pack(fill='both',
-                                                                side='left',
-                                                                padx=10, pady=10)
-        self.starting_time = Entry(duration_frame, text="Starting time")
-        self.ending_time = Entry(duration_frame, text="Ending time")
-        self.starting_time.pack(fill='both', side='left', padx=10, pady=10)
-        self.ending_time.pack(fill='both', side='left', padx=10, pady=10)
-
+        # Schedule picker
+        self.schedule_selector = SchedulePicker(self)
+        self.schedule_selector.pack(side="left")
 
         # Bottom widget
         self.bottom_frame = Frame(self, bg="white")
@@ -280,3 +279,12 @@ class AddDaysOffTemplate(Frame):
                                   command=self.manager.from_adddaysoff_to_studies_frame)
         self.confirm_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
         self.back_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
+
+    def choose_color(self) -> None:
+        """
+        Opens a color picker.
+        returns the color chosen.
+        """
+        color = askcolor()
+        if color:
+            self.config(bg=color[1])
