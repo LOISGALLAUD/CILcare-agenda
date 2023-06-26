@@ -58,7 +58,7 @@ class GUI(Tk):
         self.help_menu = HelpMenu(self)
 
         self.current_menu = self.main_menu
-        self.main_menu.pack(fill=BOTH, expand=True)
+        return True
 
     def change_menu(self, next_menu: Frame) -> bool:
         """

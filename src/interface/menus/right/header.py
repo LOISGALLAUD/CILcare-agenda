@@ -18,6 +18,9 @@ class Header(Frame):
     def __init__(self, manager=None) -> None:
         super().__init__(manager)
         self.manager = manager
+        self.grid(row=0, column=0, sticky='nsew')
+        self.update_idletasks()
+
         # Default toggle
         self.current_toggle = None
         self.propagate(False)

@@ -16,14 +16,18 @@ class AgendaCanvas(Canvas):
     """
     Represents the agenda canvas.
     """
-    def __init__(self, master, start_time, end_time, **kwargs):
-        super().__init__(master, width=master.winfo_reqwidth(),
-                         height=master.winfo_reqheight(), **kwargs)
+    def __init__(self, master, **kwargs):
+        super().__init__(master, bg="white", **kwargs)
         self.master = master
-        self.start_time = start_time
-        self.end_time = end_time
-        self.step = self.winfo_width() / 24  # 1 hour
-        self.create_timeline()
+        self.width = 0
+        self.height = 0
+        self.pack(fill='both', expand=True)
+        self.update_idletasks()
+
+        self.time_interval = 24  # 24 hours
+        self.time_step = 1 # 1 hour
+        self.x_step = self.width / self.time_interval
+        self.start_time = 0
         self.selected_rectangles = []  # Liste des rectangles sélectionnés
         self.bind('<Button-1>', self.deselect_rectangles)
 
@@ -45,16 +49,15 @@ class AgendaCanvas(Canvas):
         """
         Creates the timeline.
         """
-        timeline_width = self.master.winfo_reqwidth()
-        timeline_height = self.master.winfo_reqheight()
-
-        # Steps
-        step_width = timeline_width / 24
+        self.width = self.winfo_width()
+        self.height = self.winfo_height()
+        self.x_step = self.width / self.time_interval
+        timeline_height = self.height
 
         # Draw the timeline
-        for i in range(25):  # Increase to 25 to draw line at the end
-            x_pos = i * step_width
-            self.create_line(x_pos, 0, x_pos, timeline_height, fill='black')
+        for i in range(self.time_interval):  # Increase to 25 to draw line at the end
+            x_pos = i * self.x_step
+            self.create_line(x_pos, 0, x_pos, timeline_height, fill='#d9d9d9')
             time_label = self.start_time + i
-            self.create_text(x_pos+step_width/5, 5*timeline_height/6,
-                             text=str(time_label), anchor='n', fill='black')
+            self.create_text(x_pos+self.x_step/5, 11*timeline_height/12,
+                             text=str(time_label), anchor='n', fill='grey')

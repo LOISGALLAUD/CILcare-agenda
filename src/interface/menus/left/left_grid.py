@@ -19,6 +19,8 @@ class LeftGrid(Frame):
     def __init__(self, main_menu=None):
         super().__init__(main_menu)
         self.manager = main_menu
+        self.grid(row=0, column=0, sticky='nsew')
+        self.update_idletasks()
 
         self.grid_propagate(False)
 

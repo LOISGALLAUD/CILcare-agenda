@@ -19,18 +19,18 @@ class MainMenu(Frame):
     It is the first page to appear when the user logs in.
     """
     def __init__(self, gui=None) -> None:
-        super().__init__(gui)
+        super().__init__(gui, bg='white')
         self.gui = gui
-
-        # Setup the left grid for the navbar
-        self.left_grid = LeftGrid(self)
-        self.left_grid.grid(row=0, column=0, sticky='nsew')
-
-        # Setup the right grid for the header, body and footer
-        self.right_grid = RightGrid(self)
-        self.right_grid.grid(row=0, column=1, sticky='nsew')
+        self.pack(fill='both', expand=True)
+        self.update_idletasks()
 
         # Setup the grid
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=6)
         self.grid_rowconfigure(0, weight=1)
+
+        # Setup the left grid for the navbar
+        self.left_grid = LeftGrid(self)
+
+        # Setup the right grid for the header, body and footer
+        self.right_grid = RightGrid(self)

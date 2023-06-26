@@ -22,10 +22,12 @@ class Body(Frame):
     Contains the items to be displayed in the shopping page.
     """
     def __init__(self, right_grid=None):
-        super().__init__(right_grid)
+        super().__init__(right_grid, width=right_grid.winfo_reqwidth(),
+                         height=right_grid.winfo_reqheight(), bg='white')
         self.manager = right_grid
-        self.width = None
-        self.height = None
+        self.grid(row=1, column=0, sticky='nsew')
+        self.update_idletasks()
+
         self.studies_template = None
         self.operators_template = None
         self.rooms_template = None
@@ -41,7 +43,6 @@ class Body(Frame):
         Setup the studies page
         """
         self.studies_template = StudiesTemplate(self)
-        self.studies_template.pack(fill='both', expand=True, side='top')
 
     def setup_operators(self) -> None:
         """
