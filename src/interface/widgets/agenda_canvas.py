@@ -14,44 +14,47 @@ from src.utils.graphical_utils import Canvas
 
 class AgendaCanvas(Canvas):
     """
-    Describe the agenda canvas in the add days off menu.
-    It contains visual representation of the disponibilities
-    of operators.
+    Represents the agenda canvas.
     """
-    def __init__(self, manager=None, **kwargs) -> None:
-        super().__init__(manager, **kwargs)
-        self.manager = manager
-        self.width = None
-        self.height = None
-        self.setup_canvas()
+    def __init__(self, master, start_time, end_time, **kwargs):
+        super().__init__(master, width=master.winfo_reqwidth(),
+                         height=master.winfo_reqheight(), **kwargs)
+        self.master = master
+        self.start_time = start_time
+        self.end_time = end_time
+        self.step = self.winfo_width() / 24  # 1 hour
+        self.create_timeline()
+        self.selected_rectangles = []  # Liste des rectangles sélectionnés
+        self.bind('<Button-1>', self.deselect_rectangles)
 
-    def setup_canvas(self) -> None:
+    def deselect_rectangles(self, _event) -> None:
         """
-        Setup the canvas.
+        Deselect all rectangles when clicking on the canvas.
         """
-        self.configure(bg="#2bb5a6")
-        self.bind("<Configure>", self.on_resize)
+        item = self.find_withtag('current')  # Récupérer l'élément sur lequel le clic a eu lieu
+        if len(item) == 1 and self.type(item) == 'rectangle':
+            return  # Ne rien faire si le clic a eu lieu sur un rectangle
+        if len(item) == 1 and self.type(item) == 'text':
+            return # Ne rien faire si le clic a eu lieu sur un texte
 
-    def on_resize(self, event) -> None:
-        """
-        Resize the canvas.
-        """
-        self.width = event.width
-        self.height = event.height
-        self.configure(width=self.width, height=self.height)
-        self.delete("all")
-        self.draw_grid()
+        for rect in self.selected_rectangles:
+            self.itemconfig(rect.rect, fill='darkred')
+        self.selected_rectangles.clear()
 
-    def draw_grid(self) -> None:
+    def create_timeline(self):
         """
-        Draw the grid on the canvas.
+        Creates the timeline.
         """
-        # Draw the horizontal lines
-        for i in range(24):
-            self.create_line(0, i * self.height / 24, self.width,
-                             i * self.height / 24, fill="#3f3f3f")
+        timeline_width = self.master.winfo_reqwidth()
+        timeline_height = self.master.winfo_reqheight()
 
-        # Draw the vertical lines
-        for i in range(7):
-            self.create_line(i * self.width / 7, 0, i * self.width / 7,
-                             self.height, fill="#3f3f3f")
+        # Steps
+        step_width = timeline_width / 24
+
+        # Draw the timeline
+        for i in range(25):  # Increase to 25 to draw line at the end
+            x_pos = i * step_width
+            self.create_line(x_pos, 0, x_pos, timeline_height, fill='black')
+            time_label = self.start_time + i
+            self.create_text(x_pos+step_width/5, 5*timeline_height/6,
+                             text=str(time_label), anchor='n', fill='black')
