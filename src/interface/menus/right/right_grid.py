@@ -8,7 +8,7 @@ Container of the header, body and footer of the shopping page.
 
 from src.interface.menus.right.header import Header
 from src.interface.menus.right.body import Body
-#from src.interface.menus.right.footer import Footer
+from src.interface.menus.right.footer import Footer
 from src.utils.graphical_utils import Frame
 
 #-------------------------------------------------------------------#
@@ -29,13 +29,13 @@ class RightGrid(Frame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=4)
-        #self.grid_rowconfigure(2, weight=2)
+        self.grid_rowconfigure(2, weight=2)
 
         # Setup the header inside the right grid
         self.header = Header(self)
 
         # Setup the footer inside the right grid
-        #self.footer = Footer(self)
+        self.footer = Footer(self)
 
         # Setup the body inside the right grid
         self.body = Body(self)

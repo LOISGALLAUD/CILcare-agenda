@@ -11,7 +11,7 @@ from src.utils.graphical_utils import Frame, Canvas, Label, ButtonApp, Text
 from src.utils.graphical_utils import LabelEntryPair, Serials, IntVar, Checkbutton
 from src.interface.widgets.schedule_picker import SchedulePicker
 from src.interface.widgets.right_click import RCMSerial, RCMStudy
-from src.interface.widgets.agenda_canvas import AgendaCanvas
+from src.interface.widgets.agenda_canvas import WorkingFrame
 from src.interface.widgets.task_rectangle import TaskRectangle
 
 #-------------------------------------------------------------------#
@@ -35,10 +35,6 @@ class StudiesTemplate(Frame):
         # By default, the body contains the days off timeline and the study timeline
         self.setup_off_days_frame()
         self.setup_studies_frame()
-        self.days_off_frame.agenda_canvas.create_timeline()
-        self.study_frame.agenda_canvas.create_timeline()
-        self.days_off_frame.display_tasks()
-        self.study_frame.display_tasks()
 
     def setup_off_days_frame(self) -> None:
         """
@@ -96,7 +92,7 @@ class StudiesTemplate(Frame):
 
 #-------------------------------------------------------------------#
 
-class DaysOffTimelineTemplate(Frame):
+class DaysOffTimelineTemplate(WorkingFrame):
     """
     Contains the timeline of the days off.
     """
@@ -106,30 +102,18 @@ class DaysOffTimelineTemplate(Frame):
         self.pack(fill='both', expand=True, side='top')
         self.update_idletasks()
         self.right_click_menu_study = RCMStudy(self)
+        self.bind("<Button-3>", self.right_click_menu_study.show)
 
-        self.setup_timeline_canvas()
 
-    def setup_timeline_canvas(self) -> None:
-        """
-        Setup the canvas of the timeline.
-        """
-        self.agenda_canvas = AgendaCanvas(self)
-
-        # Bind the right click menu to the canvas
-        self.agenda_canvas.bind("<Button-3>", self.right_click_menu_study.show)
-
-    def display_tasks(self) -> None:
-        """
-        Display the tasks on the timeline.
-        """
-        TaskRectangle(self.agenda_canvas, "Vacances hugo", 8, 12)
-        TaskRectangle(self.agenda_canvas, "Astreintes Aurore", 14, 18)
-        TaskRectangle(self.agenda_canvas, "Vacances Hugo", 20, 22)
+        study1 = self.add_study("STUDY1")
+        self.add_serial(study1, "SERIAL1")
+        serial2 = self.add_serial(study1, "SERIAL2")
+        self.add_task(serial2)
 
 
 #-------------------------------------------------------------------#
 
-class StudyTimelineTemplate(Frame):
+class StudyTimelineTemplate(WorkingFrame):
     """
     Contains the timeline of the days off.
     """
@@ -139,28 +123,28 @@ class StudyTimelineTemplate(Frame):
         self.pack(fill='both', expand=True, side='top')
         self.update_idletasks()
 
+
+        # Add studies, serials and tasks
+        study1 = self.add_study("STUDY1")
+        self.add_serial(study1, "SERIAL1")
+        serial2 = self.add_serial(study1, "SERIAL2")
+        self.add_task(serial2)
+
+        study2 = self.add_study("STUDY2")
+        self.add_serial(study2, "SERIAL1")
+        self.add_serial(study2, "SERIAL2")
+
         self.right_click_menu_study = RCMStudy(self)
         self.right_click_menu_serial = RCMSerial(self)
-
-        self.setup_timeline_canvas()
-
-    def setup_timeline_canvas(self) -> None:
-        """
-        Setup the canvas of the timeline.
-        """
-        self.agenda_canvas = AgendaCanvas(self)
-        self.agenda_canvas.pack( fill='both', expand=True)
-
-        # Bind the right click menu to the canvas
-        self.agenda_canvas.bind("<Button-3>", self.right_click_menu_study.show)
+        self.bind("<Button-3>", self.right_click_menu_study.show)
 
     def display_tasks(self) -> None:
         """
         Display the tasks on the timeline.
         """
-        TaskRectangle(self.agenda_canvas, "TASK1", 8, 12)
-        TaskRectangle(self.agenda_canvas, "TASK2", 14, 18)
-        TaskRectangle(self.agenda_canvas, "TASK3", 20, 22)
+        TaskRectangle(self, "TASK1", 8, 12)
+        TaskRectangle(self, "TASK2", 14, 18)
+        TaskRectangle(self, "TASK3", 20, 22)
 
 #-------------------------------------------------------------------#
 

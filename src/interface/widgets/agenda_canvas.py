@@ -8,28 +8,160 @@ of operators.
 
 #-------------------------------------------------------------------#
 
-from src.utils.graphical_utils import Canvas
+from src.utils.graphical_utils import Frame, Canvas, Label, Scrollbar
 
 #-------------------------------------------------------------------#
 
-class AgendaCanvas(Canvas):
+
+class AgendaCanvas(Frame):
     """
-    Represents the agenda canvas.
+    Agenda canvas with scrolling.
+    """
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
+        self.master = master
+        self.config(bg='purple')
+        self.pack(fill='both', expand=True, side='top')
+        self.update_idletasks()
+
+        scrollbar = Scrollbar(self)
+        scrollbar.pack(side="left", fill="y")
+        canvas = Canvas(self, yscrollcommand=scrollbar.set)
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.config(command=canvas.yview)
+
+        self.wf = WorkingFrame(canvas)
+        canvas.create_window((0, 0), window=self.wf, anchor='nw')
+
+        self.wf.bind('<Configure>',
+                         lambda event: canvas.configure(scrollregion=canvas.bbox('all')))
+        canvas.bind('<Configure>',
+                    lambda event: canvas.configure(scrollregion=canvas.bbox('all')))
+
+class WorkingFrame(Frame):
+    """
+    Represents the working frame.
+    """
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
+        self.master = master
+        self.pack(fill="both", expand=True)
+        self.update_idletasks()
+
+        self.time_interval = 24  # 24 hours
+        self.starting_time = 0
+
+        self.footer_graduation = FooterGraduation(self)
+
+    def create_timeline(self, canvas,
+                        time_interval, start_time,
+                        show_time:bool=0) -> None:
+        """
+        Creates the timeline.
+        """
+        width = canvas.width
+        height = canvas.height
+        x_step = width / time_interval
+
+        # Draw the timeline
+        for i in range(time_interval):
+            x_pos = i * x_step
+            canvas.create_line(x_pos, 0, x_pos, height, fill='#d9d9d9')
+            time_label = start_time + i
+            if show_time:
+                canvas.create_text(x_pos+x_step/5, 8*height/12,
+                                text=str(time_label), anchor='n', fill='grey')
+
+    def add_study(self, study_name) -> None:
+        """
+        Adds a study to the timeline.
+        """
+        return StudyFrame(self, study_name)
+
+    def add_serial(self, study_frame, serial_name) -> None:
+        """
+        Adds a serial to the timeline.
+        """
+        return SerialFrame(study_frame, serial_name)
+
+    def add_task(self, serial_frame) -> None:
+        """
+        Adds a task to the timeline.
+        """
+        TaskRectangle(serial_frame.serial_canvas, 'Task name', 8, 12)
+
+class FooterGraduation(Canvas):
+    """
+    Canvas in which is drawn the time graduation.
+    """
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
+        self.master = master
+        self.height = 50
+        self.config(height=self.height, bg='white')
+        self.pack(fill='x', side='bottom', expand=True)
+        self.update_idletasks()
+        self.width = self.winfo_width()
+
+        self.master.create_timeline(self, self.master.time_interval, self.master.starting_time, 1)
+
+class StudyFrame(Frame):
+    """
+    Frame containing a study and its serials.
+    """
+    def __init__(self, master, name, **kwargs):
+        super().__init__(master, **kwargs)
+        self.master = master
+        self.config(bg='red')
+        Label(self, text=name).pack(side='left')
+        self.pack(fill="x")
+        self.update_idletasks()
+
+class SerialFrame(Frame):
+    """
+    Frame containing a serial and its tasks.
+    """
+    def __init__(self, master, name, **kwargs):
+        super().__init__(master, **kwargs)
+        self.master = master
+        self.config(bg='blue')
+        Label(self, text=name).pack(side='left')
+        self.pack(fill="x")
+        self.config(width=40)
+        self.update_idletasks()
+        self.serial_canvas = SerialCanvas(self)
+
+class SerialCanvas(Canvas):
+    """
+    Canvas containing the tasks of a serial.
     """
     def __init__(self, master, **kwargs):
         super().__init__(master, bg="white", **kwargs)
         self.master = master
+
         self.width = 0
         self.height = 0
-        self.pack(fill='both', expand=True)
-        self.update_idletasks()
+        self.time_interval = 0
+        self.x_step = 0
+        self.starting_time = 0
 
-        self.time_interval = 24  # 24 hours
-        self.time_step = 1 # 1 hour
-        self.x_step = self.width / self.time_interval
-        self.start_time = 0
-        self.selected_rectangles = []  # Liste des rectangles sélectionnés
+        self.selected_rectangles = []  # List of selected rectangles
+
+        self.pack(side='top', fill="x")
+        self.update_idletasks()
+        self.get_time_graduations()
+        self.master.master.master.create_timeline(self, self.time_interval, self.starting_time)
         self.bind('<Button-1>', self.deselect_rectangles)
+
+    def get_time_graduations(self) -> list:
+        """
+        Get the time graduations.
+        """
+        self.width = self.winfo_width()
+        self.height = self. winfo_height()
+        self.time_interval = self.master.master.master.time_interval
+        self.x_step = self.width / self.time_interval
+        self.starting_time = self.master.master.master.starting_time
 
     def deselect_rectangles(self, _event) -> None:
         """
@@ -45,19 +177,105 @@ class AgendaCanvas(Canvas):
             self.itemconfig(rect.rect, fill='darkred')
         self.selected_rectangles.clear()
 
-    def create_timeline(self):
-        """
-        Creates the timeline.
-        """
-        self.width = self.winfo_width()
-        self.height = self.winfo_height()
-        self.x_step = self.width / self.time_interval
-        timeline_height = self.height
+class TaskRectangle:
+    """
+    Represents a task on the canvas.
+    """
+    height = 40
+    def __init__(self, canvas_manager: Canvas, name: str,
+                 starting_hour: int, ending_hour:int) -> None:
+        self.canvas_manager = canvas_manager
+        self.start_x_pos = 0  # Position de départ du rectangle
+        self.start_y_pos = 0  # Position de départ du rectangle
+        self.is_dragging = False  # Indicateur de déplacement en cours
 
-        # Draw the timeline
-        for i in range(self.time_interval):  # Increase to 25 to draw line at the end
-            x_pos = i * self.x_step
-            self.create_line(x_pos, 0, x_pos, timeline_height, fill='#d9d9d9')
-            time_label = self.start_time + i
-            self.create_text(x_pos+self.x_step/5, 11*timeline_height/12,
-                             text=str(time_label), anchor='n', fill='grey')
+        self.name = name
+        self.x_pos = self.get_x_pos(starting_hour)
+        self.width = self.get_x_pos(ending_hour) - self.x_pos
+        self.y_pos = self.canvas_manager.winfo_height() / 2 # arbitrary constant
+
+        self.draw_task()
+
+    def get_x_pos(self, starting_hour: int) -> int:
+        """
+        Convert the starting hour to the x position on the canvas.
+        """
+        return starting_hour * self.canvas_manager.x_step
+
+    def draw_task(self) -> None:
+        """
+        Draws the task on the canvas.
+        """
+        self.rect = self.canvas_manager.create_rectangle(self.x_pos, self.y_pos,
+                                                    self.x_pos + self.width,
+                                                    self.y_pos + self.height, fill='darkred')
+        self.text = self.canvas_manager.create_text(self.x_pos + self.width / 2,
+                                                    self.y_pos + self.height / 2,
+                                                    text=self.name,
+                                                    fill='white')
+        self.canvas_manager.tag_bind(self.rect, '<ButtonPress-1>', self.on_click)
+        self.canvas_manager.tag_bind(self.rect, '<B1-Motion>', self.on_drag)
+        self.canvas_manager.tag_bind(self.text, '<ButtonPress-1>', self.on_click)
+        self.canvas_manager.tag_bind(self.text, '<B1-Motion>', self.on_drag)
+
+    def on_click(self, event) -> None:
+        """
+        Event handler for clicking on the rectangle.
+        """
+        if event.state & 4:  # 4 corresponds to the Ctrl key
+            # Toggle selection
+            if self in self.canvas_manager.selected_rectangles:
+                self.canvas_manager.selected_rectangles.remove(self)
+                self.canvas_manager.itemconfig(self.rect, fill='darkred')
+            else:
+                self.canvas_manager.selected_rectangles.append(self)
+                self.canvas_manager.itemconfig(self.rect, fill='red')
+        else:
+            if self not in self.canvas_manager.selected_rectangles:
+                # Deselect all rectangles
+                for rect in self.canvas_manager.selected_rectangles:
+                    self.canvas_manager.itemconfig(rect.rect, fill='darkred')
+                self.canvas_manager.selected_rectangles.clear()
+
+                # Select the current rectangle
+                self.canvas_manager.selected_rectangles.append(self)
+                self.canvas_manager.itemconfig(self.rect, fill='red')
+
+        self.start_x_pos = event.x
+        self.start_y_pos = event.y
+
+    def on_drag(self, event) -> None:
+        """
+        Event handler for dragging the rectangle.
+        """
+        for rect in self.canvas_manager.selected_rectangles:
+            if rect.is_dragging:
+                continue
+            rect.is_dragging = True
+
+        if not self.is_dragging:
+            self.is_dragging = True
+            # Deselect other rectangles except the current one
+            for rect in self.canvas_manager.selected_rectangles:
+                if rect != self:
+                    self.canvas_manager.itemconfig(rect.rect, fill='darkred')
+            self.canvas_manager.selected_rectangles = [self]
+            self.canvas_manager.itemconfig(self.rect, fill='red')
+
+        dx_pos = event.x - self.start_x_pos
+
+        for rect in self.canvas_manager.selected_rectangles:
+            # Move the rectangle with the step on the X axis within a range
+            if abs(dx_pos) >= rect.canvas_manager.x_step:
+                steps = int(dx_pos / rect.canvas_manager.x_step)
+                dx_pos = steps * rect.canvas_manager.x_step
+                rect.canvas_manager.move(rect.rect, dx_pos, 0)
+                rect.start_x_pos = event.x
+
+            # Move the text
+            x1, y1, x2, y2 = rect.canvas_manager.coords(rect.rect)
+            text_x = (x1 + x2) / 2
+            text_y = (y1 + y2) / 2
+            rect.canvas_manager.coords(rect.text, text_x, text_y)
+
+        self.is_dragging = False
