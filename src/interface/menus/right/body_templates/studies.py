@@ -12,7 +12,6 @@ from src.utils.graphical_utils import LabelEntryPair, Serials, IntVar, Checkbutt
 from src.interface.widgets.schedule_picker import SchedulePicker
 from src.interface.widgets.right_click import RCMSerial, RCMStudy
 from src.interface.widgets.agenda_canvas import WorkingFrame
-from src.interface.widgets.task_rectangle import TaskRectangle
 
 #-------------------------------------------------------------------#
 
@@ -104,11 +103,26 @@ class DaysOffTimelineTemplate(WorkingFrame):
         self.right_click_menu_study = RCMStudy(self)
         self.bind("<Button-3>", self.right_click_menu_study.show)
 
-
-        study1 = self.add_study("STUDY1")
-        self.add_serial(study1, "SERIAL1")
-        serial2 = self.add_serial(study1, "SERIAL2")
-        self.add_task(serial2)
+        study_frame1 = self.add_study("Study 1")
+        serial_frame1 = self.add_serial(study_frame1, "Serial 1")
+        serial_frame2 = self.add_serial(study_frame1, "Serial 2")
+        self.add_task(serial_frame1)
+        self.add_task(serial_frame2)
+        study_frame2 = self.add_study("Study 2")
+        serial_frame12 = self.add_serial(study_frame2, "Serial 1")
+        serial_frame22 = self.add_serial(study_frame2, "Serial 2")
+        self.add_task(serial_frame12)
+        self.add_task(serial_frame22)
+        study_frame1 = self.add_study("Study 1")
+        serial_frame1 = self.add_serial(study_frame1, "Serial 1")
+        serial_frame2 = self.add_serial(study_frame1, "Serial 2")
+        self.add_task(serial_frame1)
+        self.add_task(serial_frame2)
+        study_frame2 = self.add_study("Study 2")
+        serial_frame12 = self.add_serial(study_frame2, "Serial 1")
+        serial_frame22 = self.add_serial(study_frame2, "Serial 2")
+        self.add_task(serial_frame12)
+        self.add_task(serial_frame22)
 
 
 #-------------------------------------------------------------------#
@@ -122,29 +136,28 @@ class StudyTimelineTemplate(WorkingFrame):
         self.manager = body
         self.pack(fill='both', expand=True, side='top')
         self.update_idletasks()
-
-
-        # Add studies, serials and tasks
-        study1 = self.add_study("STUDY1")
-        self.add_serial(study1, "SERIAL1")
-        serial2 = self.add_serial(study1, "SERIAL2")
-        self.add_task(serial2)
-
-        study2 = self.add_study("STUDY2")
-        self.add_serial(study2, "SERIAL1")
-        self.add_serial(study2, "SERIAL2")
-
         self.right_click_menu_study = RCMStudy(self)
         self.right_click_menu_serial = RCMSerial(self)
-        self.bind("<Button-3>", self.right_click_menu_study.show)
-
-    def display_tasks(self) -> None:
-        """
-        Display the tasks on the timeline.
-        """
-        TaskRectangle(self, "TASK1", 8, 12)
-        TaskRectangle(self, "TASK2", 14, 18)
-        TaskRectangle(self, "TASK3", 20, 22)
+        study_frame1 = self.add_study("Study 1")
+        serial_frame1 = self.add_serial(study_frame1, "Serial 1")
+        serial_frame2 = self.add_serial(study_frame1, "Serial 2")
+        self.add_task(serial_frame1)
+        self.add_task(serial_frame2)
+        study_frame2 = self.add_study("Study 2")
+        serial_frame12 = self.add_serial(study_frame2, "Serial 1")
+        serial_frame22 = self.add_serial(study_frame2, "Serial 2")
+        self.add_task(serial_frame12)
+        self.add_task(serial_frame22)
+        study_frame1 = self.add_study("Study 1")
+        serial_frame1 = self.add_serial(study_frame1, "Serial 1")
+        serial_frame2 = self.add_serial(study_frame1, "Serial 2")
+        self.add_task(serial_frame1)
+        self.add_task(serial_frame2)
+        study_frame2 = self.add_study("Study 2")
+        serial_frame12 = self.add_serial(study_frame2, "Serial 1")
+        serial_frame22 = self.add_serial(study_frame2, "Serial 2")
+        self.add_task(serial_frame12)
+        self.add_task(serial_frame22)
 
 #-------------------------------------------------------------------#
 
