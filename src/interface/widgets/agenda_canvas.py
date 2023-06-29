@@ -12,6 +12,7 @@ from src.utils.graphical_utils import Frame, Canvas, Label, Scrollbar
 
 #-------------------------------------------------------------------#
 
+
 class WorkingFrame(Frame):
     """
     Represents the working frame.
@@ -25,12 +26,13 @@ class WorkingFrame(Frame):
         self.time_interval = 24  # 24 hours
         self.starting_time = 0
 
+
         scrollbar = Scrollbar(self, orient="vertical", width=20)
         scrollbar.pack(side="right", fill="y")
-        self.canvas = Canvas(self, yscrollcommand=scrollbar.set, bg="orange")
+        self.canvas = Canvas(self, yscrollcommand=scrollbar.set)
         self.canvas.pack(side="top", fill="both", expand=True)
         scrollbar.config(command=self.canvas.yview)
-        self.inner_frame = Frame(self.canvas, bg="black")
+        self.inner_frame = Frame(self.canvas)
         self.canvas.create_window((0, 0), window=self.inner_frame, anchor='nw')
         self.canvas.bind('<Configure>',
                     lambda event: self.canvas.configure(scrollregion=self.canvas.bbox('all')))
@@ -38,10 +40,6 @@ class WorkingFrame(Frame):
         self.agenda_frame = AgendaFrame(self, self.inner_frame)
         self.agenda_frame.bind('<Configure>',
                         lambda event: self.canvas.configure(scrollregion=self.canvas.bbox('all')))
-
-
-        self.footer_graduation = FooterGraduation(self)
-
 
 
     def create_timeline(self, canvas,
@@ -60,8 +58,8 @@ class WorkingFrame(Frame):
             canvas.create_line(x_pos, 0, x_pos, height, fill='#d9d9d9')
             time_label = start_time + i
             if show_time:
-                canvas.create_text(x_pos+x_step/5, 8*height/12,
-                                text=str(time_label), anchor='n', fill='grey')
+                canvas.create_text(x_pos+x_step/4, 11*height/12,
+                                text=str(time_label)+"h", anchor='n', fill='grey')
 
     def add_study(self, study_name) -> None:
         """
@@ -73,7 +71,7 @@ class WorkingFrame(Frame):
         """
         Adds a serial to the timeline.
         """
-        return SerialFrame(study_frame, serial_name)
+        return SerialFrame(study_frame.serial_container, serial_name)
 
     def add_task(self, serial_frame) -> None:
         """
@@ -89,7 +87,7 @@ class FooterGraduation(Canvas):
         super().__init__(master, **kwargs)
         self.master = master
         self.height = 50
-        self.config(height=self.height, bg='white')
+        self.config(height=self.height)
         self.pack(fill='x', side='bottom')
         self.update_idletasks()
         self.width = self.winfo_width()
@@ -103,16 +101,8 @@ class AgendaFrame(Frame):
     def __init__(self, master, scrollable_frame, **kwargs):
         super().__init__(master=scrollable_frame, **kwargs)
         self.master = master
-        self.config(bg='purple')
-        self.pack(fill='both', ipadx=500, expand=True)
+        self.pack(fill='both', expand=False, ipadx=400)
         self.update_idletasks()
-        self.bind("<Configure>", self.on_master_configure)
-
-    def on_master_configure(self, _event):
-        """
-        Event called when the master is configured.
-        """
-        self.configure(width=self.master.winfo_width())
 
 class StudyFrame(Frame):
     """
@@ -120,12 +110,21 @@ class StudyFrame(Frame):
     """
     def __init__(self, master, name, **kwargs):
         super().__init__(master, **kwargs)
-        self.master = master
-        self.config(bg='red')
-        Label(self, text=name).pack(side='left',
-                                    fill='x')
+        self.config(bg="pink4")
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1, uniform='group')
+        self.grid_columnconfigure(1, weight=5, uniform='group')
+
+        Label(self, text=name,
+              wraplength=150).grid(row=0, column=0)
+
+        self.serial_container = Frame(self)
+        self.serial_container.grid(row=0, column=1, sticky='nsew')
+
         self.pack(fill="x")
         self.update_idletasks()
+        self.width = self.winfo_width()
+        self.height = self.winfo_height()
 
 class SerialFrame(Frame):
     """
@@ -133,13 +132,19 @@ class SerialFrame(Frame):
     """
     def __init__(self, master, name, **kwargs):
         super().__init__(master, **kwargs)
-        self.master = master
-        self.config(bg='blue')
-        Label(self, text=name).pack(side='left')
+        self.config(bg='pink')
+
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1, uniform='group')
+        self.grid_columnconfigure(1, weight=5, uniform='group')
+
+        Label(self, text=name,
+              wraplength=150).grid(row=0, column=0)
+
         self.pack(fill="x")
-        self.config(width=40)
         self.update_idletasks()
         self.serial_canvas = SerialCanvas(self)
+
 
 class SerialCanvas(Canvas):
     """
@@ -157,11 +162,11 @@ class SerialCanvas(Canvas):
 
         self.selected_rectangles = []  # List of selected rectangles
 
-        self.pack(side='top', fill="x")
+        self.grid(row=0, column=1, sticky='nsew')
         self.update_idletasks()
         self.get_time_graduations()
-        self.master.master.master.master.create_timeline(
-            self, self.time_interval, self.starting_time)
+        self.master.master.master.master.master.create_timeline(
+            self, self.time_interval, self.starting_time, 1)
         self.bind('<Button-1>', self.deselect_rectangles)
 
         self.bind('<Enter>', self.bind_mousewheel)
@@ -185,13 +190,13 @@ class SerialCanvas(Canvas):
         """
         Scroll up.
         """
-        self.master.master.master.master.canvas.yview_scroll(-1, 'units')
+        self.master.master.master.master.master.canvas.yview_scroll(-1, 'units')
 
     def on_scroll_down(self, _event):
         """
         Scroll down.
         """
-        self.master.master.master.master.canvas.yview_scroll(1, 'units')
+        self.master.master.master.master.master.canvas.yview_scroll(1, 'units')
 
     def get_time_graduations(self) -> list:
         """
@@ -199,9 +204,9 @@ class SerialCanvas(Canvas):
         """
         self.width = self.winfo_width()
         self.height = self. winfo_height()
-        self.time_interval = self.master.master.master.master.time_interval
+        self.time_interval = self.master.master.master.master.master.time_interval
         self.x_step = self.width / self.time_interval
-        self.starting_time = self.master.master.master.master.starting_time
+        self.starting_time = self.master.master.master.master.master.starting_time
 
     def deselect_rectangles(self, _event) -> None:
         """
