@@ -29,11 +29,12 @@ class WorkingFrame(Frame):
 
         scrollbar = Scrollbar(self, orient="vertical", width=20)
         scrollbar.pack(side="right", fill="y")
-        self.canvas = Canvas(self, yscrollcommand=scrollbar.set)
+        self.canvas = Canvas(self, yscrollcommand=scrollbar.set, bg='orange')
         self.canvas.pack(side="top", fill="both", expand=True)
         scrollbar.config(command=self.canvas.yview)
-        self.inner_frame = Frame(self.canvas)
-        self.canvas.create_window((0, 0), window=self.inner_frame, anchor='nw')
+        self.inner_frame = Frame(self.canvas, bg='purple')
+        self.update_idletasks()
+        self.canvas.create_window((0, 0), window=self.inner_frame, anchor='nw', width=self.canvas.winfo_width())
         self.canvas.bind('<Configure>',
                     lambda event: self.canvas.configure(scrollregion=self.canvas.bbox('all')))
 
@@ -92,7 +93,8 @@ class FooterGraduation(Canvas):
         self.update_idletasks()
         self.width = self.winfo_width()
 
-        self.master.create_timeline(self, self.master.time_interval, self.master.starting_time, 1)
+        self.master.create_timeline(self, self.master.time_interval,
+                                    self.master.starting_time, 1)
 
 class AgendaFrame(Frame):
     """
@@ -101,7 +103,8 @@ class AgendaFrame(Frame):
     def __init__(self, master, scrollable_frame, **kwargs):
         super().__init__(master=scrollable_frame, **kwargs)
         self.master = master
-        self.pack(fill='both', expand=False, ipadx=400)
+        self.config(bg='red')
+        self.pack(fill='both', expand=True)
         self.update_idletasks()
 
 class StudyFrame(Frame):
@@ -113,7 +116,7 @@ class StudyFrame(Frame):
         self.config(bg="pink4")
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1, uniform='group')
-        self.grid_columnconfigure(1, weight=5, uniform='group')
+        self.grid_columnconfigure(1, weight=12, uniform='group')
 
         Label(self, text=name,
               wraplength=150).grid(row=0, column=0)
@@ -136,7 +139,7 @@ class SerialFrame(Frame):
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1, uniform='group')
-        self.grid_columnconfigure(1, weight=5, uniform='group')
+        self.grid_columnconfigure(1, weight=12, uniform='group')
 
         Label(self, text=name,
               wraplength=150).grid(row=0, column=0)
@@ -162,7 +165,7 @@ class SerialCanvas(Canvas):
 
         self.selected_rectangles = []  # List of selected rectangles
 
-        self.grid(row=0, column=1, sticky='nsew')
+        self.grid(row=0, column=1,padx=5, pady=5, sticky='ew')
         self.update_idletasks()
         self.get_time_graduations()
         self.master.master.master.master.master.create_timeline(
@@ -221,6 +224,14 @@ class SerialCanvas(Canvas):
         for rect in self.selected_rectangles:
             self.itemconfig(rect.rect, fill='darkred')
         self.selected_rectangles.clear()
+
+    def update_timeline(self) -> None:
+        """
+        Update the timeline.
+        """
+        self.delete('timeline')
+        self.master.master.master.master.master.create_timeline(
+            self, self.time_interval, self.starting_time, 1)
 
 class TaskRectangle:
     """
