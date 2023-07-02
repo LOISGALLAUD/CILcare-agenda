@@ -32,7 +32,7 @@ class StudiesTemplate(Frame):
         self.add_days_off = None
 
         # By default, the body contains the days off timeline and the study timeline
-        self.setup_off_days_frame()
+        # self.setup_off_days_frame()
         self.setup_studies_frame()
 
     def setup_off_days_frame(self) -> None:
@@ -142,7 +142,25 @@ class StudyTimelineTemplate(WorkingFrame):
         serial_frame1 = self.add_serial(study_frame1, "Serial 1")
         serial_frame2 = self.add_serial(study_frame1, "Serial 2")
         self.add_task(serial_frame1)
+        study_frame2 = self.add_study("Study 2")
+        serial_frame12 = self.add_serial(study_frame2, "Serial 1")
+        serial_frame22 = self.add_serial(study_frame2, "Serial 2")
+        self.add_task(serial_frame12)
+        self.add_task(serial_frame22)
+        study_frame1 = self.add_study("Study 1")
+        serial_frame1 = self.add_serial(study_frame1, "Serial 1")
+        serial_frame2 = self.add_serial(study_frame1, "Serial 2")
+        self.add_task(serial_frame1)
         self.add_task(serial_frame2)
+        study_frame2 = self.add_study("Study 2")
+        serial_frame12 = self.add_serial(study_frame2, "Serial 1")
+        serial_frame22 = self.add_serial(study_frame2, "Serial 2")
+        self.add_task(serial_frame12)
+        self.add_task(serial_frame22)
+        study_frame1 = self.add_study("Study 1")
+        serial_frame1 = self.add_serial(study_frame1, "Serial 1")
+        serial_frame2 = self.add_serial(study_frame1, "Serial 2")
+        self.add_task(serial_frame1)
         study_frame2 = self.add_study("Study 2")
         serial_frame12 = self.add_serial(study_frame2, "Serial 1")
         serial_frame22 = self.add_serial(study_frame2, "Serial 2")
