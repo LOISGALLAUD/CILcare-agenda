@@ -20,12 +20,11 @@ class WorkingFrame(Frame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         self.master = master
-        self.pack(fill="both", expand=True)
+        self.pack(fill="both", expand=True, padx=10, pady=10)
         self.update_idletasks()
 
         self.time_interval = 24  # 24 hours
         self.starting_time = 0
-
 
         scrollbar = Scrollbar(self, orient="vertical", width=20)
         scrollbar.pack(side="right", fill="y")
@@ -34,7 +33,8 @@ class WorkingFrame(Frame):
         scrollbar.config(command=self.canvas.yview)
         self.inner_frame = Frame(self.canvas, bg='purple')
         self.update_idletasks()
-        self.canvas.create_window((0, 0), window=self.inner_frame, anchor='nw', width=self.canvas.winfo_width())
+        self.canvas.create_window((0, 0), window=self.inner_frame,
+                                  anchor='nw', width=self.canvas.winfo_width())
         self.canvas.bind('<Configure>',
                     lambda event: self.canvas.configure(scrollregion=self.canvas.bbox('all')))
 
@@ -135,11 +135,11 @@ class SerialFrame(Frame):
     """
     def __init__(self, master, name, **kwargs):
         super().__init__(master, **kwargs)
-        self.config(bg='pink')
+        self.config(bg='white')
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1, uniform='group')
-        self.grid_columnconfigure(1, weight=12, uniform='group')
+        self.grid_columnconfigure(1, weight=13, uniform='group')
 
         Label(self, text=name,
               wraplength=150).grid(row=0, column=0)
@@ -155,6 +155,7 @@ class SerialCanvas(Canvas):
     """
     def __init__(self, master, **kwargs):
         super().__init__(master, bg="white", **kwargs)
+        self.grid(row=0, column=1, sticky='ew')
         self.master = master
 
         self.width = 0
@@ -165,7 +166,6 @@ class SerialCanvas(Canvas):
 
         self.selected_rectangles = []  # List of selected rectangles
 
-        self.grid(row=0, column=1,padx=5, pady=5, sticky='ew')
         self.update_idletasks()
         self.get_time_graduations()
         self.master.master.master.master.master.create_timeline(
@@ -206,7 +206,7 @@ class SerialCanvas(Canvas):
         Get the time graduations.
         """
         self.width = self.winfo_width()
-        self.height = self. winfo_height()
+        self.height = self.winfo_height()
         self.time_interval = self.master.master.master.master.master.time_interval
         self.x_step = self.width / self.time_interval
         self.starting_time = self.master.master.master.master.master.starting_time
