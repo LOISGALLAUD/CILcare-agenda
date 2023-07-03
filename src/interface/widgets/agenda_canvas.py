@@ -20,7 +20,7 @@ class WorkingFrame(Frame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         self.master = master
-        self.pack(fill="both", padx=10, pady=10)
+        self.pack(fill='both', expand=True, side='top')
         self.update_idletasks()
 
         self.time_interval = 24  # 24 hours
@@ -115,8 +115,6 @@ class AgendaFrame(Frame):
         self.master = master
         self.pack(fill='x')
         self.update_idletasks()
-
-        self.footer_graduation = FooterGraduation(self)
 
 class StudyFrame(Frame):
     """
