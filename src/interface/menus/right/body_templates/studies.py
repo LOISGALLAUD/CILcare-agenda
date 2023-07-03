@@ -32,7 +32,7 @@ class StudiesTemplate(Frame):
         self.add_days_off = None
 
         # By default, the body contains the days off timeline and the study timeline
-        # self.setup_off_days_frame()
+        self.setup_off_days_frame()
         self.setup_studies_frame()
 
     def setup_off_days_frame(self) -> None:

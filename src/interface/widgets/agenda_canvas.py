@@ -134,7 +134,7 @@ class StudyFrame(Frame):
         self.serial_container = Frame(self)
         self.serial_container.grid(row=0, column=1, sticky='ew')
 
-        self.pack(fill="x", pady=10)
+        self.pack(fill="x")
         self.update_idletasks()
 
 class SerialFrame(Frame):
