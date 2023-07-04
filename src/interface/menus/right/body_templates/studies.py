@@ -11,7 +11,7 @@ from src.utils.graphical_utils import Frame, Canvas, Label, ButtonApp, Text
 from src.utils.graphical_utils import LabelEntryPair, Serials, IntVar, Checkbutton
 from src.interface.widgets.schedule_picker import SchedulePicker
 from src.interface.widgets.right_click import RCMSerial, RCMStudy
-from src.interface.widgets.agenda_canvas import WorkingFrame
+from src.interface.widgets.agenda_canvas import WorkingFrame, FooterGraduation
 
 #-------------------------------------------------------------------#
 
@@ -26,23 +26,29 @@ class StudiesTemplate(Frame):
         self.pack(fill='both', expand=True, side='top')
         self.update_idletasks()
 
+        self.time_interval = 24  # 24 hours
+        self.starting_time = 0
+
         self.days_off_frame = None
         self.study_frame = None
         self.add_study = None
         self.add_days_off = None
 
         # By default, the body contains the days off timeline and the study timeline
+        self.footer_graduation = FooterGraduation(self)
         self.setup_studies_frame()
         self.setup_off_days_frame()
         self.compact_btn = ButtonApp(self, text="Compacter",
-                                         command=self.compact_navbar)
+                                         command=self.compact_navbar, custom_theme="Green")
 
-        self.compact_btn.pack(fill='both', side='bottom')
+        self.compact_btn.pack(fill='both', side='top')
 
         self.rowconfigure(0, weight=10)
         self.rowconfigure(1, weight=1)
         self.rowconfigure(2, weight=10)
+        self.rowconfigure(2, weight=1)
         self.columnconfigure(0, weight=1)
+
 
     def compact_navbar(self) -> None:
         """

@@ -20,18 +20,16 @@ class WorkingFrame(Frame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         self.master = master
-        self.pack(fill='both', expand=True, side='top')
+        self.gui_manager = master.manager.manager.manager.gui
+        self.pack(fill='both', expand=True, side='bottom')
         self.update_idletasks()
 
-        self.time_interval = 24  # 24 hours
-        self.starting_time = 0
-
-        scrollbar = Scrollbar(self, orient="vertical", width=20)
+        scrollbar = Scrollbar(self, orient="vertical", width=0)
         scrollbar.pack(side="right", fill="y")
-        self.canvas = Canvas(self, yscrollcommand=scrollbar.set)
+        self.canvas = Canvas(self, yscrollcommand=scrollbar.set, border=0)
         self.canvas.pack(side="top", fill="both", expand=True)
         scrollbar.config(command=self.canvas.yview)
-        self.inner_frame = Frame(self.canvas)
+        self.inner_frame = Frame(self.canvas, border=0, borderwidth=0, highlightthickness=0)
         self.update_idletasks()
         self.canvas.create_window((0, 0), window=self.inner_frame,
                                   anchor='nw', width=self.canvas.winfo_width())
@@ -42,15 +40,22 @@ class WorkingFrame(Frame):
         self.agenda_frame.bind('<Configure>',
                         lambda event: self.canvas.configure(scrollregion=self.canvas.bbox('all')))
 
+        self.gui_manager.bind('<Left>', lambda event: self.shift_timeline(-1))
+        self.gui_manager.bind('<Right>', lambda event: self.shift_timeline(1))
 
-    def create_timeline(self, canvas,
-                        time_interval, start_time,
-                        show_time:bool=0) -> None:
+    def shift_timeline(self, direction):
+        """
+        Décale les graduations de temps dans la direction spécifiée.
+        """
+        self.master.starting_time += direction
+        self.create_timeline(self.canvas, self.master.time_interval, self.master.starting_time, )
+
+    def create_timeline(self, canvas, time_interval, start_time, show_time=False):
         """
         Creates the timeline.
         """
-        width = canvas.width
-        height = canvas.height
+        width = canvas.winfo_width()
+        height = canvas.winfo_height()
         x_step = width / time_interval
 
         # Draw the timeline
@@ -59,8 +64,9 @@ class WorkingFrame(Frame):
             canvas.create_line(x_pos, 0, x_pos, height, fill='#d9d9d9')
             time_label = start_time + i
             if show_time:
-                canvas.create_text(x_pos+x_step/4, 11*height/12,
-                                text=str(time_label)+"h", anchor='n', fill='grey')
+                canvas.create_text(x_pos + x_step / 4, 20,
+                                   text=str(time_label) + "h",
+                                   anchor='n', fill='grey', tags="timeline")
 
     def add_study(self, study_name) -> None:
         """
@@ -80,30 +86,38 @@ class WorkingFrame(Frame):
         """
         TaskRectangle(serial_frame.serial_canvas, 'Task name', 8, 12)
 
-class FooterGraduation(Canvas):
+class FooterGraduation(Frame):
     """
     Canvas in which is drawn the time graduation.
     """
     def __init__(self, master, **kwargs):
-        super().__init__(master, bg='darkred', **kwargs)
-        self.master = master
+        super().__init__(master, bg='#494466', border=0, **kwargs)
+
         self.grid_columnconfigure(0, weight=1, uniform='group')
         self.grid_columnconfigure(1, weight=12, uniform='group')
 
         Label(self, text="TEMPS",
               wraplength=150).grid(row=0, column=0)
 
-        frame = Frame(self, bg="white")
-        frame.grid(row=0, column=1, sticky='nsew')
+        serial_container = Frame(self, border=0)
+        serial_container.grid(row=0, column=1, sticky='nsew')
+        serial_container.grid_columnconfigure(0, weight=1, uniform='group')
+        serial_container.grid_columnconfigure(1, weight=13, uniform='group')
+
+        Label(serial_container, text="SERIALS",
+                wraplength=150).grid(row=0, column=0, sticky='nsew')
+        canvas = Canvas(serial_container, bg="white")
+        canvas.grid(row=0, column=1, sticky='nsew', padx=(0, 2))
 
         self.pack(fill="x", side="bottom")
+        self.grid_propagate(False)
         self.update_idletasks()
         self.width = self.winfo_width()
         self.height = 50
         self.config(height=self.height)
 
-        self.master.master.create_timeline(self, self.master.master.time_interval,
-                                    self.master.master.starting_time, 1)
+        WorkingFrame.create_timeline(WorkingFrame, canvas, self.master.time_interval,
+                                    self.master.starting_time, 1)
 
 class AgendaFrame(Frame):
     """
@@ -111,7 +125,7 @@ class AgendaFrame(Frame):
     """
     def __init__(self, master, scrollable_frame, **kwargs):
         super().__init__(master=scrollable_frame,
-                         bg='darkred', **kwargs)
+                         bg='#494466', **kwargs)
         self.master = master
         self.pack(fill='x')
         self.update_idletasks()
@@ -122,11 +136,11 @@ class StudyFrame(Frame):
     """
     def __init__(self, master, name, **kwargs):
         super().__init__(master, **kwargs)
-        self.config(bg="darkred")
+        self.config(bg="#494466")
         self.grid_columnconfigure(0, weight=1, uniform='group')
         self.grid_columnconfigure(1, weight=12, uniform='group')
 
-        Label(self, text=name,
+        Label(self, text=name, bg="#494466", fg="white",
               wraplength=150).grid(row=0, column=0)
 
         self.serial_container = Frame(self)
@@ -141,13 +155,13 @@ class SerialFrame(Frame):
     """
     def __init__(self, master, name, **kwargs):
         super().__init__(master, **kwargs)
-        self.config(bg='white')
+        self.config(bg='#d3ccff')
         self.grid_propagate(False)
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1, uniform='group')
         self.grid_columnconfigure(1, weight=13, uniform='group')
 
-        Label(self, text=name,
+        Label(self, text=name, fg="black", bg='#d3ccff',
               wraplength=150).grid(row=0, column=0)
 
         self.pack(fill="x")
@@ -213,9 +227,9 @@ class SerialCanvas(Canvas):
         """
         self.width = self.winfo_width()
         self.height = self.winfo_height()
-        self.time_interval = self.master.master.master.master.master.time_interval
+        self.time_interval = self.master.master.master.master.master.master.time_interval
         self.x_step = self.width / self.time_interval
-        self.starting_time = self.master.master.master.master.master.starting_time
+        self.starting_time = self.master.master.master.master.master.master.starting_time
 
     def deselect_rectangles(self, _event) -> None:
         """
@@ -228,7 +242,7 @@ class SerialCanvas(Canvas):
             return # Ne rien faire si le clic a eu lieu sur un texte
 
         for rect in self.selected_rectangles:
-            self.itemconfig(rect.rect, fill='darkred')
+            self.itemconfig(rect.rect, fill='#494466')
         self.selected_rectangles.clear()
 
     def update_timeline(self) -> None:
@@ -270,7 +284,7 @@ class TaskRectangle:
         """
         self.rect = self.canvas_manager.create_rectangle(self.x_pos, self.y_pos,
                                                     self.x_pos + self.width,
-                                                    self.y_pos + self.height, fill='darkred')
+                                                    self.y_pos + self.height, fill='#494466')
         self.text = self.canvas_manager.create_text(self.x_pos + self.width / 2,
                                                     self.y_pos + self.height / 2,
                                                     text=self.name,
@@ -288,20 +302,20 @@ class TaskRectangle:
             # Toggle selection
             if self in self.canvas_manager.selected_rectangles:
                 self.canvas_manager.selected_rectangles.remove(self)
-                self.canvas_manager.itemconfig(self.rect, fill='darkred')
+                self.canvas_manager.itemconfig(self.rect, fill='#494466')
             else:
                 self.canvas_manager.selected_rectangles.append(self)
-                self.canvas_manager.itemconfig(self.rect, fill='red')
+                self.canvas_manager.itemconfig(self.rect, fill='#a499e5')
         else:
             if self not in self.canvas_manager.selected_rectangles:
                 # Deselect all rectangles
                 for rect in self.canvas_manager.selected_rectangles:
-                    self.canvas_manager.itemconfig(rect.rect, fill='darkred')
+                    self.canvas_manager.itemconfig(rect.rect, fill='#494466')
                 self.canvas_manager.selected_rectangles.clear()
 
                 # Select the current rectangle
                 self.canvas_manager.selected_rectangles.append(self)
-                self.canvas_manager.itemconfig(self.rect, fill='red')
+                self.canvas_manager.itemconfig(self.rect, fill='#a499e5')
 
         self.start_x_pos = event.x
         self.start_y_pos = event.y
@@ -320,9 +334,9 @@ class TaskRectangle:
             # Deselect other rectangles except the current one
             for rect in self.canvas_manager.selected_rectangles:
                 if rect != self:
-                    self.canvas_manager.itemconfig(rect.rect, fill='darkred')
+                    self.canvas_manager.itemconfig(rect.rect, fill='#494466')
             self.canvas_manager.selected_rectangles = [self]
-            self.canvas_manager.itemconfig(self.rect, fill='red')
+            self.canvas_manager.itemconfig(self.rect, fill=' "a499e5')
 
         dx_pos = event.x - self.start_x_pos
 
