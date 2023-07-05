@@ -18,10 +18,10 @@ class WorkingFrame(Frame):
     Represents the working frame.
     """
     def __init__(self, master, **kwargs):
-        super().__init__(master, **kwargs)
+        super().__init__(master, bg="black", **kwargs)
         self.master = master
         self.gui_manager = master.manager.manager.manager.gui
-        self.pack(fill='both', expand=True, side='bottom')
+        self.pack(fill='both', expand=True, side='bottom', pady=(0, 5))
         self.update_idletasks()
 
         scrollbar = Scrollbar(self, orient="vertical", width=0)
@@ -124,8 +124,7 @@ class AgendaFrame(Frame):
     Agenda canvas with scrolling.
     """
     def __init__(self, master, scrollable_frame, **kwargs):
-        super().__init__(master=scrollable_frame,
-                         bg='#494466', **kwargs)
+        super().__init__(master=scrollable_frame, **kwargs)
         self.master = master
         self.pack(fill='x')
         self.update_idletasks()
@@ -135,13 +134,12 @@ class StudyFrame(Frame):
     Frame containing a study and its serials.
     """
     def __init__(self, master, name, **kwargs):
-        super().__init__(master, **kwargs)
-        self.config(bg="#494466")
+        super().__init__(master, bg="white", **kwargs)
         self.grid_columnconfigure(0, weight=1, uniform='group')
         self.grid_columnconfigure(1, weight=12, uniform='group')
 
         Label(self, text=name, bg="#494466", fg="white",
-              wraplength=150).grid(row=0, column=0)
+              wraplength=150).grid(row=0, column=0, sticky='nsew', pady=5)
 
         self.serial_container = Frame(self)
         self.serial_container.grid(row=0, column=1, sticky='ew')
@@ -154,15 +152,14 @@ class SerialFrame(Frame):
     Frame containing a serial and its tasks.
     """
     def __init__(self, master, name, **kwargs):
-        super().__init__(master, **kwargs)
-        self.config(bg='#d3ccff')
+        super().__init__(master, bg='white', **kwargs)
         self.grid_propagate(False)
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1, uniform='group')
         self.grid_columnconfigure(1, weight=13, uniform='group')
 
         Label(self, text=name, fg="black", bg='#d3ccff',
-              wraplength=150).grid(row=0, column=0)
+              wraplength=150).grid(row=0, column=0, sticky='nsew', pady=5)
 
         self.pack(fill="x")
         self.update_idletasks()

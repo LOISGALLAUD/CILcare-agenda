@@ -17,22 +17,36 @@ class SchedulePicker(Frame):
     def __init__(self, manager:Frame):
         super().__init__(manager)
         self.manager = manager
-        Label(self, text="Schedule", bg="#FFFFFF").pack(side='top', padx=10)
+        Label(self, text="Schedule", bg="#FFFFFF").pack(side='top')
 
-        # start hour
-        start_hour_frame = Frame(self, bg="red")
-        Label(start_hour_frame, text="Start hour", bg="#FFFFFF").pack(side='top', padx=10)
-        hour_label = LabelEntryPair(start_hour_frame, "Hour")
-        hour_label.pack(side='left', padx=5)
-        minute_label = LabelEntryPair(start_hour_frame, "Minute")
-        minute_label.pack(side='left', padx=5)
+        # start date
+        start_date_frame = Frame(self)
+        Label(start_date_frame, text="Start date", bg="#FFFFFF").pack(side='top')
+        self.start_date_label = LabelEntryPair(start_date_frame, "date")
+        self.start_date_label.pack(side='left',)
 
-        # end hour
-        end_hour_frame = Frame(self, bg="blue")
-        Label(end_hour_frame, text="End hour", bg="#FFFFFF").pack(side='top', padx=10)
-        hour_label = LabelEntryPair(end_hour_frame, "Hour")
-        hour_label.pack(side='left', padx=5)
-        minute_label = LabelEntryPair(end_hour_frame, "Minute")
-        minute_label.pack(side='left', padx=5)
-        start_hour_frame.pack(padx=10)
-        end_hour_frame.pack(padx=10)
+        # end date
+        end_date_frame = Frame(self)
+        Label(end_date_frame, text="End date", bg="#FFFFFF").pack(side='top')
+        self.end_date_label = LabelEntryPair(end_date_frame, "date")
+        self.end_date_label.pack(side='left')
+        start_date_frame.pack()
+        end_date_frame.pack()
+
+    def get_start_date(self):
+        """
+        Returns the start date.
+        """
+        return self.start_date_label.entry.get()
+
+    def get_end_date(self):
+        """
+        Returns the end date.
+        """
+        return self.end_date_label.entry.get()
+
+    def get_schedule(self):
+        """
+        Returns the schedule.
+        """
+        return (self.get_start_date(), self.get_end_date())

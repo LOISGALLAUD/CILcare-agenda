@@ -21,7 +21,7 @@ class StudiesTemplate(Frame):
     templates related to the studies.
     """
     def __init__(self, body=None):
-        super().__init__(body, bg="#FFFFFF")
+        super().__init__(body, bg="#5b557f")
         self.manager = body
         self.pack(fill='both', expand=True, side='top')
         self.update_idletasks()
