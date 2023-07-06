@@ -17,7 +17,7 @@ class SchedulePicker(Frame):
     def __init__(self, manager:Frame):
         super().__init__(manager)
         self.manager = manager
-        Label(self, text="Schedule", bg="#FFFFFF").pack(side='top')
+        Label(self, text="Schedule").pack(side='top')
 
         # start date
         start_date_frame = Frame(self)
