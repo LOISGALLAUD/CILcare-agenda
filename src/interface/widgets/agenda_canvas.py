@@ -12,7 +12,6 @@ from src.utils.graphical_utils import Frame, Canvas, Label, Scrollbar
 
 #-------------------------------------------------------------------#
 
-
 class WorkingFrame(Frame):
     """
     Represents the working frame.
@@ -21,7 +20,7 @@ class WorkingFrame(Frame):
         super().__init__(master, bg="black", **kwargs)
         self.master = master
         self.gui_manager = master.manager.manager.manager.gui
-        self.pack(fill='both', expand=True, side='bottom', pady=(0, 5))
+        self.pack(fill='both', expand=True, side='bottom', pady=(0, 10))
         self.update_idletasks()
 
         scrollbar = Scrollbar(self, orient="vertical", width=0)
@@ -91,30 +90,29 @@ class FooterGraduation(Frame):
     Canvas in which is drawn the time graduation.
     """
     def __init__(self, master, **kwargs):
-        super().__init__(master, bg='#494466', border=0, **kwargs)
-
+        super().__init__(master, bg='#494466', height=50, border=0, **kwargs)
+        self.update_idletasks()
         self.grid_columnconfigure(0, weight=1, uniform='group')
         self.grid_columnconfigure(1, weight=12, uniform='group')
 
-        Label(self, text="TEMPS",
-              wraplength=150).grid(row=0, column=0)
 
-        serial_container = Frame(self, border=0)
+        Label(self, text="TEMPS", bg="#494466", fg="white",
+              wraplength=150).grid(row=0, column=0, sticky='nsew', pady=5)
+        serial_container = Frame(self, border=0, height=50)
         serial_container.grid(row=0, column=1, sticky='nsew')
         serial_container.grid_columnconfigure(0, weight=1, uniform='group')
         serial_container.grid_columnconfigure(1, weight=13, uniform='group')
 
-        Label(serial_container, text="SERIALS",
-                wraplength=150).grid(row=0, column=0, sticky='nsew')
-        canvas = Canvas(serial_container, bg="white")
+        Label(serial_container, text="UNITE DE TEMPS", bg="#d3ccff", fg="black",
+                wraplength=50).grid(row=0, column=0, sticky='nsew')
+        canvas = Canvas(serial_container, bg="white", height=50)
         canvas.grid(row=0, column=1, sticky='nsew', padx=(0, 2))
 
-        self.pack(fill="x", side="bottom")
-        self.grid_propagate(False)
-        self.update_idletasks()
+        self.pack(fill="both", side="bottom", pady=(0, 10))
         self.width = self.winfo_width()
         self.height = 50
-        self.config(height=self.height)
+        self.config(height=50)
+        self.update_idletasks()
 
         WorkingFrame.create_timeline(WorkingFrame, canvas, self.master.time_interval,
                                     self.master.starting_time, 1)

@@ -8,6 +8,8 @@ of the application.
 
 #-------------------------------------------------------------------#
 
+import os
+from PIL import Image, ImageTk
 from src.utils.graphical_utils import Tk, Frame, BOTH
 from src.interface.menus.login_menu import LoginMenu
 from src.interface.menus.main_menu import MainMenu
@@ -26,20 +28,21 @@ class GUI(Tk):
         self.title(app.NAME)
         self.attributes("-fullscreen", True)
         self.resizable = False
-        self.config(bg="black")
+        self.protocol("WM_DELETE_WINDOW", self.close)
 
+        self.coeffx = self.winfo_screenheight() // 1080
+        self.coeffy = self.winfo_screenwidth() // 1920
+
+        self.cilcare_logo = None
         self.login_menu = None
         self.current_menu = None
 
+        self.load_images()
         self.setup_menus()
 
-    def start(self) -> bool:
-        """
-        Displays the GUI.
-        """
-        self.loggers.log.info("GUI started")
+        # Set the GUI reference in the application
+        setattr(self.app, "gui", self)
         self.mainloop()
-        return True
 
     def close(self) -> bool:
         """
@@ -74,3 +77,23 @@ class GUI(Tk):
         self.current_menu = next_menu
         self.loggers.log.debug(f"({type(next_menu).__name__})")
         return True
+
+    def load_images(self) -> None:
+        """
+        Load every image of the application.
+        """
+        self.cilcare_logo = self.open_image("cilcare_logo.png", 170, 170)
+
+
+    def open_image(self, file_name: str,
+                    width:int=None, height:int=None) -> ImageTk.PhotoImage:
+        """
+        This function loads an image from the given path.
+        """
+        image_path = os.path.join(os.getcwd(), "data", "images", file_name)
+        image = Image.open(image_path)
+        if width and height:
+            image = image.resize((width*self.coeffx, height*self.coeffy), Image.ANTIALIAS)
+
+        photo = ImageTk.PhotoImage(image)
+        return photo

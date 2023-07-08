@@ -36,16 +36,15 @@ class StudiesTemplate(Frame):
 
         # By default, the body contains the days off timeline and the study timeline
         self.footer_graduation = FooterGraduation(self)
-        self.setup_studies_frame()
-        self.setup_off_days_frame()
+        # self.setup_studies_frame()
+        # self.setup_off_days_frame()
         self.compact_btn = ButtonApp(self, text="Compacter",
                                          command=self.compact_navbar, custom_theme="Green")
 
         self.compact_btn.pack(fill='both', side='top')
 
-        self.rowconfigure(0, weight=10)
-        self.rowconfigure(1, weight=1)
-        self.rowconfigure(2, weight=10)
+        self.rowconfigure(0, weight=12)
+        self.rowconfigure(1, weight=12)
         self.rowconfigure(2, weight=1)
         self.columnconfigure(0, weight=1)
 
@@ -63,7 +62,7 @@ class StudiesTemplate(Frame):
         Expands the navbar to the left of the screen.
         """
         self.compact_btn.config(text="Compacter", command=self.compact_navbar)
-        self.days_off_frame.pack(fill='both', expand=True, side='top')
+        self.days_off_frame.pack(fill='both', expand=True, side='top', pady=(0, 10))
 
     def setup_off_days_frame(self) -> None:
         """

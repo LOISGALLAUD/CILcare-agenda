@@ -44,9 +44,6 @@ class Agenda:
 
         # Setup the GUI
         self.gui = GUI(self)
-        self.gui.protocol("WM_DELETE_WINDOW", self.close)
-
-        self.gui.start()
 
     def close(self) -> bool:
         """
