@@ -6,7 +6,9 @@ Describes the footer of the shopping menu.
 
 #-------------------------------------------------------------------#
 
-from src.utils.graphical_utils import Frame
+from src.utils.graphical_utils import Frame, Label
+from src.interface.widgets.schedule_picker import SchedulePicker
+from src.interface.widgets.filter import Filters
 
 #-------------------------------------------------------------------#
 
@@ -18,7 +20,30 @@ class Footer(Frame):
     """
     def __init__(self, manager=None):
         super().__init__(manager)
-        self.shopping_manager = manager.manager
-        self.loggers = self.shopping_manager.gui.app.loggers
-        self.grid_propagate(False)
-        self.configure(bg="#2bb5a6")
+        self.manager = manager
+        self.grid(row=2, column=0, sticky='nsew')
+        self.update_idletasks()
+        self.study_manager = manager.manager
+        self.loggers = self.study_manager.gui.app.loggers
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=5)
+        self.grid_columnconfigure(1, weight=5)
+        # self.grid_columnconfigure(2, weight=1)
+        self.configure(bg="#8c77ff")
+
+        self.schedule_picker = SchedulePicker(self)
+        self.schedule_picker.grid(row=0, column=0, sticky="nsew", padx=(0, 5), pady=(0, 10))
+
+        self.filters = Filters(self)
+        self.filters.grid(row=0, column=1, sticky="nsew", padx=(0, 5), pady=(0, 10))
+
+        # logo_label = Label(self, image=self.study_manager.gui.cilcare_logo,
+        #                    border=0, bg="#8c77ff", highlightthickness=0)
+        # logo_label.grid(row=0, column=2, sticky="nsew")
+
+    def filter_archived_tasks(self):
+        """
+        Filter the archived tasks.
+        """
+        self.loggers.log.debug("Filter archived tasks")
+        # self.study_manager.filter_archived_tasks(self.archived.get())

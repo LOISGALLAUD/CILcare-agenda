@@ -22,7 +22,7 @@ class EntryApp(Entry):
         self.name = name
         self.hidden = hidden
 
-        self.config(bg="#A91B60", fg="white",
+        self.config(bg="#5b557f", fg="white",
                     insertbackground="white", font=("system", 12),
                     borderwidth=0, highlightthickness=0,)
         self.bind("<FocusIn>", self.on_focus_in)

@@ -14,25 +14,28 @@ class TaskRectangle:
     """
     Represents a task on the canvas.
     """
+    height = 40
     def __init__(self, canvas_manager: Canvas, name: str,
                  starting_hour: int, ending_hour:int) -> None:
-        self.start_x_pos, self.start_y_pos = None, None
-        self.is_dragging = False  # Indicateur de déplacement en cours
         self.canvas_manager = canvas_manager
+        self.is_dragging = False  # Indicateur de déplacement en cours
+
         self.name = name
         self.x_pos = self.get_x_pos(starting_hour)
         self.width = self.get_x_pos(ending_hour) - self.x_pos
-        self.y_pos = self.canvas_manager.master.winfo_reqheight() / 2 # arbitrary constant
-        self.height = 40 # constant
+        self.y_pos = self.canvas_manager.height / 2 # arbitrary constant
+
+        self.start_x_pos, self.start_y_pos = None, None
         self.rect = None
         self.text = None
+
         self.draw_task()
 
     def get_x_pos(self, starting_hour: int) -> int:
         """
         Convert the starting hour to the x position on the canvas.
         """
-        return starting_hour * self.canvas_manager.master.x_step
+        return starting_hour * self.canvas_manager.x_step
 
     def draw_task(self) -> None:
         """
@@ -99,9 +102,9 @@ class TaskRectangle:
 
         for rect in self.canvas_manager.selected_rectangles:
             # Move the rectangle with the step on the X axis within a range
-            if abs(dx_pos) >= rect.canvas_manager.master.x_step:
-                steps = int(dx_pos / rect.canvas_manager.master.x_step)
-                dx_pos = steps * rect.canvas_manager.master.x_step
+            if abs(dx_pos) >= rect.canvas_manager.x_step:
+                steps = int(dx_pos / rect.canvas_manager.x_step)
+                dx_pos = steps * rect.canvas_manager.x_step
                 rect.canvas_manager.move(rect.rect, dx_pos, 0)
                 rect.start_x_pos = event.x
 

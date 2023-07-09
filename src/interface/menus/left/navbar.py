@@ -28,7 +28,7 @@ class Navbar(Frame):
         self.current_toggle = self.toggles[0]
 
         self.grid_propagate(False)
-        self.configure(bg="#F40B7C")
+        self.configure(bg="#d3ccff")
         self.setup_buttons()
 
     def setup_buttons(self) -> bool:

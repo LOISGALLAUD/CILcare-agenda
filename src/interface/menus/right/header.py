@@ -18,10 +18,13 @@ class Header(Frame):
     def __init__(self, manager=None) -> None:
         super().__init__(manager)
         self.manager = manager
+        self.grid(row=0, column=0, sticky='nsew')
+        self.update_idletasks()
+
         # Default toggle
         self.current_toggle = None
         self.propagate(False)
-        self.configure(bg="#2bb5a6")
+        self.configure(bg="#8c77ff")
 
         self.add_study_btn = None
         self.add_days_off_btn = None

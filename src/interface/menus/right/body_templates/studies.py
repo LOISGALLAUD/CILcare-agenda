@@ -11,6 +11,7 @@ from src.utils.graphical_utils import Frame, Canvas, Label, ButtonApp, Text
 from src.utils.graphical_utils import LabelEntryPair, Serials, IntVar, Checkbutton
 from src.interface.widgets.schedule_picker import SchedulePicker
 from src.interface.widgets.right_click import RCMSerial, RCMStudy
+from src.interface.widgets.agenda_canvas import WorkingFrame, FooterGraduation
 
 #-------------------------------------------------------------------#
 
@@ -20,33 +21,60 @@ class StudiesTemplate(Frame):
     templates related to the studies.
     """
     def __init__(self, body=None):
-        super().__init__(body)
+        super().__init__(body, bg="#5b557f")
         self.manager = body
-        self.configure(bg="#FFFFFF")
-        self.width = None
-        self.height = None
+        self.pack(fill='both', expand=True, side='top')
+        self.update_idletasks()
+
+        self.time_interval = 24  # 24 hours
+        self.starting_time = 0
+
         self.days_off_frame = None
         self.study_frame = None
         self.add_study = None
         self.add_days_off = None
 
         # By default, the body contains the days off timeline and the study timeline
-        self.setup_off_days_frame()
-        self.setup_studies_frame()
+        self.footer_graduation = FooterGraduation(self)
+        # self.setup_studies_frame()
+        # self.setup_off_days_frame()
+        self.compact_btn = ButtonApp(self, text="Compacter",
+                                         command=self.compact_navbar, custom_theme="Green")
+
+        self.compact_btn.pack(fill='both', side='top')
+
+        self.rowconfigure(0, weight=12)
+        self.rowconfigure(1, weight=12)
+        self.rowconfigure(2, weight=1)
+        self.columnconfigure(0, weight=1)
+
+
+    def compact_navbar(self) -> None:
+        """
+        Compacts the navbar to the left of the screen.
+        """
+        self.days_off_frame.pack_forget()
+        self.compact_btn.config(text="Etendre", command=self.expand_navbar)
+
+
+    def expand_navbar(self) -> None:
+        """
+        Expands the navbar to the left of the screen.
+        """
+        self.compact_btn.config(text="Compacter", command=self.compact_navbar)
+        self.days_off_frame.pack(fill='both', expand=True, side='top', pady=(0, 10))
 
     def setup_off_days_frame(self) -> None:
         """
         Setup the template of days off.
         """
         self.days_off_frame = DaysOffTimelineTemplate(self)
-        self.days_off_frame.pack(fill='both', expand=True, side='top')
 
     def setup_studies_frame(self) -> None:
         """
         Setup the template of studies.
         """
         self.study_frame = StudyTimelineTemplate(self)
-        self.study_frame.pack(fill='both', expand=True, side='top')
 
     def from_addstudy_to_studies_frame(self) -> None:
         """
@@ -90,111 +118,91 @@ class StudiesTemplate(Frame):
         self.add_days_off = AddDaysOffTemplate(self)
         self.add_days_off.pack(fill='both', expand=True, side='top', padx=10, pady=10)
 
-
 #-------------------------------------------------------------------#
 
-class DaysOffTimelineTemplate(Frame):
+class DaysOffTimelineTemplate(WorkingFrame):
     """
     Contains the timeline of the days off.
     """
     def __init__(self, body=None):
         super().__init__(body)
         self.manager = body
-        self.timeline_width = None
-        self.timeline_height = None
-        self.timeline = None
+        self.update_idletasks()
         self.right_click_menu_study = RCMStudy(self)
+        self.bind("<Button-3>", self.right_click_menu_study.show)
 
-        self.setup_labels()
-        self.setup_timeline_canvas()
+        study_frame1 = self.add_study("Study 1")
+        serial_frame1 = self.add_serial(study_frame1, "Serial 1")
+        serial_frame2 = self.add_serial(study_frame1, "Serial 2")
+        self.add_task(serial_frame1)
+        self.add_task(serial_frame2)
+        study_frame2 = self.add_study("Study 2")
+        serial_frame12 = self.add_serial(study_frame2, "Serial 1")
+        serial_frame22 = self.add_serial(study_frame2, "Serial 2")
+        self.add_task(serial_frame12)
+        self.add_task(serial_frame22)
+        study_frame1 = self.add_study("Study 1")
+        serial_frame1 = self.add_serial(study_frame1, "Serial 1")
+        serial_frame2 = self.add_serial(study_frame1, "Serial 2")
+        self.add_task(serial_frame1)
+        self.add_task(serial_frame2)
+        study_frame2 = self.add_study("Study 2")
+        serial_frame12 = self.add_serial(study_frame2, "Serial 1")
+        serial_frame22 = self.add_serial(study_frame2, "Serial 2")
+        self.add_task(serial_frame12)
+        self.add_task(serial_frame22)
 
-    def setup_labels(self) -> None:
-        """
-        Setup the labels of the timeline.
-        """
-        Label(self, text="Days off / Availabilities", bg="#FFFFFF",
-              fg="#000000", font=("System", 12)).pack(fill='both',
-                                                      side='left', padx=10, pady=10)
-
-    def setup_timeline_canvas(self) -> None:
-        """
-        Setup the canvas of the timeline.
-        """
-        self.timeline = Canvas(self, bg="#FFFFFF")
-        self.timeline.pack(fill='both', expand=True, side='left', padx=10, pady=10)
-
-        # Bind the right click menu to the canvas
-        self.timeline.bind("<Button-3>", self.right_click_menu_study.show)
-
-        # Responsive design
-        self.timeline.bind("<Configure>", self.draw_timeline)
-
-    def draw_timeline(self, _event=None) -> None:
-        """
-        Draw a line from left to right.
-        """
-        self.manager.manager.manager.manager.gui.update()
-        self.timeline_width = self.timeline.winfo_width()
-        self.timeline_height = self.timeline.winfo_height()
-        self.timeline.create_line(0, self.timeline_height//5,
-                                self.timeline_width, self.timeline_height//5,
-                                fill="#000000", width=5)
 
 #-------------------------------------------------------------------#
 
-class StudyTimelineTemplate(Frame):
+class StudyTimelineTemplate(WorkingFrame):
     """
     Contains the timeline of the days off.
     """
     def __init__(self, body=None):
         super().__init__(body)
         self.manager = body
-        self.timeline_width = None
-        self.timeline_height = None
-        self.timeline = None
+        self.update_idletasks()
         self.right_click_menu_study = RCMStudy(self)
         self.right_click_menu_serial = RCMSerial(self)
-
-        self.setup_labels()
-        self.setup_timeline_canvas()
-
-    def setup_labels(self) -> None:
-        """
-        Setup the labels of the timeline.
-        """
-        Label(self, text="Study", bg="#FFFFFF",
-              fg="#000000", font=("System", 12)).pack(fill='both',
-                                                      side='left', padx=10, pady=10)
-        frame = Frame(self, bg="#FFFFFF")
-        frame.bind("<Button-3>", self.right_click_menu_serial.show)
-
-        Label(frame, text="Serial1", bg="#FFFFFF").pack(fill='both', side='top', padx=10, pady=10)
-        Label(frame, text="Serial2", bg="#FFFFFF").pack(fill='both', side='top', padx=10, pady=10)
-        frame.pack(fill='both', side='left', padx=10, pady=10)
-
-    def setup_timeline_canvas(self) -> None:
-        """
-        Setup the canvas of the timeline.
-        """
-        self.timeline = Canvas(self, bg="#FFFFFF")
-        self.timeline.pack(fill='both', expand=True, side='left', padx=10, pady=10)
-
-        # Bind the right click menu to the canvas
-        self.timeline.bind("<Button-3>", self.right_click_menu_study.show)
-
-        # Responsive design
-        self.timeline.bind("<Configure>", self.draw_timeline)
-
-    def draw_timeline(self, _event=None) -> None:
-        """
-        Draw a line from left to right.
-        """
-        self.manager.manager.manager.manager.gui.update()
-        self.timeline_width = self.timeline.winfo_width()
-        self.timeline_height = self.timeline.winfo_height()
-        self.timeline.create_line(0, self.timeline_height//5,
-                         self.timeline_width, self.timeline_height//5,
-                         fill="#000000", width=5)
+        study_frame1 = self.add_study("Study 1")
+        serial_frame1 = self.add_serial(study_frame1, "Serial 1")
+        serial_frame2 = self.add_serial(study_frame1, "Serial 2")
+        self.add_task(serial_frame1)
+        study_frame2 = self.add_study("Study 2")
+        serial_frame12 = self.add_serial(study_frame2, "Serial 1")
+        serial_frame22 = self.add_serial(study_frame2, "Serial 2")
+        self.add_task(serial_frame12)
+        self.add_task(serial_frame22)
+        study_frame1 = self.add_study("Study 1")
+        serial_frame1 = self.add_serial(study_frame1, "Serial 1")
+        serial_frame2 = self.add_serial(study_frame1, "Serial 2")
+        self.add_task(serial_frame1)
+        self.add_task(serial_frame2)
+        study_frame2 = self.add_study("Study 2")
+        serial_frame12 = self.add_serial(study_frame2, "Serial 1")
+        serial_frame22 = self.add_serial(study_frame2, "Serial 2")
+        self.add_task(serial_frame12)
+        self.add_task(serial_frame22)
+        study_frame1 = self.add_study("Study 1")
+        serial_frame1 = self.add_serial(study_frame1, "Serial 1")
+        serial_frame2 = self.add_serial(study_frame1, "Serial 2")
+        self.add_task(serial_frame1)
+        study_frame2 = self.add_study("Study 2")
+        serial_frame12 = self.add_serial(study_frame2, "Serial 1")
+        serial_frame22 = self.add_serial(study_frame2, "Serial 2")
+        self.add_task(serial_frame12)
+        self.add_task(serial_frame22)
+        study_frame1 = self.add_study("Study 1")
+        serial_frame1 = self.add_serial(study_frame1, "Serial 1")
+        serial_frame2 = self.add_serial(study_frame1, "Serial 2")
+        self.add_task(serial_frame1)
+        self.add_task(serial_frame2)
+        study_frame2 = self.add_study("Study 2")
+        serial_frame12 = self.add_serial(study_frame2, "Serial 1")
+        serial_frame22 = self.add_serial(study_frame2, "Serial 2")
+        self.add_task(serial_frame12)
+        self.add_task(serial_frame22)
 
 #-------------------------------------------------------------------#
 
