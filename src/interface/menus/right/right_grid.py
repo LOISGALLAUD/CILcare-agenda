@@ -21,9 +21,9 @@ class RightGrid(Frame):
     def __init__(self, main_menu=None):
         super().__init__(main_menu, bg='white')
         self.manager = main_menu
+        self.grid_propagate(False)
         self.grid(row=0, column=1, sticky='nsew')
         self.update_idletasks()
-        self.grid_propagate(False)
 
         # Setup the grid
         self.grid_columnconfigure(0, weight=1)
