@@ -28,7 +28,7 @@ class RightGrid(Frame):
         # Setup the grid
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
-        self.grid_rowconfigure(1, weight=10)
+        self.grid_rowconfigure(1, weight=12)
         self.grid_rowconfigure(2, weight=1)
 
         # Setup the header inside the right grid

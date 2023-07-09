@@ -82,8 +82,7 @@ class GUI(Tk):
         """
         Load every image of the application.
         """
-        self.cilcare_logo = self.open_image("cilcare_logo.png", 170, 170)
-
+        self.cilcare_logo = self.open_image("cilcare_logo.png", 100, 100)
 
     def open_image(self, file_name: str,
                     width:int=None, height:int=None) -> ImageTk.PhotoImage:

@@ -25,7 +25,7 @@ class Body(Frame):
         super().__init__(right_grid, width=right_grid.winfo_reqwidth(),
                          height=right_grid.winfo_reqheight(), bg='white')
         self.manager = right_grid
-        self.propagate(False)
+        self.grid_propagate(False)
         self.grid(row=1, column=0, sticky='nsew')
         self.update_idletasks()
 

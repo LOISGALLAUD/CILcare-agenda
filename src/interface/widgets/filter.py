@@ -6,7 +6,8 @@ Widget that allows to filter the task by category.
 
 #-------------------------------------------------------------------#
 
-from src.utils.graphical_utils import Frame, Combobox, StringVar, ButtonApp, Label
+from src.utils.graphical_utils import Frame, Combobox, StringVar
+from src.utils.graphical_utils import ButtonApp, Label, Checkbutton, IntVar
 
 #-------------------------------------------------------------------#
 
@@ -39,15 +40,27 @@ class Filters(Frame):
         """
         Constructor of the Filters class.
         """
-        super().__init__(master, bg="#8c77ff")
+        super().__init__(master, bg="#494466")
         self.master = master
         self.db_manager = self.master.master.manager.gui.app.db_cursor
+        Label(self, text="Filters", bg="#494466",
+              fg="white").pack(side='top', fill="both", expand=True)
+
         self.confirm_filtering_btn = ButtonApp(self, text="Confirm filters", custom_theme="Green",
                                                   command=self.confirm_filtering)
         self.confirm_filtering_btn.pack(side="right", fill="both", expand=True)
 
         combos_frame = Frame(self, bg="#494466")
         combos_frame.pack(side="left")
+
+        self.archived = IntVar()
+        self.filter_archived = Checkbutton(self, text="Show Archived",
+                                           bg="white",
+                                           highlightbackground="#494466",
+                                           highlightcolor="#494466",
+                                           highlightthickness=0,
+                                           variable=self.archived)
+        self.filter_archived.pack(side="left", padx=10)
 
         up_frame = Frame(combos_frame, bg="#494466")
         study_options = ["All", "CILcare", "CILcare - CILcare"]

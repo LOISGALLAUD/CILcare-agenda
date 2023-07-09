@@ -107,6 +107,11 @@ class FooterGraduation(Frame):
                 wraplength=50).grid(row=0, column=0, sticky='nsew')
         canvas = Canvas(serial_container, bg="white", height=50)
         canvas.grid(row=0, column=1, sticky='nsew', padx=(0, 2))
+        horizontal_scrollbar = Scrollbar(serial_container, orient="horizontal", width=10)
+        horizontal_scrollbar.grid(row=1, column=1, sticky='nsew')
+        canvas.config(xscrollcommand=horizontal_scrollbar.set)
+        horizontal_scrollbar.config(command=canvas.xview)
+        serial_container.update_idletasks()
 
         self.pack(fill="both", side="bottom", pady=(0, 10))
         self.width = self.winfo_width()
