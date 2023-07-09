@@ -98,20 +98,20 @@ class FooterGraduation(Frame):
 
         Label(self, text="TEMPS", bg="#494466", fg="white",
               wraplength=150).grid(row=0, column=0, sticky='nsew', pady=5)
-        serial_container = Frame(self, border=0, height=50)
+        serial_container = Frame(self, border=0, height=50, bg='#d3ccff')
         serial_container.grid(row=0, column=1, sticky='nsew')
         serial_container.grid_columnconfigure(0, weight=1, uniform='group')
         serial_container.grid_columnconfigure(1, weight=13, uniform='group')
 
         Label(serial_container, text="UNITE DE TEMPS", bg="#d3ccff", fg="black",
                 wraplength=50).grid(row=0, column=0, sticky='nsew')
+
         canvas = Canvas(serial_container, bg="white", height=50)
         canvas.grid(row=0, column=1, sticky='nsew', padx=(0, 2))
         horizontal_scrollbar = Scrollbar(serial_container, orient="horizontal", width=10)
         horizontal_scrollbar.grid(row=1, column=1, sticky='nsew')
         canvas.config(xscrollcommand=horizontal_scrollbar.set)
         horizontal_scrollbar.config(command=canvas.xview)
-        serial_container.update_idletasks()
 
         self.pack(fill="both", side="bottom", pady=(0, 10))
         self.width = self.winfo_width()
