@@ -11,7 +11,8 @@ from src.utils.graphical_utils import Frame, Canvas, Label, ButtonApp, Text
 from src.utils.graphical_utils import LabelEntryPair, Serials, IntVar, Checkbutton
 from src.interface.widgets.schedule_picker import SchedulePicker
 from src.interface.widgets.right_click import RCMSerial, RCMStudy
-from src.interface.widgets.agenda_canvas import WorkingFrame, FooterGraduation
+from src.interface.widgets.agenda_canvas import WorkingFrame
+from src.interface.widgets.footer_grad import FooterFrame
 
 #-------------------------------------------------------------------#
 
@@ -26,7 +27,7 @@ class StudiesTemplate(Frame):
         self.pack(fill='both', expand=True, side='top')
         self.update_idletasks()
 
-        self.time_interval = 24  # 24 hours
+        self.time_interval = 80  # 24 hours
         self.starting_time = 0
 
         self.days_off_frame = None
@@ -35,9 +36,9 @@ class StudiesTemplate(Frame):
         self.add_days_off = None
 
         # By default, the body contains the days off timeline and the study timeline
-        self.footer_graduation = FooterGraduation(self)
-        self.setup_studies_frame()
-        self.setup_off_days_frame()
+        self.study_timeline = self.setup_studies_frame()
+        self.daysoff_timeline = self.setup_off_days_frame()
+        self.footer_graduation = FooterFrame(self, [self.study_timeline, self.daysoff_timeline])
         self.compact_btn = ButtonApp(self, text="Compacter",
                                          command=self.compact_navbar, custom_theme="Green")
 
@@ -68,13 +69,13 @@ class StudiesTemplate(Frame):
         """
         Setup the template of days off.
         """
-        self.days_off_frame = DaysOffTimelineTemplate(self)
+        return DaysOffTimelineTemplate(self)
 
     def setup_studies_frame(self) -> None:
         """
         Setup the template of studies.
         """
-        self.study_frame = StudyTimelineTemplate(self)
+        return StudyTimelineTemplate(self)
 
     def from_addstudy_to_studies_frame(self) -> None:
         """

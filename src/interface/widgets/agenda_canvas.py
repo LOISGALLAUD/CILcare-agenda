@@ -19,19 +19,21 @@ class WorkingFrame(Frame):
     def __init__(self, master, **kwargs):
         super().__init__(master, bg="black", **kwargs)
         self.master = master
-        self.gui_manager = master.manager.manager.manager.gui
+        self.coeff_config = self.master.time_interval//24
         self.pack(fill='both', expand=True, side='bottom', pady=(0, 10))
         self.update_idletasks()
 
-        scrollbar = Scrollbar(self, orient="vertical", width=0)
+        self.serial_canvases = []
+
+        scrollbar = Scrollbar(self, orient="vertical", width=20)
         scrollbar.pack(side="right", fill="y")
-        self.canvas = Canvas(self, yscrollcommand=scrollbar.set, border=0)
+        self.canvas = Canvas(self, yscrollcommand=scrollbar.set)
         self.canvas.pack(side="top", fill="both", expand=True)
         scrollbar.config(command=self.canvas.yview)
         self.inner_frame = Frame(self.canvas, border=0, borderwidth=0, highlightthickness=0)
         self.update_idletasks()
         self.canvas.create_window((0, 0), window=self.inner_frame,
-                                  anchor='nw', width=self.canvas.winfo_width())
+                                  anchor='nw', width=self.get_correct_width())
         self.canvas.bind('<Configure>',
                     lambda event: self.canvas.configure(scrollregion=self.canvas.bbox('all')))
 
@@ -39,17 +41,8 @@ class WorkingFrame(Frame):
         self.agenda_frame.bind('<Configure>',
                         lambda event: self.canvas.configure(scrollregion=self.canvas.bbox('all')))
 
-        self.gui_manager.bind('<Left>', lambda event: self.shift_timeline(-1))
-        self.gui_manager.bind('<Right>', lambda event: self.shift_timeline(1))
 
-    def shift_timeline(self, direction):
-        """
-        Décale les graduations de temps dans la direction spécifiée.
-        """
-        self.master.starting_time += direction
-        self.create_timeline(self.canvas, self.master.time_interval, self.master.starting_time, )
-
-    def create_timeline(self, canvas, time_interval, start_time, show_time=False):
+    def create_timeline(self, canvas, time_interval):
         """
         Creates the timeline.
         """
@@ -61,11 +54,14 @@ class WorkingFrame(Frame):
         for i in range(time_interval):
             x_pos = i * x_step
             canvas.create_line(x_pos, 0, x_pos, height, fill='#d9d9d9')
-            time_label = start_time + i
-            if show_time:
-                canvas.create_text(x_pos + x_step / 4, 20,
-                                   text=str(time_label) + "h",
-                                   anchor='n', fill='grey', tags="timeline")
+
+    def get_correct_width(self):
+        """
+        Return a pertinent width for the canvas knowing the time
+        interval, the starting time and the width of the window.
+        """
+        x_step = self.master.winfo_width() / 25
+        return self.master.time_interval * x_step
 
     def add_study(self, study_name) -> None:
         """
@@ -77,7 +73,9 @@ class WorkingFrame(Frame):
         """
         Adds a serial to the timeline.
         """
-        return SerialFrame(study_frame.serial_container, serial_name)
+        serial_frame = SerialFrame(study_frame.serial_container, serial_name)
+        self.serial_canvases.append(serial_frame.serial_canvas)
+        return serial_frame
 
     def add_task(self, serial_frame) -> None:
         """
@@ -85,42 +83,6 @@ class WorkingFrame(Frame):
         """
         TaskRectangle(serial_frame.serial_canvas, 'Task name', 8, 12)
 
-class FooterGraduation(Frame):
-    """
-    Canvas in which is drawn the time graduation.
-    """
-    def __init__(self, master, **kwargs):
-        super().__init__(master, bg='#494466', height=50, border=0, **kwargs)
-        self.update_idletasks()
-        self.grid_columnconfigure(0, weight=1, uniform='group')
-        self.grid_columnconfigure(1, weight=12, uniform='group')
-
-
-        Label(self, text="TEMPS", bg="#494466", fg="white",
-              wraplength=150).grid(row=0, column=0, sticky='nsew', pady=5)
-        serial_container = Frame(self, border=0, height=50, bg='#d3ccff')
-        serial_container.grid(row=0, column=1, sticky='nsew')
-        serial_container.grid_columnconfigure(0, weight=1, uniform='group')
-        serial_container.grid_columnconfigure(1, weight=13, uniform='group')
-
-        Label(serial_container, text="UNITE DE TEMPS", bg="#d3ccff", fg="black",
-                wraplength=50).grid(row=0, column=0, sticky='nsew')
-
-        canvas = Canvas(serial_container, bg="white", height=50)
-        canvas.grid(row=0, column=1, sticky='nsew', padx=(0, 2))
-        horizontal_scrollbar = Scrollbar(serial_container, orient="horizontal", width=10)
-        horizontal_scrollbar.grid(row=1, column=1, sticky='nsew')
-        canvas.config(xscrollcommand=horizontal_scrollbar.set)
-        horizontal_scrollbar.config(command=canvas.xview)
-
-        self.pack(fill="both", side="bottom", pady=(0, 10))
-        self.width = self.winfo_width()
-        self.height = 50
-        self.config(height=50)
-        self.update_idletasks()
-
-        WorkingFrame.create_timeline(WorkingFrame, canvas, self.master.time_interval,
-                                    self.master.starting_time, 1)
 
 class AgendaFrame(Frame):
     """
@@ -138,11 +100,12 @@ class StudyFrame(Frame):
     """
     def __init__(self, master, name, **kwargs):
         super().__init__(master, bg="white", **kwargs)
+        self.coeff_config = master.master.coeff_config
         self.grid_columnconfigure(0, weight=1, uniform='group')
-        self.grid_columnconfigure(1, weight=12, uniform='group')
+        self.grid_columnconfigure(1, weight=12*self.coeff_config, uniform='group')
 
         Label(self, text=name, bg="#494466", fg="white",
-              wraplength=150).grid(row=0, column=0, sticky='nsew', pady=5)
+              wraplength=150).grid(row=0, column=0, sticky='nsew')
 
         self.serial_container = Frame(self)
         self.serial_container.grid(row=0, column=1, sticky='ew')
@@ -159,7 +122,7 @@ class SerialFrame(Frame):
         self.grid_propagate(False)
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1, uniform='group')
-        self.grid_columnconfigure(1, weight=13, uniform='group')
+        self.grid_columnconfigure(1, weight=13*self.master.master.coeff_config, uniform='group')
 
         Label(self, text=name, fg="black", bg='#d3ccff',
               wraplength=150).grid(row=0, column=0, sticky='nsew', pady=5)
@@ -189,7 +152,7 @@ class SerialCanvas(Canvas):
         self.update_idletasks()
         self.get_time_graduations()
         self.master.master.master.master.master.create_timeline(
-            self, self.time_interval, self.starting_time)
+            self, self.time_interval)
         self.bind('<Button-1>', self.deselect_rectangles)
 
         self.bind('<Enter>', self.bind_mousewheel)
