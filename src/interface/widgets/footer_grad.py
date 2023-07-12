@@ -22,10 +22,9 @@ class FooterFrame(Frame):
         self.study_timeline = study_timeline
         self.daysoff_timeline = daysoff_timeline
         self.coeff_config = 80//24
-        self.pack(fill='both', side='bottom', expand=True)
+        self.grid(row=3, column=0, sticky='nsew')
         self.propagate(False)
         self.config(height=70)
-        self.update_idletasks()
 
         scrollbar = Scrollbar(self, orient="horizontal",
                               width=20)
@@ -39,7 +38,7 @@ class FooterFrame(Frame):
         self.update_idletasks()
 
         self.canvas.create_window((0, 0), window=inner_frame, anchor='w',
-                                  width=self.get_correct_width())
+                                  width=study_timeline.get_correct_width())
         self.canvas.bind('<Configure>', lambda event: self.canvas.configure
                          (scrollregion=self.canvas.bbox('all')))
         self.graduation_frame = GraduationFrame(self, inner_frame)
@@ -110,7 +109,7 @@ class UnityFrame(Frame):
         self.grid_columnconfigure(0, weight=1, uniform='group')
         self.grid_columnconfigure(1, weight=13*self.master.master.master.master.coeff_config,
                                   uniform='group')
-        Label(self, text="UNITE DE TEMPS", bg="#494466", fg="white",
+        Label(self, text="UNITE DE TEMPS", bg="#d3ccff", fg="black",
               wraplength=150).grid(row=0, column=0, sticky='nsew')
 
         self.pack(fill='x')

@@ -18,11 +18,11 @@ class WorkingFrame(Frame):
     Represents the working frame.
     """
 
-    def __init__(self, master, **kwargs):
+    def __init__(self, master, row, **kwargs):
         super().__init__(master, bg="black", **kwargs)
         self.master = master
         self.coeff_config = self.master.time_interval//24
-        self.pack(fill='both', expand=True, side='top', pady=(0, 10))
+        self.grid(row=row, column=0, sticky='nsew', pady=(0, 10))
         self.update_idletasks()
 
         self.serial_canvases = []

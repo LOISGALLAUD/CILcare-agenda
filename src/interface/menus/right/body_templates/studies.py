@@ -38,25 +38,29 @@ class StudiesTemplate(Frame):
         self.add_days_off = None
 
         # By default, the body contains the days off timeline and the study timeline
-        self.daysoff_timeline = self.setup_off_days_frame()
-        self.study_timeline = self.setup_studies_frame()
+        self.days_off_frame = self.setup_off_days_frame()
+        self.study_frame = self.setup_studies_frame()
         self.footer_graduation = FooterFrame(
-            self, self.study_timeline, self.daysoff_timeline)
-
+            self, self.study_frame, self.days_off_frame)
         self.compact_btn = ButtonApp(self, text="Compacter",
                                      command=self.compact_navbar, custom_theme="Green")
-        self.compact_btn.pack(fill='both', side='top')
+        self.compact_btn.grid(row=0, column=0, sticky='nsew')
 
-        self.rowconfigure(0, weight=12)
+        self.rowconfigure(0, weight=1)
         self.rowconfigure(1, weight=12)
-        self.rowconfigure(2, weight=1)
+        self.rowconfigure(2, weight=12)
+        self.rowconfigure(3, weight=1)
         self.columnconfigure(0, weight=1)
 
     def compact_navbar(self) -> None:
         """
         Compacts the navbar to the left of the screen.
         """
-        self.days_off_frame.pack_forget()
+        self.days_off_frame.grid_forget()
+        self.rowconfigure(0, weight=1)
+        self.rowconfigure(1, weight=0)
+        self.rowconfigure(2, weight=12)
+        self.rowconfigure(3, weight=1)
         self.compact_btn.config(text="Etendre", command=self.expand_navbar)
 
     def expand_navbar(self) -> None:
@@ -64,20 +68,23 @@ class StudiesTemplate(Frame):
         Expands the navbar to the left of the screen.
         """
         self.compact_btn.config(text="Compacter", command=self.compact_navbar)
-        self.days_off_frame.pack(
-            fill='both', expand=True, side='top', pady=(0, 10))
+        self.rowconfigure(0, weight=1)
+        self.rowconfigure(1, weight=12)
+        self.rowconfigure(2, weight=12)
+        self.rowconfigure(3, weight=1)
+        self.days_off_frame.grid(row=1, column=0, sticky='nsew', pady=(0, 10))
 
     def setup_off_days_frame(self) -> None:
         """
         Setup the template of days off.
         """
-        return DaysOffTimelineTemplate(self)
+        return DaysOffTimelineTemplate(self, row=1)
 
     def setup_studies_frame(self) -> None:
         """
         Setup the template of studies.
         """
-        return StudyTimelineTemplate(self)
+        return StudyTimelineTemplate(self, row=2)
 
     def from_addstudy_to_studies_frame(self) -> None:
         """
@@ -131,8 +138,8 @@ class DaysOffTimelineTemplate(WorkingFrame):
     Contains the timeline of the days off.
     """
 
-    def __init__(self, body=None):
-        super().__init__(body)
+    def __init__(self, body, row):
+        super().__init__(body, row=row)
         self.manager = body
         self.update_idletasks()
         self.right_click_menu_study = RCMStudy(self)
@@ -167,8 +174,8 @@ class StudyTimelineTemplate(WorkingFrame):
     Contains the timeline of the days off.
     """
 
-    def __init__(self, body=None):
-        super().__init__(body)
+    def __init__(self, body, row):
+        super().__init__(body, row=row)
         self.manager = body
         self.update_idletasks()
         self.right_click_menu_study = RCMStudy(self)
