@@ -29,7 +29,7 @@ class StudiesTemplate(Frame):
         self.pack(fill='both', expand=True, side='top')
         self.update_idletasks()
 
-        self.time_interval = 80  # 24 hours
+        self.time_interval = 25  # 24 hours
         self.starting_time = 0
 
         self.days_off_frame = None

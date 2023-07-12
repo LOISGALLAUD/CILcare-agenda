@@ -6,7 +6,7 @@ to manage the graphical user interface
 of the application.
 """
 
-#-------------------------------------------------------------------#
+# -------------------------------------------------------------------#
 
 import os
 from PIL import Image, ImageTk
@@ -15,12 +15,14 @@ from src.interface.menus.login_menu import LoginMenu
 from src.interface.menus.main_menu import MainMenu
 from src.interface.menus.help_menu import HelpMenu
 
-#-------------------------------------------------------------------#
+# -------------------------------------------------------------------#
+
 
 class GUI(Tk):
     """
     Graphical User Interface of the application.
     """
+
     def __init__(self, app) -> None:
         super().__init__()
         self.app = app
@@ -85,14 +87,15 @@ class GUI(Tk):
         self.cilcare_logo = self.open_image("cilcare_logo.png", 100, 100)
 
     def open_image(self, file_name: str,
-                    width:int=None, height:int=None) -> ImageTk.PhotoImage:
+                   width: int = None, height: int = None) -> ImageTk.PhotoImage:
         """
         This function loads an image from the given path.
         """
         image_path = os.path.join(os.getcwd(), "data", "images", file_name)
         image = Image.open(image_path)
         if width and height:
-            image = image.resize((width*self.coeffx, height*self.coeffy), Image.ANTIALIAS)
+            image = image.resize(
+                (width*self.coeffx, height*self.coeffy), Image.ANTIALIAS)
 
         photo = ImageTk.PhotoImage(image)
         return photo

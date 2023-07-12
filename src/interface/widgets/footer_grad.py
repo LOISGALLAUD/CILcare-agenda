@@ -21,7 +21,7 @@ class FooterFrame(Frame):
         self.master = master
         self.study_timeline = study_timeline
         self.daysoff_timeline = daysoff_timeline
-        self.coeff_config = 80//24
+        self.coeff_config = self.master.time_interval//24
         self.grid(row=3, column=0, sticky='nsew')
         self.propagate(False)
         self.config(height=70)
@@ -137,7 +137,8 @@ class TimeCanvas(Canvas):
 
         self.update_idletasks()
         self.get_time_graduations()
-        self.create_timeline(80, 0)
+        self.create_timeline(
+            self.master.master.master.master.master.master.time_interval, 0)
 
     def get_time_graduations(self) -> list:
         """
