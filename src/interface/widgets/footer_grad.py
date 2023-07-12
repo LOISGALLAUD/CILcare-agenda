@@ -4,19 +4,23 @@ footer_graduation.py
 Canvas in which is drawn the time graduation.
 """
 
-#-------------------------------------------------------------------#
+# -------------------------------------------------------------------#
 
 from src.utils.graphical_utils import Frame, Canvas, Label, Scrollbar
 
-#-------------------------------------------------------------------#
+# -------------------------------------------------------------------#
+
 
 class FooterFrame(Frame):
     """
     Frame containing the footer.
     """
-    def __init__(self, master, frame_to_scroll:list, **kwargs):
+
+    def __init__(self, master, study_timeline, daysoff_timeline, **kwargs):
         super().__init__(master, bg='#494466', **kwargs)
         self.master = master
+        self.study_timeline = study_timeline
+        self.daysoff_timeline = daysoff_timeline
         self.coeff_config = 80//24
         self.pack(fill='both', side='bottom', expand=True)
         self.propagate(False)
@@ -28,22 +32,27 @@ class FooterFrame(Frame):
         scrollbar.pack(side="bottom", fill="x")
         self.canvas = Canvas(self, xscrollcommand=scrollbar.set, bg='purple',)
         self.canvas.pack(fill="both", expand=True, side="top")
-        scrollbar.config(command=self.canvas.xview)
+        scrollbar.config(command=self.h_scroll)
 
         inner_frame = Frame(self.canvas, border=0,
                             borderwidth=0, highlightthickness=0)
         self.update_idletasks()
 
         self.canvas.create_window((0, 0), window=inner_frame, anchor='w',
-                             width=self.get_correct_width())
-        self.canvas.bind('<Configure>', lambda event:self.canvas.configure
-                    (scrollregion=self.canvas.bbox('all')))
+                                  width=self.get_correct_width())
+        self.canvas.bind('<Configure>', lambda event: self.canvas.configure
+                         (scrollregion=self.canvas.bbox('all')))
         self.graduation_frame = GraduationFrame(self, inner_frame)
         self.graduation_frame.bind('<Configure>',
-                        lambda event: self.canvas.configure(scrollregion=self.canvas.bbox('all')))
+                                   lambda event: self.canvas.configure(scrollregion=self.canvas.bbox('all')))
 
-        for frame in frame_to_scroll:
-            scrollbar.config(command=frame.canvas.xview)
+    def h_scroll(self, *args):
+        """
+        Simultaneous horizontal scroll of the two timelines.
+        """
+        self.study_timeline.canvas.xview(*args)
+        self.daysoff_timeline.canvas.xview(*args)
+        self.canvas.xview(*args)
 
     def get_correct_width(self):
         """
@@ -53,10 +62,12 @@ class FooterFrame(Frame):
         x_step = self.winfo_width() / 25
         return 80 * x_step
 
+
 class GraduationFrame(Frame):
     """
     Frame container of the time graduation.
     """
+
     def __init__(self, master, scrollable_frame, **kwargs):
         super().__init__(master=scrollable_frame, **kwargs)
         self.master = master
@@ -66,17 +77,19 @@ class GraduationFrame(Frame):
 
         self.time_frame = TimeFrame(self)
 
+
 class TimeFrame(Frame):
     """
     Frame containing the time.
     """
+
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         self.grid_columnconfigure(0, weight=1, uniform='group')
         self.grid_columnconfigure(1, weight=12*self.master.master.coeff_config,
                                   uniform='group')
         Label(self, text="TEMPS", bg="#494466", fg="white",
-                wraplength=150).grid(row=0, column=0, sticky='nsew')
+              wraplength=150).grid(row=0, column=0, sticky='nsew')
 
         self.pack(fill='x')
         self.update_idletasks()
@@ -90,6 +103,7 @@ class UnityFrame(Frame):
     """
     Frame containing the unity of time.
     """
+
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         self.grid_propagate(False)
@@ -97,17 +111,19 @@ class UnityFrame(Frame):
         self.grid_columnconfigure(1, weight=13*self.master.master.master.master.coeff_config,
                                   uniform='group')
         Label(self, text="UNITE DE TEMPS", bg="#494466", fg="white",
-                wraplength=150).grid(row=0, column=0, sticky='nsew')
+              wraplength=150).grid(row=0, column=0, sticky='nsew')
 
         self.pack(fill='x')
         self.update_idletasks()
         self.config(height=50)
         self.time_canvas = TimeCanvas(self)
 
+
 class TimeCanvas(Canvas):
     """
     Canvas containing the time.
     """
+
     def __init__(self, master, **kwargs):
         super().__init__(master, bg="white", height=50,
                          **kwargs)
@@ -134,7 +150,7 @@ class TimeCanvas(Canvas):
         self.x_step = self.width / self.time_interval
         self.starting_time = self.master.master.master.master.master.master.starting_time
 
-    def create_timeline(self, time_interval:int, start_time:int):
+    def create_timeline(self, time_interval: int, start_time: int):
         """
         Creates the timeline.
         """
@@ -148,5 +164,5 @@ class TimeCanvas(Canvas):
             self.create_line(x_pos, 0, x_pos, height, fill='#d9d9d9')
             time_label = start_time + i
             self.create_text(x_pos + x_step / 4, 20,
-                                text=str(time_label) + "h",
-                                anchor='n', fill='grey', tags="timeline")
+                             text=str(time_label) + "h",
+                             anchor='n', fill='grey', tags="timeline")

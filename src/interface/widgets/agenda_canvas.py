@@ -6,41 +6,43 @@ It contains visual representation of the disponibilities
 of operators.
 """
 
-#-------------------------------------------------------------------#
+# -------------------------------------------------------------------#
 
 from src.utils.graphical_utils import Frame, Canvas, Label, Scrollbar
 
-#-------------------------------------------------------------------#
+# -------------------------------------------------------------------#
+
 
 class WorkingFrame(Frame):
     """
     Represents the working frame.
     """
+
     def __init__(self, master, **kwargs):
         super().__init__(master, bg="black", **kwargs)
         self.master = master
         self.coeff_config = self.master.time_interval//24
-        self.pack(fill='both', expand=True, side='bottom', pady=(0, 10))
+        self.pack(fill='both', expand=True, side='top', pady=(0, 10))
         self.update_idletasks()
 
         self.serial_canvases = []
 
-        scrollbar = Scrollbar(self, orient="vertical", width=20)
+        scrollbar = Scrollbar(self, orient="vertical", width=0)
         scrollbar.pack(side="right", fill="y")
         self.canvas = Canvas(self, yscrollcommand=scrollbar.set)
         self.canvas.pack(side="top", fill="both", expand=True)
         scrollbar.config(command=self.canvas.yview)
-        self.inner_frame = Frame(self.canvas, border=0, borderwidth=0, highlightthickness=0)
+        self.inner_frame = Frame(
+            self.canvas, border=0, borderwidth=0, highlightthickness=0)
         self.update_idletasks()
         self.canvas.create_window((0, 0), window=self.inner_frame,
                                   anchor='nw', width=self.get_correct_width())
         self.canvas.bind('<Configure>',
-                    lambda event: self.canvas.configure(scrollregion=self.canvas.bbox('all')))
+                         lambda event: self.canvas.configure(scrollregion=self.canvas.bbox('all')))
 
         self.agenda_frame = AgendaFrame(self, self.inner_frame)
         self.agenda_frame.bind('<Configure>',
-                        lambda event: self.canvas.configure(scrollregion=self.canvas.bbox('all')))
-
+                               lambda event: self.canvas.configure(scrollregion=self.canvas.bbox('all')))
 
     def create_timeline(self, canvas, time_interval):
         """
@@ -88,21 +90,25 @@ class AgendaFrame(Frame):
     """
     Agenda canvas with scrolling.
     """
+
     def __init__(self, master, scrollable_frame, **kwargs):
         super().__init__(master=scrollable_frame, **kwargs)
         self.master = master
         self.pack(fill='x')
         self.update_idletasks()
 
+
 class StudyFrame(Frame):
     """
     Frame containing a study and its serials.
     """
+
     def __init__(self, master, name, **kwargs):
         super().__init__(master, bg="white", **kwargs)
         self.coeff_config = master.master.coeff_config
         self.grid_columnconfigure(0, weight=1, uniform='group')
-        self.grid_columnconfigure(1, weight=12*self.coeff_config, uniform='group')
+        self.grid_columnconfigure(
+            1, weight=12*self.coeff_config, uniform='group')
 
         Label(self, text=name, bg="#494466", fg="white",
               wraplength=150).grid(row=0, column=0, sticky='nsew')
@@ -113,16 +119,19 @@ class StudyFrame(Frame):
         self.pack(fill="x")
         self.update_idletasks()
 
+
 class SerialFrame(Frame):
     """
     Frame containing a serial and its tasks.
     """
+
     def __init__(self, master, name, **kwargs):
         super().__init__(master, bg='white', **kwargs)
         self.grid_propagate(False)
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1, uniform='group')
-        self.grid_columnconfigure(1, weight=13*self.master.master.coeff_config, uniform='group')
+        self.grid_columnconfigure(
+            1, weight=13*self.master.master.coeff_config, uniform='group')
 
         Label(self, text=name, fg="black", bg='#d3ccff',
               wraplength=150).grid(row=0, column=0, sticky='nsew', pady=5)
@@ -132,10 +141,12 @@ class SerialFrame(Frame):
         self.config(height=50)
         self.serial_canvas = SerialCanvas(self)
 
+
 class SerialCanvas(Canvas):
     """
     Canvas containing the tasks of a serial.
     """
+
     def __init__(self, master, **kwargs):
         super().__init__(master, bg="white", **kwargs)
         self.grid(row=0, column=1, sticky='ew')
@@ -176,7 +187,8 @@ class SerialCanvas(Canvas):
         """
         Scroll up.
         """
-        self.master.master.master.master.master.canvas.yview_scroll(-1, 'units')
+        self.master.master.master.master.master.canvas.yview_scroll(
+            -1, 'units')
 
     def on_scroll_down(self, _event):
         """
@@ -198,11 +210,12 @@ class SerialCanvas(Canvas):
         """
         Deselect all rectangles when clicking on the canvas.
         """
-        item = self.find_withtag('current')  # Récupérer l'élément sur lequel le clic a eu lieu
+        item = self.find_withtag(
+            'current')  # Récupérer l'élément sur lequel le clic a eu lieu
         if len(item) == 1 and self.type(item) == 'rectangle':
             return  # Ne rien faire si le clic a eu lieu sur un rectangle
         if len(item) == 1 and self.type(item) == 'text':
-            return # Ne rien faire si le clic a eu lieu sur un texte
+            return  # Ne rien faire si le clic a eu lieu sur un texte
 
         for rect in self.selected_rectangles:
             self.itemconfig(rect.rect, fill='#494466')
@@ -216,13 +229,15 @@ class SerialCanvas(Canvas):
         self.master.master.master.master.master.create_timeline(
             self, self.time_interval, self.starting_time, 1)
 
+
 class TaskRectangle:
     """
     Represents a task on the canvas.
     """
     height = 40
+
     def __init__(self, canvas_manager: Canvas, name: str,
-                 starting_hour: int, ending_hour:int) -> None:
+                 starting_hour: int, ending_hour: int) -> None:
         self.canvas_manager = canvas_manager
         self.start_x_pos = 0  # Position de départ du rectangle
         self.start_y_pos = 0  # Position de départ du rectangle
@@ -246,15 +261,17 @@ class TaskRectangle:
         Draws the task on the canvas.
         """
         self.rect = self.canvas_manager.create_rectangle(self.x_pos, self.y_pos,
-                                                    self.x_pos + self.width,
-                                                    self.y_pos + self.height, fill='#494466')
+                                                         self.x_pos + self.width,
+                                                         self.y_pos + self.height, fill='#494466')
         self.text = self.canvas_manager.create_text(self.x_pos + self.width / 2,
                                                     self.y_pos + self.height / 2,
                                                     text=self.name,
                                                     fill='white')
-        self.canvas_manager.tag_bind(self.rect, '<ButtonPress-1>', self.on_click)
+        self.canvas_manager.tag_bind(
+            self.rect, '<ButtonPress-1>', self.on_click)
         self.canvas_manager.tag_bind(self.rect, '<B1-Motion>', self.on_drag)
-        self.canvas_manager.tag_bind(self.text, '<ButtonPress-1>', self.on_click)
+        self.canvas_manager.tag_bind(
+            self.text, '<ButtonPress-1>', self.on_click)
         self.canvas_manager.tag_bind(self.text, '<B1-Motion>', self.on_drag)
 
     def on_click(self, event) -> None:

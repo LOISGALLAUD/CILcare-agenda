@@ -4,7 +4,7 @@ studies.py
 Studies template for the body
 """
 
-#-------------------------------------------------------------------#
+# -------------------------------------------------------------------#
 
 from tkcolorpicker import askcolor
 from src.utils.graphical_utils import Frame, Canvas, Label, ButtonApp, Text
@@ -14,13 +14,15 @@ from src.interface.widgets.right_click import RCMSerial, RCMStudy
 from src.interface.widgets.agenda_canvas import WorkingFrame
 from src.interface.widgets.footer_grad import FooterFrame
 
-#-------------------------------------------------------------------#
+# -------------------------------------------------------------------#
+
 
 class StudiesTemplate(Frame):
     """
     Contains the Frame in which will be displayed every
     templates related to the studies.
     """
+
     def __init__(self, body=None):
         super().__init__(body, bg="#5b557f")
         self.manager = body
@@ -36,19 +38,19 @@ class StudiesTemplate(Frame):
         self.add_days_off = None
 
         # By default, the body contains the days off timeline and the study timeline
-        self.study_timeline = self.setup_studies_frame()
         self.daysoff_timeline = self.setup_off_days_frame()
-        self.footer_graduation = FooterFrame(self, [self.study_timeline, self.daysoff_timeline])
-        self.compact_btn = ButtonApp(self, text="Compacter",
-                                         command=self.compact_navbar, custom_theme="Green")
+        self.study_timeline = self.setup_studies_frame()
+        self.footer_graduation = FooterFrame(
+            self, self.study_timeline, self.daysoff_timeline)
 
+        self.compact_btn = ButtonApp(self, text="Compacter",
+                                     command=self.compact_navbar, custom_theme="Green")
         self.compact_btn.pack(fill='both', side='top')
 
         self.rowconfigure(0, weight=12)
         self.rowconfigure(1, weight=12)
         self.rowconfigure(2, weight=1)
         self.columnconfigure(0, weight=1)
-
 
     def compact_navbar(self) -> None:
         """
@@ -57,13 +59,13 @@ class StudiesTemplate(Frame):
         self.days_off_frame.pack_forget()
         self.compact_btn.config(text="Etendre", command=self.expand_navbar)
 
-
     def expand_navbar(self) -> None:
         """
         Expands the navbar to the left of the screen.
         """
         self.compact_btn.config(text="Compacter", command=self.compact_navbar)
-        self.days_off_frame.pack(fill='both', expand=True, side='top', pady=(0, 10))
+        self.days_off_frame.pack(
+            fill='both', expand=True, side='top', pady=(0, 10))
 
     def setup_off_days_frame(self) -> None:
         """
@@ -106,7 +108,8 @@ class StudiesTemplate(Frame):
         self.study_frame.pack_forget()
         self.days_off_frame.pack_forget()
         self.add_study = AddStudyTemplate(self)
-        self.add_study.pack(fill='both', expand=True, side='top', padx=10, pady=10)
+        self.add_study.pack(fill='both', expand=True,
+                            side='top', padx=10, pady=10)
 
     def setup_add_days_off(self) -> None:
         """
@@ -117,14 +120,17 @@ class StudiesTemplate(Frame):
         self.study_frame.pack_forget()
         self.days_off_frame.pack_forget()
         self.add_days_off = AddDaysOffTemplate(self)
-        self.add_days_off.pack(fill='both', expand=True, side='top', padx=10, pady=10)
+        self.add_days_off.pack(fill='both', expand=True,
+                               side='top', padx=10, pady=10)
 
-#-------------------------------------------------------------------#
+# -------------------------------------------------------------------#
+
 
 class DaysOffTimelineTemplate(WorkingFrame):
     """
     Contains the timeline of the days off.
     """
+
     def __init__(self, body=None):
         super().__init__(body)
         self.manager = body
@@ -154,12 +160,13 @@ class DaysOffTimelineTemplate(WorkingFrame):
         self.add_task(serial_frame22)
 
 
-#-------------------------------------------------------------------#
+# -------------------------------------------------------------------#
 
 class StudyTimelineTemplate(WorkingFrame):
     """
     Contains the timeline of the days off.
     """
+
     def __init__(self, body=None):
         super().__init__(body)
         self.manager = body
@@ -205,30 +212,33 @@ class StudyTimelineTemplate(WorkingFrame):
         self.add_task(serial_frame12)
         self.add_task(serial_frame22)
 
-#-------------------------------------------------------------------#
+# -------------------------------------------------------------------#
+
 
 class AddStudyTemplate(Frame):
     """
     Templates displayed when the user wants to add a study.
     """
     parameters = ["Study name", "Client name", "Animal type", "Number"]
+
     def __init__(self, study_template) -> None:
         super().__init__(study_template)
         self.manager = study_template
         self.configure(bg="#FFFFFF")
 
-
         # Parameters of the study
         for parameter in self.parameters:
-            LabelEntryPair(self, parameter).pack(fill='both', side='top', padx=10)
+            LabelEntryPair(self, parameter).pack(
+                fill='both', side='top', padx=10)
 
         self.checkbox_var = IntVar()
         self.checkbox = Checkbutton(self, text="Archived", bg="#FFFFFF", activebackground="#FFFFFF",
-                               variable=self.checkbox_var, command=None)
+                                    variable=self.checkbox_var, command=None)
         self.checkbox.pack(side='top', padx=10, pady=10, anchor="w")
 
         # Description of the study
-        Label(self, text="Description", bg="#FFFFFF").pack(fill='both', side='top', padx=10)
+        Label(self, text="Description", bg="#FFFFFF").pack(
+            fill='both', side='top', padx=10)
         self.description = Text(self)
         self.description.pack(fill='both', side='top', padx=10)
 
@@ -243,16 +253,20 @@ class AddStudyTemplate(Frame):
                                      command=self.manager.from_addstudy_to_studies_frame)
         self.back_btn = ButtonApp(self.bottom_frame, text="Back",
                                   command=self.manager.from_addstudy_to_studies_frame)
-        self.confirm_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
-        self.back_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
+        self.confirm_btn.pack(fill='both', expand=True,
+                              side='left', padx=10, pady=10)
+        self.back_btn.pack(fill='both', expand=True,
+                           side='left', padx=10, pady=10)
 
-#-------------------------------------------------------------------#
+# -------------------------------------------------------------------#
+
 
 class AddDaysOffTemplate(Frame):
     """
     Templates displayed when the user wants to add a study.
     """
     parameters = ["Title", "Operator", "Color"]
+
     def __init__(self, study_template) -> None:
         super().__init__(study_template)
         self.manager = study_template
@@ -268,7 +282,7 @@ class AddDaysOffTemplate(Frame):
 
         self.checkbox_var = IntVar()
         self.checkbox = Checkbutton(self, text="Force", bg="#FFFFFF", activebackground="#FFFFFF",
-                               variable=self.checkbox_var, command=None)
+                                    variable=self.checkbox_var, command=None)
         self.checkbox.pack(side='top', padx=10, pady=10, anchor="w")
 
         # agenda of the study
@@ -286,8 +300,10 @@ class AddDaysOffTemplate(Frame):
                                      command=self.manager.from_adddaysoff_to_studies_frame)
         self.back_btn = ButtonApp(self.bottom_frame, text="Back",
                                   command=self.manager.from_adddaysoff_to_studies_frame)
-        self.confirm_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
-        self.back_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
+        self.confirm_btn.pack(fill='both', expand=True,
+                              side='left', padx=10, pady=10)
+        self.back_btn.pack(fill='both', expand=True,
+                           side='left', padx=10, pady=10)
 
     def choose_color(self) -> None:
         """
