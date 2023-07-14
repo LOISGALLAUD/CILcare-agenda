@@ -35,35 +35,21 @@ class WorkingFrame(Frame):
         self.inner_frame = Frame(
             self.canvas, border=0, borderwidth=0, highlightthickness=0)
         self.update_idletasks()
-        self.canvas.create_window((0, 0), window=self.inner_frame,
-                                  anchor='nw', width=self.get_correct_width())
+        self.window = self.canvas.create_window((0, 0), window=self.inner_frame,
+                                                anchor='nw', width=self.get_correct_width(
+                                                    self.master.time_interval))
+        self.agenda_frame = AgendaFrame(self, self.inner_frame)
+
         self.canvas.bind('<Configure>',
                          lambda event: self.canvas.configure(scrollregion=self.canvas.bbox('all')))
 
-        self.agenda_frame = AgendaFrame(self, self.inner_frame)
-        self.agenda_frame.bind('<Configure>',
-                               lambda event: self.canvas.configure(scrollregion=self.canvas.bbox('all')))
-
-    def create_timeline(self, canvas, time_interval):
-        """
-        Creates the timeline.
-        """
-        width = canvas.winfo_width()
-        height = canvas.winfo_height()
-        x_step = width / time_interval
-
-        # Draw the timeline
-        for i in range(time_interval):
-            x_pos = i * x_step
-            canvas.create_line(x_pos, 0, x_pos, height, fill='#d9d9d9')
-
-    def get_correct_width(self):
+    def get_correct_width(self, time_interval):
         """
         Return a pertinent width for the canvas knowing the time
         interval, the starting time and the width of the window.
         """
         x_step = self.master.winfo_width() / 25
-        return self.master.time_interval * x_step
+        return time_interval * x_step
 
     def add_study(self, study_name) -> None:
         """
@@ -84,6 +70,13 @@ class WorkingFrame(Frame):
         Adds a task to the timeline.
         """
         TaskRectangle(serial_frame.serial_canvas, 'Task name', 8, 12)
+
+    def update_schedule(self, _start_date, _time_interval) -> None:
+        """
+        Update the timeline.
+        """
+        for serial_canvas in self.serial_canvases:
+            serial_canvas.update_timeline(_time_interval)
 
 
 class AgendaFrame(Frame):
@@ -162,7 +155,7 @@ class SerialCanvas(Canvas):
 
         self.update_idletasks()
         self.get_time_graduations()
-        self.master.master.master.master.master.create_timeline(
+        self.create_timeline(
             self, self.time_interval)
         self.bind('<Button-1>', self.deselect_rectangles)
 
@@ -221,13 +214,27 @@ class SerialCanvas(Canvas):
             self.itemconfig(rect.rect, fill='#494466')
         self.selected_rectangles.clear()
 
-    def update_timeline(self) -> None:
+    def update_timeline(self, time_interval) -> None:
         """
         Update the timeline.
         """
         self.delete('timeline')
-        self.master.master.master.master.master.create_timeline(
-            self, self.time_interval, self.starting_time, 1)
+        self.create_timeline(
+            self, time_interval)
+
+    def create_timeline(self, canvas, time_interval):
+        """
+        Creates the timeline.
+        """
+        width = canvas.winfo_width()
+        height = canvas.winfo_height()
+        x_step = width / time_interval
+
+        # Draw the timeline
+        for i in range(time_interval):
+            x_pos = i * x_step
+            canvas.create_line(x_pos, 0, x_pos, height,
+                               fill='#d9d9d9', tag='timeline')
 
 
 class TaskRectangle:

@@ -29,7 +29,7 @@ class StudiesTemplate(Frame):
         self.pack(fill='both', expand=True, side='top')
         self.update_idletasks()
 
-        self.time_interval = 25  # 24 hours
+        self.time_interval = 50  # 24 hours
         self.starting_time = 0
 
         self.days_off_frame = None
@@ -37,11 +37,8 @@ class StudiesTemplate(Frame):
         self.add_study = None
         self.add_days_off = None
 
-        # By default, the body contains the days off timeline and the study timeline
-        self.days_off_frame = self.setup_off_days_frame()
-        self.study_frame = self.setup_studies_frame()
-        self.footer_graduation = FooterFrame(
-            self, self.study_frame, self.days_off_frame)
+        self.setup_timelines()
+
         self.compact_btn = ButtonApp(self, text="Compacter",
                                      command=self.compact_navbar, custom_theme="Green")
         self.compact_btn.grid(row=0, column=0, sticky='nsew')
@@ -51,6 +48,29 @@ class StudiesTemplate(Frame):
         self.rowconfigure(2, weight=12)
         self.rowconfigure(3, weight=1)
         self.columnconfigure(0, weight=1)
+
+    def setup_timelines(self) -> None:
+        """
+        Setup the timelines.
+        """
+        self.days_off_frame = self.setup_off_days_frame()
+        self.study_frame = self.setup_studies_frame()
+        self.footer_frame = FooterFrame(
+            self, self.study_frame, self.days_off_frame)
+        self.footer_frame.canvas.configure(
+            scrollregion=self.footer_frame.canvas.bbox('all'))
+
+    def update_timelines(self, _start_date: int, time_interval: int, _day_of_week: str) -> None:
+        """
+        Updates the graduation of the timelines.
+        """
+        self.time_interval = time_interval
+
+        self.days_off_frame.destroy()
+        self.study_frame.destroy()
+        self.footer_frame.destroy()
+
+        self.setup_timelines()
 
     def compact_navbar(self) -> None:
         """
@@ -148,23 +168,15 @@ class DaysOffTimelineTemplate(WorkingFrame):
         study_frame1 = self.add_study("Study 1")
         serial_frame1 = self.add_serial(study_frame1, "Serial 1")
         serial_frame2 = self.add_serial(study_frame1, "Serial 2")
-        self.add_task(serial_frame1)
-        self.add_task(serial_frame2)
         study_frame2 = self.add_study("Study 2")
         serial_frame12 = self.add_serial(study_frame2, "Serial 1")
         serial_frame22 = self.add_serial(study_frame2, "Serial 2")
-        self.add_task(serial_frame12)
-        self.add_task(serial_frame22)
         study_frame1 = self.add_study("Study 1")
         serial_frame1 = self.add_serial(study_frame1, "Serial 1")
         serial_frame2 = self.add_serial(study_frame1, "Serial 2")
-        self.add_task(serial_frame1)
-        self.add_task(serial_frame2)
         study_frame2 = self.add_study("Study 2")
         serial_frame12 = self.add_serial(study_frame2, "Serial 1")
         serial_frame22 = self.add_serial(study_frame2, "Serial 2")
-        self.add_task(serial_frame12)
-        self.add_task(serial_frame22)
 
 
 # -------------------------------------------------------------------#
@@ -183,41 +195,27 @@ class StudyTimelineTemplate(WorkingFrame):
         study_frame1 = self.add_study("Study 1")
         serial_frame1 = self.add_serial(study_frame1, "Serial 1")
         serial_frame2 = self.add_serial(study_frame1, "Serial 2")
-        self.add_task(serial_frame1)
         study_frame2 = self.add_study("Study 2")
         serial_frame12 = self.add_serial(study_frame2, "Serial 1")
         serial_frame22 = self.add_serial(study_frame2, "Serial 2")
-        self.add_task(serial_frame12)
-        self.add_task(serial_frame22)
         study_frame1 = self.add_study("Study 1")
         serial_frame1 = self.add_serial(study_frame1, "Serial 1")
         serial_frame2 = self.add_serial(study_frame1, "Serial 2")
-        self.add_task(serial_frame1)
-        self.add_task(serial_frame2)
         study_frame2 = self.add_study("Study 2")
         serial_frame12 = self.add_serial(study_frame2, "Serial 1")
         serial_frame22 = self.add_serial(study_frame2, "Serial 2")
-        self.add_task(serial_frame12)
-        self.add_task(serial_frame22)
         study_frame1 = self.add_study("Study 1")
         serial_frame1 = self.add_serial(study_frame1, "Serial 1")
         serial_frame2 = self.add_serial(study_frame1, "Serial 2")
-        self.add_task(serial_frame1)
         study_frame2 = self.add_study("Study 2")
         serial_frame12 = self.add_serial(study_frame2, "Serial 1")
         serial_frame22 = self.add_serial(study_frame2, "Serial 2")
-        self.add_task(serial_frame12)
-        self.add_task(serial_frame22)
         study_frame1 = self.add_study("Study 1")
         serial_frame1 = self.add_serial(study_frame1, "Serial 1")
         serial_frame2 = self.add_serial(study_frame1, "Serial 2")
-        self.add_task(serial_frame1)
-        self.add_task(serial_frame2)
         study_frame2 = self.add_study("Study 2")
         serial_frame12 = self.add_serial(study_frame2, "Serial 1")
         serial_frame22 = self.add_serial(study_frame2, "Serial 2")
-        self.add_task(serial_frame12)
-        self.add_task(serial_frame22)
 
 # -------------------------------------------------------------------#
 

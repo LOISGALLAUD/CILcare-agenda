@@ -26,24 +26,25 @@ class FooterFrame(Frame):
         self.propagate(False)
         self.config(height=70)
 
-        scrollbar = Scrollbar(self, orient="horizontal",
-                              width=20)
-        scrollbar.pack(side="bottom", fill="x")
-        self.canvas = Canvas(self, xscrollcommand=scrollbar.set, bg='purple',)
+        self.scrollbar = Scrollbar(self, orient="horizontal",
+                                   width=20)
+        self.scrollbar.pack(side="bottom", fill="x")
+        self.canvas = Canvas(
+            self, xscrollcommand=self.scrollbar.set, bg='white',)
         self.canvas.pack(fill="both", expand=True, side="top")
-        scrollbar.config(command=self.h_scroll)
+        self.scrollbar.config(command=self.h_scroll)
 
-        inner_frame = Frame(self.canvas, border=0,
-                            borderwidth=0, highlightthickness=0)
+        self.inner_frame = Frame(self.canvas, border=0,
+                                 borderwidth=0, highlightthickness=0)
         self.update_idletasks()
 
-        self.canvas.create_window((0, 0), window=inner_frame, anchor='w',
-                                  width=study_timeline.get_correct_width())
+        self.window = self.canvas.create_window((0, 0), window=self.inner_frame, anchor='nw',
+                                                width=self.get_correct_width(self.master.time_interval))
+
         self.canvas.bind('<Configure>', lambda event: self.canvas.configure
                          (scrollregion=self.canvas.bbox('all')))
-        self.graduation_frame = GraduationFrame(self, inner_frame)
-        self.graduation_frame.bind('<Configure>',
-                                   lambda event: self.canvas.configure(scrollregion=self.canvas.bbox('all')))
+
+        self.graduation_frame = GraduationFrame(self, self.inner_frame)
 
     def h_scroll(self, *args):
         """
@@ -53,13 +54,30 @@ class FooterFrame(Frame):
         self.daysoff_timeline.canvas.xview(*args)
         self.canvas.xview(*args)
 
-    def get_correct_width(self):
+    def get_correct_width(self, time_interval):
         """
         Return a pertinent width for the canvas knowing the time
         interval, the starting time and the width of the window.
         """
-        x_step = self.winfo_width() / 25
-        return 80 * x_step
+        x_step = self.master.winfo_width() / 25
+        return time_interval * x_step
+
+    def update_graduation(self, _start_date, _time_interval, _day_of_week):
+        """
+        Update the graduation.
+        """
+        self.graduation_frame.destroy()
+        self.canvas.delete(self.window)
+        self.canvas.create_window((0, 0), window=self.inner_frame, anchor='w',
+                                  width=self.get_correct_width(_time_interval))
+        self.canvas.bind('<Configure>', lambda event: self.canvas.configure
+                         (scrollregion=self.canvas.bbox('all')))
+        self.graduation_frame = GraduationFrame(self, self.inner_frame)
+        self.graduation_frame.bind('<Configure>',
+                                   lambda event: self.canvas.configure(
+                                       scrollregion=self.canvas.bbox('all')))
+        self.graduation_frame.time_frame.unity_frame.time_canvas.update_timeline(
+            _start_date, _time_interval, _day_of_week)
 
 
 class GraduationFrame(Frame):
@@ -150,19 +168,28 @@ class TimeCanvas(Canvas):
         self.x_step = self.width / self.time_interval
         self.starting_time = self.master.master.master.master.master.master.starting_time
 
-    def create_timeline(self, time_interval: int, start_time: int):
+    def create_timeline(self, time_interval: int, start_time: int, _day_of_week: str = None):
         """
         Creates the timeline.
         """
         width = self.winfo_width()
         height = self.winfo_height()
         x_step = width / time_interval
-
+        start_time = 0
         # Draw the timeline
-        for i in range(time_interval):
+        for i in range(time_interval+1):
             x_pos = i * x_step
-            self.create_line(x_pos, 0, x_pos, height, fill='#d9d9d9')
+            self.create_line(x_pos, 0, x_pos, height,
+                             fill='#d9d9d9', tags="timeline")
             time_label = start_time + i
             self.create_text(x_pos + x_step / 4, 20,
                              text=str(time_label) + "h",
-                             anchor='n', fill='grey', tags="timeline")
+                             anchor='n', fill='grey', tags="timescale")
+
+    def update_timeline(self, start_date, time_interval, day_of_week) -> None:
+        """
+        Update the timeline.
+        """
+        self.delete('timeline')
+        self.delete('timescale')
+        self.create_timeline(time_interval, start_date, day_of_week)
