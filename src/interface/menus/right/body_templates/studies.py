@@ -49,14 +49,14 @@ class StudiesTemplate(Frame):
         self.rowconfigure(3, weight=1)
         self.columnconfigure(0, weight=1)
 
-    def setup_timelines(self) -> None:
+    def setup_timelines(self, day_of_week=None) -> None:
         """
         Setup the timelines.
         """
         self.days_off_frame = self.setup_off_days_frame()
         self.study_frame = self.setup_studies_frame()
-        self.footer_frame = FooterFrame(
-            self, self.study_frame, self.days_off_frame)
+        self.footer_frame = FooterFrame(self, self.study_frame,
+                                        self.days_off_frame, day_of_week)
         self.footer_frame.canvas.configure(
             scrollregion=self.footer_frame.canvas.bbox('all'))
 
@@ -70,7 +70,7 @@ class StudiesTemplate(Frame):
         self.study_frame.destroy()
         self.footer_frame.destroy()
 
-        self.setup_timelines()
+        self.setup_timelines(_day_of_week)
 
     def compact_navbar(self) -> None:
         """

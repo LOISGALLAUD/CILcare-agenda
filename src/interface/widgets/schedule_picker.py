@@ -116,19 +116,11 @@ class SchedulePicker(Frame):
 
         if not time_interval.days:
             return
-        print(time_interval.days)
-        self.manager.manager.body.studies_template.update_timelines(
-            start_date, time_interval.days*24+1, day_of_week)
+        time_interval = time_interval.days*24+1  # in hours
 
-        # if time_interval.seconds//3600 > datetime.timedelta(days=2).seconds//3600:
-        #     time_interval = time_interval.days + 1
-
-        # else:
-        #     time_interval = time_interval.seconds
-        #     print("time_interval", time_interval)
-        #     self.manager.manager.body.studies_template.study_frame.update_schedule(
-        #         start_date, time_interval)
-        #     self.manager.manager.body.studies_template.days_off_frame.update_schedule(
-        #         start_date, time_interval)
-        #     self.manager.manager.body.studies_template.footer_frame.update_graduation(
-        #         start_date, time_interval)
+        if time_interval >= 3*24+1:
+            self.manager.manager.body.studies_template.update_timelines(
+                start_date, time_interval)
+        else:
+            self.manager.manager.body.studies_template.update_timelines(
+                start_date, time_interval, day_of_week)

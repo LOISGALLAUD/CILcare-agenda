@@ -6,6 +6,7 @@ Canvas in which is drawn the time graduation.
 
 # -------------------------------------------------------------------#
 
+from datetime import datetime
 from src.utils.graphical_utils import Frame, Canvas, Label, Scrollbar
 
 # -------------------------------------------------------------------#
@@ -16,12 +17,13 @@ class FooterFrame(Frame):
     Frame containing the footer.
     """
 
-    def __init__(self, master, study_timeline, daysoff_timeline, **kwargs):
+    def __init__(self, master, study_timeline, daysoff_timeline, day_of_week=None, **kwargs):
         super().__init__(master, bg='#494466', **kwargs)
         self.master = master
         self.study_timeline = study_timeline
         self.daysoff_timeline = daysoff_timeline
         self.coeff_config = self.master.time_interval//24
+        self.start_weekday = day_of_week
         self.grid(row=3, column=0, sticky='nsew')
         self.propagate(False)
         self.config(height=70)
@@ -61,23 +63,6 @@ class FooterFrame(Frame):
         """
         x_step = self.master.winfo_width() / 25
         return time_interval * x_step
-
-    def update_graduation(self, _start_date, _time_interval, _day_of_week):
-        """
-        Update the graduation.
-        """
-        self.graduation_frame.destroy()
-        self.canvas.delete(self.window)
-        self.canvas.create_window((0, 0), window=self.inner_frame, anchor='w',
-                                  width=self.get_correct_width(_time_interval))
-        self.canvas.bind('<Configure>', lambda event: self.canvas.configure
-                         (scrollregion=self.canvas.bbox('all')))
-        self.graduation_frame = GraduationFrame(self, self.inner_frame)
-        self.graduation_frame.bind('<Configure>',
-                                   lambda event: self.canvas.configure(
-                                       scrollregion=self.canvas.bbox('all')))
-        self.graduation_frame.time_frame.unity_frame.time_canvas.update_timeline(
-            _start_date, _time_interval, _day_of_week)
 
 
 class GraduationFrame(Frame):
@@ -176,15 +161,34 @@ class TimeCanvas(Canvas):
         height = self.winfo_height()
         x_step = width / time_interval
         start_time = 0
+        days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        if _day_of_week is None:
+            _day_of_week = datetime.now().strftime("%A")
+
+        # Determine the start day index
+        start_day_index = days.index(
+            _day_of_week[:3])
+
         # Draw the timeline
         for i in range(time_interval+1):
             x_pos = i * x_step
             self.create_line(x_pos, 0, x_pos, height,
                              fill='#d9d9d9', tags="timeline")
             time_label = start_time + i
-            self.create_text(x_pos + x_step / 4, 20,
-                             text=str(time_label) + "h",
-                             anchor='n', fill='grey', tags="timescale")
+
+            # Calculate the current day
+            current_day_index = (start_day_index + (time_label // 24)) % 7
+            current_day = days[current_day_index]
+
+            # Display the time label and day of the week
+            if time_label % 24 == 0:
+                self.create_text(x_pos + x_step / 4, 20,
+                                 text=current_day,
+                                 anchor='n', fill='black', tags="timescale")
+            else:
+                self.create_text(x_pos + x_step / 4, 20,
+                                 text=str(time_label) + "h",
+                                 anchor='n', fill='grey', tags="timescale")
 
     def update_timeline(self, start_date, time_interval, day_of_week) -> None:
         """
