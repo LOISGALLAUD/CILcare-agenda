@@ -4,13 +4,14 @@ footer.py
 Describes the footer of the shopping menu.
 """
 
-#-------------------------------------------------------------------#
+# -------------------------------------------------------------------#
 
-from src.utils.graphical_utils import Frame, Label
+from src.utils.graphical_utils import Frame
 from src.interface.widgets.schedule_picker import SchedulePicker
 from src.interface.widgets.filter import Filters
 
-#-------------------------------------------------------------------#
+# -------------------------------------------------------------------#
+
 
 class Footer(Frame):
     """
@@ -18,6 +19,7 @@ class Footer(Frame):
     Contains the confirm button and the reset button
     and the total of the cart.
     """
+
     def __init__(self, manager=None):
         super().__init__(manager)
         self.manager = manager
@@ -32,14 +34,9 @@ class Footer(Frame):
         self.configure(bg="#8c77ff")
 
         self.schedule_picker = SchedulePicker(self)
-        self.schedule_picker.grid(row=0, column=0, sticky="nsew", padx=(0, 5), pady=(0, 10))
-
         self.filters = Filters(self)
-        self.filters.grid(row=0, column=1, sticky="nsew", padx=(0, 5), pady=(0, 10))
 
-        # logo_label = Label(self, image=self.study_manager.gui.cilcare_logo,
-        #                    border=0, bg="#8c77ff", highlightthickness=0)
-        # logo_label.grid(row=0, column=2, sticky="nsew")
+        self.show_filters()
 
     def filter_archived_tasks(self):
         """
@@ -47,3 +44,19 @@ class Footer(Frame):
         """
         self.loggers.log.debug("Filter archived tasks")
         # self.study_manager.filter_archived_tasks(self.archived.get())
+
+    def show_filters(self):
+        """
+        Show the filters.
+        """
+        self.filters.grid(row=0, column=1, sticky="nsew",
+                          padx=(0, 5), pady=(0, 10))
+        self.schedule_picker.grid(
+            row=0, column=0, sticky="nsew", padx=(0, 5), pady=(0, 10))
+
+    def hide_filters(self):
+        """
+        Hide the filters.
+        """
+        self.filters.grid_forget()
+        self.schedule_picker.grid_forget()

@@ -4,14 +4,15 @@ Nabar.py
 Configure MarcoNeo's navbar on its shopping menu.
 """
 
-#-------------------------------------------------------------------#
+# -------------------------------------------------------------------#
 
 import os
 import shutil
 from tkinter.filedialog import asksaveasfilename
 from src.utils.graphical_utils import Frame, ButtonApp
 
-#-------------------------------------------------------------------#
+# -------------------------------------------------------------------#
+
 
 class Navbar(Frame):
     """
@@ -19,8 +20,9 @@ class Navbar(Frame):
     Is used to navigate between the different toggles.
     """
     toggles = ["Studies", "Operators", "Equipment",
-                   "Rooms", "Qualifications", "Animal types",
-                   "Templates"]
+               "Rooms", "Qualifications", "Animal types",
+               "Templates"]
+
     def __init__(self, left_grid=None) -> None:
         super().__init__(left_grid)
         self.manager = left_grid
@@ -43,16 +45,18 @@ class Navbar(Frame):
             button.pack(fill='both', expand=True, side='top', padx=10, pady=10)
             buttons.append(button)
         if buttons:
-            buttons[0].configure(bg=ButtonApp.ACTIVE_TOGGLE_RED)  # set active toggle color
-
+            # set active toggle color
+            buttons[0].configure(bg=ButtonApp.ACTIVE_TOGGLE_RED)
 
         self.export_btn = ButtonApp(self, text="EXPORT",
                                     command=self.export)
         self.disconnect_btn = ButtonApp(self, text="DISCONNECT",
-                                  command=self.disconnect)
+                                        command=self.disconnect)
 
-        self.export_btn.pack(fill='both', expand=True, side='top', padx=10, pady=10)
-        self.disconnect_btn.pack(fill='both', expand=True, side='bottom', padx=10, pady=(100, 10))
+        self.export_btn.pack(fill='both', expand=True,
+                             side='top', padx=10, pady=10)
+        self.disconnect_btn.pack(
+            fill='both', expand=True, side='bottom', padx=10, pady=(100, 10))
         return True
 
     def toggle(self, toggle: str) -> None:
@@ -66,20 +70,28 @@ class Navbar(Frame):
         for toggle in self.toggles:
             button = getattr(self, f"{toggle.lower()}_btn")
             if toggle == self.current_toggle:
-                button.configure(bg=ButtonApp.ACTIVE_TOGGLE_RED)  # set active toggle color
+                # set active toggle color
+                button.configure(bg=ButtonApp.ACTIVE_TOGGLE_RED)
             else:
-                button.configure(bg=ButtonApp.DEFAULT_BG_RED)  # set default color
+                # set default color
+                button.configure(bg=ButtonApp.DEFAULT_BG_RED)
 
+        if self.current_toggle != "Studies":
+            self.manager.manager.right_grid.footer.hide_filters()
+        else:
+            self.manager.manager.right_grid.footer.show_filters()
         self.manager.manager.right_grid.body.update_body(self.current_toggle)
-        self.manager.manager.right_grid.header.update_header(self.current_toggle)
+        self.manager.manager.right_grid.header.update_header(
+            self.current_toggle)
 
     def disconnect(self) -> None:
         """
         Disconnects the user.
         """
-        self.reset_mofifications()
         self.manager.manager.right_grid.reset_modifications()
-        self.manager.manager.gui.change_menu(self.manager.manager.gui.login_menu)
+        self.manager.manager.gui.change_menu(
+            self.manager.manager.gui.login_menu)
+        self.reset_mofifications()
 
     def reset_mofifications(self) -> None:
         """

@@ -113,8 +113,11 @@ class StudiesTemplate(Frame):
         self.manager.manager.header.reset_modifications()
         self.add_study.pack_forget()
         self.add_study = None
-        self.setup_studies_frame()
-        self.setup_off_days_frame()
+        self.manager.manager.footer.show_filters()
+        self.study_frame.grid(row=2, column=0, sticky='nsew', pady=(0, 10))
+        self.days_off_frame.grid(row=1, column=0, sticky='nsew', pady=(0, 10))
+        self.compact_btn.grid(row=0, column=0, sticky='nsew')
+        self.footer_frame.grid(row=3, column=0, sticky='nsew')
 
     def from_adddaysoff_to_studies_frame(self) -> None:
         """
@@ -123,8 +126,11 @@ class StudiesTemplate(Frame):
         self.manager.manager.header.reset_modifications()
         self.add_days_off.pack_forget()
         self.add_days_off = None
-        self.setup_studies_frame()
-        self.setup_off_days_frame()
+        self.manager.manager.footer.show_filters()
+        self.study_frame.grid(row=2, column=0, sticky='nsew', pady=(0, 10))
+        self.days_off_frame.grid(row=1, column=0, sticky='nsew', pady=(0, 10))
+        self.compact_btn.grid(row=0, column=0, sticky='nsew')
+        self.footer_frame.grid(row=3, column=0, sticky='nsew')
 
     def setup_add_study(self) -> None:
         """
@@ -132,8 +138,11 @@ class StudiesTemplate(Frame):
         """
         if self.add_study is not None:
             return
-        self.study_frame.pack_forget()
-        self.days_off_frame.pack_forget()
+        self.manager.manager.footer.hide_filters()
+        self.study_frame.grid_forget()
+        self.days_off_frame.grid_forget()
+        self.footer_frame.grid_forget()
+        self.compact_btn.grid_forget()
         self.add_study = AddStudyTemplate(self)
         self.add_study.pack(fill='both', expand=True,
                             side='top', padx=10, pady=10)
@@ -144,8 +153,11 @@ class StudiesTemplate(Frame):
         """
         if self.add_days_off is not None:
             return
-        self.study_frame.pack_forget()
-        self.days_off_frame.pack_forget()
+        self.manager.manager.footer.hide_filters()
+        self.study_frame.grid_forget()
+        self.days_off_frame.grid_forget()
+        self.footer_frame.grid_forget()
+        self.compact_btn.grid_forget()
         self.add_days_off = AddDaysOffTemplate(self)
         self.add_days_off.pack(fill='both', expand=True,
                                side='top', padx=10, pady=10)
@@ -165,19 +177,6 @@ class DaysOffTimelineTemplate(WorkingFrame):
         self.right_click_menu_study = RCMStudy(self)
         self.bind("<Button-3>", self.right_click_menu_study.show)
 
-        study_frame1 = self.add_study("Study 1")
-        serial_frame1 = self.add_serial(study_frame1, "Serial 1")
-        serial_frame2 = self.add_serial(study_frame1, "Serial 2")
-        study_frame2 = self.add_study("Study 2")
-        serial_frame12 = self.add_serial(study_frame2, "Serial 1")
-        serial_frame22 = self.add_serial(study_frame2, "Serial 2")
-        study_frame1 = self.add_study("Study 1")
-        serial_frame1 = self.add_serial(study_frame1, "Serial 1")
-        serial_frame2 = self.add_serial(study_frame1, "Serial 2")
-        study_frame2 = self.add_study("Study 2")
-        serial_frame12 = self.add_serial(study_frame2, "Serial 1")
-        serial_frame22 = self.add_serial(study_frame2, "Serial 2")
-
 
 # -------------------------------------------------------------------#
 
@@ -192,30 +191,6 @@ class StudyTimelineTemplate(WorkingFrame):
         self.update_idletasks()
         self.right_click_menu_study = RCMStudy(self)
         self.right_click_menu_serial = RCMSerial(self)
-        study_frame1 = self.add_study("Study 1")
-        serial_frame1 = self.add_serial(study_frame1, "Serial 1")
-        serial_frame2 = self.add_serial(study_frame1, "Serial 2")
-        study_frame2 = self.add_study("Study 2")
-        serial_frame12 = self.add_serial(study_frame2, "Serial 1")
-        serial_frame22 = self.add_serial(study_frame2, "Serial 2")
-        study_frame1 = self.add_study("Study 1")
-        serial_frame1 = self.add_serial(study_frame1, "Serial 1")
-        serial_frame2 = self.add_serial(study_frame1, "Serial 2")
-        study_frame2 = self.add_study("Study 2")
-        serial_frame12 = self.add_serial(study_frame2, "Serial 1")
-        serial_frame22 = self.add_serial(study_frame2, "Serial 2")
-        study_frame1 = self.add_study("Study 1")
-        serial_frame1 = self.add_serial(study_frame1, "Serial 1")
-        serial_frame2 = self.add_serial(study_frame1, "Serial 2")
-        study_frame2 = self.add_study("Study 2")
-        serial_frame12 = self.add_serial(study_frame2, "Serial 1")
-        serial_frame22 = self.add_serial(study_frame2, "Serial 2")
-        study_frame1 = self.add_study("Study 1")
-        serial_frame1 = self.add_serial(study_frame1, "Serial 1")
-        serial_frame2 = self.add_serial(study_frame1, "Serial 2")
-        study_frame2 = self.add_study("Study 2")
-        serial_frame12 = self.add_serial(study_frame2, "Serial 1")
-        serial_frame22 = self.add_serial(study_frame2, "Serial 2")
 
 # -------------------------------------------------------------------#
 
