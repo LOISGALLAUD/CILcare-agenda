@@ -114,16 +114,15 @@ class DBCursor:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name VARCHAR(255) NOT NULL,
                 archived BOOLEAN NOT NULL,
-                client_id INT,
+                client_name VARCHAR(255),
                 animal_type VARCHAR(255),
                 animal_count INT,
-                description TEXT,
-                FOREIGN KEY (client_id) REFERENCES client(id)
+                description TEXT
             );
             """)
 
         self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS series (
+            CREATE TABLE IF NOT EXISTS serial (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 study_id INT,
                 name VARCHAR(255),
@@ -131,13 +130,6 @@ class DBCursor:
                 ears VARCHAR(255),
                 FOREIGN KEY (study_id) REFERENCES studies(id)
             );""")
-
-        self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS clients (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name VARCHAR(255) NOT NULL
-            );
-            """)
 
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS animal_types (
@@ -158,6 +150,26 @@ class DBCursor:
             );
         """)
 
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS tasks (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                study_id INTEGER,
+                series_id INTEGER,
+                operator_id INTEGER,
+                room_id INTEGER,
+                equipment_id INTEGER,
+                animal_type_id INTEGER,
+                start_date DATETIME,
+                end_date DATETIME,
+                description TEXT,
+                FOREIGN KEY (study_id) REFERENCES studies(id),
+                FOREIGN KEY (series_id) REFERENCES series(id),
+                FOREIGN KEY (operator_id) REFERENCES operators(id),
+                FOREIGN KEY (room_id) REFERENCES rooms(id),
+                FOREIGN KEY (equipment_id) REFERENCES equipments(id),
+                FOREIGN KEY (animal_type_id) REFERENCES animal_types(id)
+            );
+        """)
         return True
 
     def setup_admin(self) -> bool:
@@ -481,6 +493,19 @@ class DBCursor:
         self.connection.commit()
         return True
 
+    def insert_task(self, study_id:int, series_id:int, operator_id:int,
+                    room_id:int, equipment_id:int, animal_type_id:int,
+                    start_date:datetime, end_date:datetime, description:str) -> bool:
+        """
+        Inserts a task in the database.
+        """
+        self.cursor.execute("""
+            INSERT INTO `tasks` (`study_id`, `series_id`, `operator_id`, `room_id`, `equipment_id`, `animal_type_id`, `start_date`, `end_date`, `description`)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+            """, (study_id, series_id, operator_id, room_id, equipment_id, animal_type_id, start_date, end_date, description))
+        self.connection.commit()
+        return  True
+
     def set_random_values(self) -> bool:
         """
         Sets random values in the database.
@@ -538,15 +563,6 @@ class DBCursor:
                 user['username'],
                 user['password']
             )
-            self.cursor.execute(query, values)
-            self.connection.commit()
-
-        clients = ['Client A', 'Client B', 'Client C']
-        random.shuffle(clients)
-
-        for client_name in clients:
-            query = "INSERT INTO clients (name) VALUES (?)"
-            values = (client_name,)
             self.cursor.execute(query, values)
             self.connection.commit()
 
@@ -664,12 +680,12 @@ class DBCursor:
 
         for study in studies:
             query = """INSERT INTO studies
-            (name, archived, client_id, animal_type, animal_count, description)
+            (name, archived, client_name, animal_type, animal_count, description)
             VALUES (?, ?, ?, ?, ?, ?)"""
             values = (
                 study['name'],
                 study['archived'],
-                random.randint(1, len(clients)),
+                "Client " + study['name'],
                 study['animal_type'],
                 study['animal_count'],
                 study['description']
@@ -687,7 +703,7 @@ class DBCursor:
         ]
 
         for series_data in series:
-            query = "INSERT INTO series (study_id, name, number, ears) VALUES (?, ?, ?, ?)"
+            query = "INSERT INTO serial (study_id, name, number, ears) VALUES (?, ?, ?, ?)"
             values = (
                 random.randint(1, len(studies)),
                 series_data['name'],

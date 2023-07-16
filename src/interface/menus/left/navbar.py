@@ -1,9 +1,9 @@
 """
-Nabar.py
+Navbar.py
 
 Configure MarcoNeo's navbar on its shopping menu.
 """
-
+# pylint: disable=django-not-configured
 # -------------------------------------------------------------------#
 
 import os
@@ -24,13 +24,12 @@ class Navbar(Frame):
                "Templates"]
 
     def __init__(self, left_grid=None) -> None:
-        super().__init__(left_grid)
+        super().__init__(left_grid, bg="#d3ccff")
         self.manager = left_grid
         # Default toggle
         self.current_toggle = self.toggles[0]
 
         self.grid_propagate(False)
-        self.configure(bg="#d3ccff")
         self.setup_buttons()
 
     def setup_buttons(self) -> bool:

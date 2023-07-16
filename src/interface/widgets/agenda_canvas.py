@@ -65,11 +65,12 @@ class WorkingFrame(Frame):
         self.serial_canvases.append(serial_frame.serial_canvas)
         return serial_frame
 
-    def add_task(self, serial_frame) -> None:
+    def add_task(self, serial_frame, name, 
+                start_date, end_date) -> None:
         """
         Adds a task to the timeline.
         """
-        TaskRectangle(serial_frame.serial_canvas, 'Task name', 8, 12)
+        TaskRectangle(serial_frame.serial_canvas, name, start_date, end_date)
 
     def update_schedule(self, _start_date, _time_interval) -> None:
         """
@@ -251,8 +252,10 @@ class TaskRectangle:
         self.is_dragging = False  # Indicateur de déplacement en cours
 
         self.name = name
-        self.x_pos = self.get_x_pos(starting_hour)
-        self.width = self.get_x_pos(ending_hour) - self.x_pos
+        print(starting_hour.hour)
+        print(ending_hour.hour)
+        self.x_pos = self.get_x_pos(starting_hour.hour)
+        self.width = self.get_x_pos(ending_hour.hour) - self.x_pos
         self.y_pos = 5
 
         self.draw_task()

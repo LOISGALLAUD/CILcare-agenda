@@ -6,9 +6,11 @@ Studies template for the body
 
 # -------------------------------------------------------------------#
 
+from datetime import datetime
 from tkcolorpicker import askcolor
-from src.utils.graphical_utils import Frame, Canvas, Label, ButtonApp, Text
+from src.utils.graphical_utils import Frame, Canvas, Label, ButtonApp, Text, StringVar
 from src.utils.graphical_utils import LabelEntryPair, Serials, IntVar, Checkbutton
+from src.utils.graphical_utils import Combobox
 from src.interface.widgets.schedule_picker import SchedulePicker
 from src.interface.widgets.right_click import RCMSerial, RCMStudy
 from src.interface.widgets.agenda_canvas import WorkingFrame
@@ -26,6 +28,7 @@ class StudiesTemplate(Frame):
     def __init__(self, body=None):
         super().__init__(body, bg="#5b557f")
         self.manager = body
+        self.db_manager = body.manager.manager.gui.app.db_cursor
         self.pack(fill='both', expand=True, side='top')
         self.update_idletasks()
 
@@ -192,6 +195,12 @@ class StudyTimelineTemplate(WorkingFrame):
         self.right_click_menu_study = RCMStudy(self)
         self.right_click_menu_serial = RCMSerial(self)
 
+        study_frame = self.add_study("STUDY TEST")
+        serial_frame = self.add_serial(study_frame, "SERIAL TEST")
+        self.manager.db_manager.insert_task(1, 1, 1, 1, 1, 1, datetime(2023, 7, 16, 10, 0), datetime(2023, 7, 16, 18, 0),
+                                            "Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
+        self.add_task(serial_frame, "TASK TEST", datetime(2023, 7, 16, 10, 0), datetime(2023, 7, 16, 18, 0))
+
 # -------------------------------------------------------------------#
 
 
@@ -199,17 +208,25 @@ class AddStudyTemplate(Frame):
     """
     Templates displayed when the user wants to add a study.
     """
-    parameters = ["Study name", "Client name", "Animal type", "Number"]
+    parameters = ["Study name", "Client name", "Number"]
 
     def __init__(self, study_template) -> None:
         super().__init__(study_template)
         self.manager = study_template
+        self.db_cursor_manager = study_template.manager.manager.manager.gui.app.db_cursor
         self.configure(bg="#FFFFFF")
 
         # Parameters of the study
         for parameter in self.parameters:
             LabelEntryPair(self, parameter).pack(
                 fill='both', side='top', padx=10)
+
+        options = [animal_type["name"] for
+                   animal_type in self.db_cursor_manager.get_animal_types()]
+        self.animal_type = StringVar()
+        Combobox(self, textvariable=self.animal_type, values=options,
+                               state="readonly", width=30).pack()
+        self.animal_type.set(options[0])
 
         self.checkbox_var = IntVar()
         self.checkbox = Checkbutton(self, text="Archived", bg="#FFFFFF", activebackground="#FFFFFF",
