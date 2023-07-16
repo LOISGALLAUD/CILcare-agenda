@@ -6,7 +6,7 @@ Studies template for the body
 
 # -------------------------------------------------------------------#
 
-from datetime import datetime
+# from datetime import datetime
 from tkcolorpicker import askcolor
 from src.utils.graphical_utils import Frame, Canvas, Label, ButtonApp, Text, StringVar
 from src.utils.graphical_utils import LabelEntryPair, Serials, IntVar, Checkbutton
@@ -194,12 +194,28 @@ class StudyTimelineTemplate(WorkingFrame):
         self.update_idletasks()
         self.right_click_menu_study = RCMStudy(self)
         self.right_click_menu_serial = RCMSerial(self)
-
-        study_frame = self.add_study("STUDY TEST")
-        serial_frame = self.add_serial(study_frame, "SERIAL TEST")
-        self.manager.db_manager.insert_task(1, 1, 1, 1, 1, 1, datetime(2023, 7, 16, 10, 0), datetime(2023, 7, 16, 18, 0),
-                                            "Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
-        self.add_task(serial_frame, "TASK TEST", datetime(2023, 7, 16, 10, 0), datetime(2023, 7, 16, 18, 0))
+        
+        for study in self.retrieve_studies():
+            study_frame = self.add_study(study["name"], study["archived"],
+                                         study["client_name"], study["number"],
+                                         study["animal_type_id"], study["description"])
+            # for serial in self.manager.db_manager.get_serials(study["id"]):
+            #     serial_frame = self.add_serial(study_frame, serial["name"])
+            #     for task in self.manager.db_manager.get_tasks(serial["id"]):
+            #         self.add_task(serial_frame, task["name"], task["start_date"], task["end_date"])
+        
+        # self.manager.db_manager.insert_study("STUDY TEST", 0, "CLIENT TEST", 1, 69, "Lorem ipsum")
+        # self.add_study("STUDY TEST", 0, "CLIENT TEST", 1, 69, "Lorem ipsum")
+        # serial_frame = self.add_serial(study_frame, "SERIAL TEST")
+        # self.manager.db_manager.insert_task(1, 1, 1, 1, 1, 1, datetime(2023, 7, 16, 10, 0), datetime(2023, 7, 16, 18, 0),
+        #                                     "Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
+        # self.add_task(serial_frame, "TASK TEST", datetime(2023, 7, 16, 10, 0), datetime(2023, 7, 16, 18, 0))
+        
+    def retrieve_studies(self) -> list:
+        """
+        Retrieves the studies from the database.
+        """
+        return self.manager.db_manager.get_studies()
 
 # -------------------------------------------------------------------#
 
@@ -208,7 +224,6 @@ class AddStudyTemplate(Frame):
     """
     Templates displayed when the user wants to add a study.
     """
-    parameters = ["Study name", "Client name", "Number"]
 
     def __init__(self, study_template) -> None:
         super().__init__(study_template)
@@ -216,11 +231,16 @@ class AddStudyTemplate(Frame):
         self.db_cursor_manager = study_template.manager.manager.manager.gui.app.db_cursor
         self.configure(bg="#FFFFFF")
 
-        # Parameters of the study
-        for parameter in self.parameters:
-            LabelEntryPair(self, parameter).pack(
-                fill='both', side='top', padx=10)
-
+        self.study_name = LabelEntryPair(self, "Study name")
+        self.study_name.pack(fill='both', side='top', padx=10)
+        
+        self.client_name = LabelEntryPair(self, "Client name")
+        self.client_name.pack(fill='both', side='top', padx=10)
+        
+        self.number = LabelEntryPair(self, "Number") 
+        self.number.pack(fill='both', side='top', padx=10)
+        
+        
         options = [animal_type["name"] for
                    animal_type in self.db_cursor_manager.get_animal_types()]
         self.animal_type = StringVar()
@@ -247,7 +267,12 @@ class AddStudyTemplate(Frame):
         self.bottom_frame = Frame(self, bg="white")
         self.bottom_frame.pack(fill='both', side='bottom', padx=10, pady=10)
         self.confirm_btn = ButtonApp(self.bottom_frame, text="Confirm",
-                                     command=self.manager.from_addstudy_to_studies_frame)
+                                     command=lambda: self.confirm(
+                                        self.study_name.entry.get(), self.client_name.entry.get(),
+                                        self.number.entry.get(), self.animal_type.get(),
+                                        self.checkbox_var.get(),
+                                        self.description.get("1.0", "end-1c")
+                                  ))
         self.back_btn = ButtonApp(self.bottom_frame, text="Back",
                                   command=self.manager.from_addstudy_to_studies_frame)
         self.confirm_btn.pack(fill='both', expand=True,
@@ -255,6 +280,16 @@ class AddStudyTemplate(Frame):
         self.back_btn.pack(fill='both', expand=True,
                            side='left', padx=10, pady=10)
 
+    def confirm(self, study_name: str, client_name: str, number: int,
+                animal_type: str, archived: bool, description: str) -> None:
+        """
+        Confirms the creation of the study.
+        """
+        self.db_cursor_manager.insert_study(study_name, client_name, 
+            number, animal_type, archived, description)
+        self.manager.from_addstudy_to_studies_frame()
+        self.master.update_timelines(self.master.starting_time, self.master.time_interval, None)
+        
 # -------------------------------------------------------------------#
 
 

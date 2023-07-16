@@ -115,9 +115,10 @@ class DBCursor:
                 name VARCHAR(255) NOT NULL,
                 archived BOOLEAN NOT NULL,
                 client_name VARCHAR(255),
-                animal_type VARCHAR(255),
+                animal_type_id INT,
                 animal_count INT,
-                description TEXT
+                description TEXT,
+                FOREIGN KEY (animal_type_id) REFERENCES animal_types(id)
             );
             """)
 
@@ -401,6 +402,33 @@ class DBCursor:
         self.connection.commit()
         return self.cursor.fetchone()[0]
 
+    def get_studies(self, study_name:str=None) -> list:
+        """
+        Returns the studies.
+        """
+        if study_name is None:
+            self.cursor.execute("""
+                SELECT * FROM `studies`;
+            """)
+        else:
+            self.cursor.execute("""
+                SELECT * FROM `studies` WHERE `name` = ?;
+            """, (study_name,))
+        rows = self.cursor.fetchall()
+        studies = [
+            {
+                'id': row[0],
+                'name': row[1],
+                'archived': row[2],
+                'client_name': row[3],
+                'animal_type_id': row[4],
+                'number': row[5],
+                'description': row[6]
+            }
+            for row in rows
+        ]
+        return studies
+
     def insert_room(self, name:str, archived:int, description:str) -> bool:
         """
         Inserts a room in the database.
@@ -506,6 +534,18 @@ class DBCursor:
         self.connection.commit()
         return  True
 
+    def insert_study(self, name:str, archived:bool, client_name:str,
+                     animal_type_id:int, animal_count:int, description:str) -> bool:
+        """
+        Inserts a study in the database.
+        """
+        self.cursor.execute("""
+            INSERT INTO `studies` (`name`, `archived`, `client_name`, `animal_type_id`, `animal_count`, `description`)
+            VALUES (?, ?, ?, ?, ?, ?);
+            """, (name, archived, client_name, animal_type_id, animal_count, description))
+        self.connection.commit()
+        return True
+    
     def set_random_values(self) -> bool:
         """
         Sets random values in the database.
@@ -663,30 +703,30 @@ class DBCursor:
         studies = [
             {'name': 'Study 1',
              'archived': random.choice([True, False]),
-             'animal_type': 'Cat', 'animal_count': random.randint(1, 10),
+             'animal_type_id': 2, 'animal_count': random.randint(1, 10),
              'description': 'Lorem ipsum dolor sit amet'},
 
             {'name': 'Study 2',
              'archived': random.choice([True, False]),
-             'animal_type': 'Dog', 'animal_count': random.randint(1, 10),
+             'animal_type_id': 1, 'animal_count': random.randint(1, 10),
              'description': 'Consectetur adipiscing elit'},
 
             {'name': 'Study 3',
              'archived': random.choice([True, False]),
-             'animal_type': 'Rabbit',
+             'animal_type_id': 3,
              'animal_count': random.randint(1, 10),
              'description': 'Sed do eiusmod tempor incididunt'},
         ]
 
         for study in studies:
             query = """INSERT INTO studies
-            (name, archived, client_name, animal_type, animal_count, description)
+            (name, archived, client_name, animal_type_id, animal_count, description)
             VALUES (?, ?, ?, ?, ?, ?)"""
             values = (
                 study['name'],
                 study['archived'],
                 "Client " + study['name'],
-                study['animal_type'],
+                study['animal_type_id'],
                 study['animal_count'],
                 study['description']
             )

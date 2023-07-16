@@ -8,6 +8,7 @@ of operators.
 
 # -------------------------------------------------------------------#
 
+from  datetime import datetime
 from src.utils.graphical_utils import Frame, Canvas, Label, Scrollbar
 
 # -------------------------------------------------------------------#
@@ -51,11 +52,13 @@ class WorkingFrame(Frame):
         x_step = self.master.winfo_width() / 25
         return time_interval * x_step
 
-    def add_study(self, study_name) -> None:
+    def add_study(self, study_name, archived, client_name, animal_id, number,
+                  description) -> None:
         """
         Adds a study to the timeline.
         """
-        return StudyFrame(self.agenda_frame, study_name)
+        return StudyFrame(self.agenda_frame, study_name, archived, client_name, animal_id, number,
+                  description)
 
     def add_serial(self, study_frame, serial_name) -> None:
         """
@@ -97,9 +100,16 @@ class StudyFrame(Frame):
     Frame containing a study and its serials.
     """
 
-    def __init__(self, master, name, **kwargs):
+    def __init__(self, master, name, archived, client_name, animal_id, number,
+                  description, **kwargs):
         super().__init__(master, bg="white", **kwargs)
         self.coeff_config = master.master.coeff_config
+        self.name = name
+        self.archived = archived
+        self.client_name = client_name
+        self.animal_id = animal_id
+        self.number = number
+        self.description = description
         self.grid_columnconfigure(0, weight=1, uniform='group')
         self.grid_columnconfigure(
             1, weight=12*self.coeff_config, uniform='group')
@@ -245,15 +255,13 @@ class TaskRectangle:
     height = 40
 
     def __init__(self, canvas_manager: Canvas, name: str,
-                 starting_hour: int, ending_hour: int) -> None:
+                 starting_hour: datetime, ending_hour: datetime) -> None:
         self.canvas_manager = canvas_manager
         self.start_x_pos = 0  # Position de départ du rectangle
         self.start_y_pos = 0  # Position de départ du rectangle
         self.is_dragging = False  # Indicateur de déplacement en cours
 
         self.name = name
-        print(starting_hour.hour)
-        print(ending_hour.hour)
         self.x_pos = self.get_x_pos(starting_hour.hour)
         self.width = self.get_x_pos(ending_hour.hour) - self.x_pos
         self.y_pos = 5
