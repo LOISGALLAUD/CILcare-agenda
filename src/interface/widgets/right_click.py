@@ -17,16 +17,15 @@ class RCMStudy(Menu):
     Frame displaying when right clicking
     on the study timeline.
     """
-    def __init__(self, manager):
+    def __init__(self, manager, study_template):
         super().__init__(manager)
         self.manager = manager
-        self.header_manager = self.manager.manager.manager.manager.header
         self.config(tearoff=False)
         self.add_command(label="Display", command=None)
         self.add_command(label="Modify",
-                         command=self.header_manager.display_add_study)
+                         command=study_template.setup_add_study)
         self.add_separator()
-        self.add_command(label="Delete", command=None)
+        self.add_command(label="Delete", command=study_template.delete_study)
 
     def show(self, event):
         """
@@ -40,7 +39,7 @@ class RCMSerial(Menu):
     Frame displaying when right clicking
     on the serials.
     """
-    def __init__(self, manager):
+    def __init__(self, manager, study_template):
         super().__init__(manager)
         self.manager = manager
         self.config(tearoff=False)

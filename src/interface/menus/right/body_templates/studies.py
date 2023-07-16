@@ -12,7 +12,7 @@ from src.utils.graphical_utils import Frame, Canvas, Label, ButtonApp, Text, Str
 from src.utils.graphical_utils import LabelEntryPair, Serials, IntVar, Checkbutton
 from src.utils.graphical_utils import Combobox
 from src.interface.widgets.schedule_picker import SchedulePicker
-from src.interface.widgets.right_click import RCMSerial, RCMStudy
+from src.interface.widgets.right_click import RCMStudy, RCMSerial
 from src.interface.widgets.agenda_canvas import WorkingFrame
 from src.interface.widgets.footer_grad import FooterFrame
 
@@ -62,6 +62,17 @@ class StudiesTemplate(Frame):
                                         self.days_off_frame, day_of_week)
         self.footer_frame.canvas.configure(
             scrollregion=self.footer_frame.canvas.bbox('all'))
+        RCMStudy(self.study_frame, self)
+        for children in self.study_frame.agenda_frame.winfo_children():
+            RCMStudy(children, self)
+            for child in children.winfo_children():
+                right_click = RCMStudy(child, self)
+                child.bind("<Button-3>", right_click.show)
+                for sub_child in child.winfo_children():
+                    for sub_sub_child in sub_child.winfo_children():
+                        sub_right_click = RCMSerial(sub_sub_child, self)
+                        sub_sub_child.bind("<Button-3>", sub_right_click.show)
+
 
     def update_timelines(self, _start_date: int, time_interval: int, _day_of_week: str) -> None:
         """
@@ -165,6 +176,11 @@ class StudiesTemplate(Frame):
         self.add_days_off.pack(fill='both', expand=True,
                                side='top', padx=10, pady=10)
 
+    def delete_study(self) -> None:
+        """
+        Deletes the study.
+        """
+
 # -------------------------------------------------------------------#
 
 
@@ -177,8 +193,6 @@ class DaysOffTimelineTemplate(WorkingFrame):
         super().__init__(body, row=row)
         self.manager = body
         self.update_idletasks()
-        self.right_click_menu_study = RCMStudy(self)
-        self.bind("<Button-3>", self.right_click_menu_study.show)
 
 
 # -------------------------------------------------------------------#
@@ -192,8 +206,6 @@ class StudyTimelineTemplate(WorkingFrame):
         super().__init__(body, row=row)
         self.manager = body
         self.update_idletasks()
-        self.right_click_menu_study = RCMStudy(self)
-        self.right_click_menu_serial = RCMSerial(self)
 
         for study in self.retrieve_studies():
             if study["archived"] or study["deleted"]:
@@ -288,8 +300,6 @@ class AddStudyTemplate(Frame):
         """
         Confirms the creation of the study.
         """
-        print(animal_type)
-
         animal_type_id = self.db_cursor_manager.get_animal_types(animal_type)[0]["id"]
         study_id = self.db_cursor_manager.insert_study(study_name, archived, client_name,
              animal_type_id, number, description)

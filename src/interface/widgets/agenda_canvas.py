@@ -69,7 +69,7 @@ class WorkingFrame(Frame):
         self.serial_canvases.append(serial_frame.serial_canvas)
         return serial_frame
 
-    def add_task(self, serial_frame, name, 
+    def add_task(self, serial_frame, name,
                 start_date, end_date) -> None:
         """
         Adds a task to the timeline.
@@ -90,7 +90,7 @@ class AgendaFrame(Frame):
     """
 
     def __init__(self, master, scrollable_frame, **kwargs):
-        super().__init__(master=scrollable_frame, **kwargs)
+        super().__init__(master=scrollable_frame, bg='white', **kwargs)
         self.master = master
         self.pack(fill='x')
         self.update_idletasks()
@@ -121,7 +121,7 @@ class StudyFrame(Frame):
         self.serial_container = Frame(self)
         self.serial_container.grid(row=0, column=1, sticky='ew')
 
-        self.pack(fill="x")
+        self.pack(fill="x", pady=5)
         self.update_idletasks()
 
 
@@ -143,7 +143,7 @@ class SerialFrame(Frame):
         self.ears = ears
 
         Label(self, text=name, fg="black", bg='#d3ccff',
-              wraplength=150).grid(row=0, column=0, sticky='nsew', pady=5)
+              wraplength=150).grid(row=0, column=0, sticky='nsew')
 
         self.pack(fill="x")
         self.update_idletasks()

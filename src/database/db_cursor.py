@@ -568,7 +568,6 @@ class DBCursor:
         if self.cursor.fetchone() is not None:
             self.safe_delete_study(name)
 
-        print(name, archived, client_name, animal_type_id, number, description)
         self.cursor.execute("""
             INSERT INTO `studies` (`name`, `archived`, `client_name`, `animal_type_id`, `number`, `description`)
             VALUES (?, ?, ?, ?, ?, ?);
