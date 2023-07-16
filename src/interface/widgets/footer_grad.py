@@ -187,7 +187,7 @@ class TimeCanvas(Canvas):
                                  anchor='n', fill='black', tags="timescale")
             else:
                 self.create_text(x_pos + x_step / 4, 20,
-                                 text=str(time_label) + "h",
+                                 text=str(time_label % 24) + "h",
                                  anchor='n', fill='grey', tags="timescale")
 
     def update_timeline(self, start_date, time_interval, day_of_week) -> None:

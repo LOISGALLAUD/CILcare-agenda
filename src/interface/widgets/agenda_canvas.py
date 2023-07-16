@@ -60,11 +60,12 @@ class WorkingFrame(Frame):
         return StudyFrame(self.agenda_frame, study_name, archived, client_name, animal_id, number,
                   description)
 
-    def add_serial(self, study_frame, serial_name) -> None:
+    def add_serial(self, study_frame, serial_name,
+                   number, ears) -> None:
         """
         Adds a serial to the timeline.
         """
-        serial_frame = SerialFrame(study_frame.serial_container, serial_name)
+        serial_frame = SerialFrame(study_frame.serial_container, serial_name, number, ears)
         self.serial_canvases.append(serial_frame.serial_canvas)
         return serial_frame
 
@@ -129,13 +130,17 @@ class SerialFrame(Frame):
     Frame containing a serial and its tasks.
     """
 
-    def __init__(self, master, name, **kwargs):
+    def __init__(self, master, name, number, ears, **kwargs):
         super().__init__(master, bg='white', **kwargs)
         self.grid_propagate(False)
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1, uniform='group')
         self.grid_columnconfigure(
             1, weight=13*self.master.master.coeff_config, uniform='group')
+
+        self.name = name
+        self.number = number
+        self.ears = ears
 
         Label(self, text=name, fg="black", bg='#d3ccff',
               wraplength=150).grid(row=0, column=0, sticky='nsew', pady=5)

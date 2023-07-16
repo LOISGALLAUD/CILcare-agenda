@@ -23,6 +23,9 @@ class Serials(Frame):
         self.configure(bg="#FFFFFF")
         self.manager = study_template
         self.displayed_serial = 0
+        self.name=None
+        self.number=None
+        self.ears=None
         Label(self, text="Serials: ", bg="#FFFFFF",
               fg="#000000").pack(fill='both', side='left', pady=10)
         ButtonApp(self, text="+", bg="#FFFFFF",
@@ -36,8 +39,15 @@ class Serials(Frame):
             return
         line_frame = Frame(self, bg="white")
         line_frame.pack(fill='both', side='top')
-        for parameter in self.parameters:
-            LabelEntryPair(line_frame, parameter).pack(fill='both', side='left')
+
+        self.name = LabelEntryPair(line_frame, "Name")
+        self.name.pack(fill='both', side='left')
+
+        self.number = LabelEntryPair(line_frame, "Number")
+        self.number.pack(fill='both', side='left')
+
+        self.ears = LabelEntryPair(line_frame, "Ears")
+        self.ears.pack(fill='both', side='left')
 
         ButtonApp(line_frame, text="X", bg="#FFFFFF",
                     command=lambda: self.remove_serial_line(line_frame)).pack(fill='both',
@@ -50,3 +60,17 @@ class Serials(Frame):
         """
         self.displayed_serial -= 1
         line_frame.destroy()
+
+    def get_data(self) -> dict:
+        """
+        Get the data from the serial widget
+        """
+        data = []
+        for line in self.winfo_children():
+            if isinstance(line, Frame):
+                serial = {}
+                for entry in line.winfo_children():
+                    if isinstance(entry, LabelEntryPair):
+                        serial[entry.label.cget("text")[:-1].lower()] = entry.entry.get()
+                data.append(serial)
+        return data

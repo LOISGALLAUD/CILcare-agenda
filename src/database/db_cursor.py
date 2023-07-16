@@ -429,6 +429,26 @@ class DBCursor:
         ]
         return studies
 
+    def get_serials(self, study_id:int) -> list:
+        """
+        Returns the serials.
+        """
+        self.cursor.execute("""
+            SELECT * FROM `serial` WHERE `study_id` = ?;
+        """, (study_id,))
+        rows = self.cursor.fetchall()
+        serials = [
+            {
+                'id': row[0],
+                'study_id': row[1],
+                'name': row[2],
+                'number': row[3],
+                'ears': row[4]
+            }
+            for row in rows
+        ]
+        return serials
+
     def insert_room(self, name:str, archived:int, description:str) -> bool:
         """
         Inserts a room in the database.
@@ -538,14 +558,26 @@ class DBCursor:
                      animal_type_id:int, animal_count:int, description:str) -> bool:
         """
         Inserts a study in the database.
+        Returns its id.
         """
         self.cursor.execute("""
             INSERT INTO `studies` (`name`, `archived`, `client_name`, `animal_type_id`, `animal_count`, `description`)
             VALUES (?, ?, ?, ?, ?, ?);
             """, (name, archived, client_name, animal_type_id, animal_count, description))
         self.connection.commit()
+        return self.cursor.lastrowid
+
+    def insert_serial(self, study_id:int, name:str, number:int, ears:str) -> bool:
+        """
+        Inserts a serial in the database.
+        """
+        self.cursor.execute("""
+            INSERT INTO `serial` (`study_id`, `name`, `number`, `ears`)
+            VALUES (?, ?, ?, ?);
+            """, (study_id, name, number, ears))
+        self.connection.commit()
         return True
-    
+
     def set_random_values(self) -> bool:
         """
         Sets random values in the database.

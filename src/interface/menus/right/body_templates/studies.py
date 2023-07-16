@@ -199,9 +199,10 @@ class StudyTimelineTemplate(WorkingFrame):
             study_frame = self.add_study(study["name"], study["archived"],
                                          study["client_name"], study["number"],
                                          study["animal_type_id"], study["description"])
-            # for serial in self.manager.db_manager.get_serials(study["id"]):
-            #     serial_frame = self.add_serial(study_frame, serial["name"])
-            #     for task in self.manager.db_manager.get_tasks(serial["id"]):
+            for serial in self.manager.db_manager.get_serials(study["id"]):
+                serial_frame = self.add_serial(study_frame, serial["name"],
+                                               serial["number"], serial["ears"])
+                # for task in self.manager.db_manager.get_tasks(serial["id"]):
             #         self.add_task(serial_frame, task["name"], task["start_date"], task["end_date"])
         
         # self.manager.db_manager.insert_study("STUDY TEST", 0, "CLIENT TEST", 1, 69, "Lorem ipsum")
@@ -285,8 +286,12 @@ class AddStudyTemplate(Frame):
         """
         Confirms the creation of the study.
         """
-        self.db_cursor_manager.insert_study(study_name, client_name, 
+        study_id = self.db_cursor_manager.insert_study(study_name, client_name,
             number, animal_type, archived, description)
+        serials = self.serials.get_data()
+        for serial in serials:
+            self.db_cursor_manager.insert_serial(study_id, serial["name"],
+                                                 serial["number"], serial["ears"])
         self.manager.from_addstudy_to_studies_frame()
         self.master.update_timelines(self.master.starting_time, self.master.time_interval, None)
         
