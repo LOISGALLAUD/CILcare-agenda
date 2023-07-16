@@ -194,8 +194,10 @@ class StudyTimelineTemplate(WorkingFrame):
         self.update_idletasks()
         self.right_click_menu_study = RCMStudy(self)
         self.right_click_menu_serial = RCMSerial(self)
-        
+
         for study in self.retrieve_studies():
+            if study["archived"] or study["deleted"]:
+                continue
             study_frame = self.add_study(study["name"], study["archived"],
                                          study["client_name"], study["number"],
                                          study["animal_type_id"], study["description"])
@@ -204,14 +206,14 @@ class StudyTimelineTemplate(WorkingFrame):
                                                serial["number"], serial["ears"])
                 # for task in self.manager.db_manager.get_tasks(serial["id"]):
             #         self.add_task(serial_frame, task["name"], task["start_date"], task["end_date"])
-        
+
         # self.manager.db_manager.insert_study("STUDY TEST", 0, "CLIENT TEST", 1, 69, "Lorem ipsum")
         # self.add_study("STUDY TEST", 0, "CLIENT TEST", 1, 69, "Lorem ipsum")
         # serial_frame = self.add_serial(study_frame, "SERIAL TEST")
         # self.manager.db_manager.insert_task(1, 1, 1, 1, 1, 1, datetime(2023, 7, 16, 10, 0), datetime(2023, 7, 16, 18, 0),
         #                                     "Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
         # self.add_task(serial_frame, "TASK TEST", datetime(2023, 7, 16, 10, 0), datetime(2023, 7, 16, 18, 0))
-        
+
     def retrieve_studies(self) -> list:
         """
         Retrieves the studies from the database.
@@ -234,14 +236,14 @@ class AddStudyTemplate(Frame):
 
         self.study_name = LabelEntryPair(self, "Study name")
         self.study_name.pack(fill='both', side='top', padx=10)
-        
+
         self.client_name = LabelEntryPair(self, "Client name")
         self.client_name.pack(fill='both', side='top', padx=10)
-        
-        self.number = LabelEntryPair(self, "Number") 
+
+        self.number = LabelEntryPair(self, "Number")
         self.number.pack(fill='both', side='top', padx=10)
-        
-        
+
+
         options = [animal_type["name"] for
                    animal_type in self.db_cursor_manager.get_animal_types()]
         self.animal_type = StringVar()
@@ -286,15 +288,18 @@ class AddStudyTemplate(Frame):
         """
         Confirms the creation of the study.
         """
-        study_id = self.db_cursor_manager.insert_study(study_name, client_name,
-            number, animal_type, archived, description)
+        print(animal_type)
+
+        animal_type_id = self.db_cursor_manager.get_animal_types(animal_type)[0]["id"]
+        study_id = self.db_cursor_manager.insert_study(study_name, archived, client_name,
+             animal_type_id, number, description)
         serials = self.serials.get_data()
         for serial in serials:
             self.db_cursor_manager.insert_serial(study_id, serial["name"],
                                                  serial["number"], serial["ears"])
         self.manager.from_addstudy_to_studies_frame()
         self.master.update_timelines(self.master.starting_time, self.master.time_interval, None)
-        
+
 # -------------------------------------------------------------------#
 
 

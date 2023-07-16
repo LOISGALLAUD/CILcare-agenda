@@ -116,8 +116,9 @@ class DBCursor:
                 archived BOOLEAN NOT NULL,
                 client_name VARCHAR(255),
                 animal_type_id INT,
-                animal_count INT,
+                number INT,
                 description TEXT,
+                deleted BOOLEAN DEFAULT 0,
                 FOREIGN KEY (animal_type_id) REFERENCES animal_types(id)
             );
             """)
@@ -423,7 +424,8 @@ class DBCursor:
                 'client_name': row[3],
                 'animal_type_id': row[4],
                 'number': row[5],
-                'description': row[6]
+                'description': row[6],
+                'deleted': row[7]
             }
             for row in rows
         ]
@@ -555,16 +557,24 @@ class DBCursor:
         return  True
 
     def insert_study(self, name:str, archived:bool, client_name:str,
-                     animal_type_id:int, animal_count:int, description:str) -> bool:
+                     animal_type_id:int, number:int, description:str) -> bool:
         """
         Inserts a study in the database.
         Returns its id.
         """
         self.cursor.execute("""
-            INSERT INTO `studies` (`name`, `archived`, `client_name`, `animal_type_id`, `animal_count`, `description`)
+            SELECT id FROM `studies` WHERE `name` = ?;
+        """, (name,))
+        if self.cursor.fetchone() is not None:
+            self.safe_delete_study(name)
+
+        print(name, archived, client_name, animal_type_id, number, description)
+        self.cursor.execute("""
+            INSERT INTO `studies` (`name`, `archived`, `client_name`, `animal_type_id`, `number`, `description`)
             VALUES (?, ?, ?, ?, ?, ?);
-            """, (name, archived, client_name, animal_type_id, animal_count, description))
+            """, (name, archived, client_name, animal_type_id, number, description))
         self.connection.commit()
+
         return self.cursor.lastrowid
 
     def insert_serial(self, study_id:int, name:str, number:int, ears:str) -> bool:
@@ -734,32 +744,32 @@ class DBCursor:
 
         studies = [
             {'name': 'Study 1',
-             'archived': random.choice([True, False]),
-             'animal_type_id': 2, 'animal_count': random.randint(1, 10),
+             'archived': 0,
+             'animal_type_id': 2, 'number': random.randint(1, 10),
              'description': 'Lorem ipsum dolor sit amet'},
 
             {'name': 'Study 2',
              'archived': random.choice([True, False]),
-             'animal_type_id': 1, 'animal_count': random.randint(1, 10),
+             'animal_type_id': 1, 'number': random.randint(1, 10),
              'description': 'Consectetur adipiscing elit'},
 
             {'name': 'Study 3',
              'archived': random.choice([True, False]),
              'animal_type_id': 3,
-             'animal_count': random.randint(1, 10),
+             'number': random.randint(1, 10),
              'description': 'Sed do eiusmod tempor incididunt'},
         ]
 
         for study in studies:
             query = """INSERT INTO studies
-            (name, archived, client_name, animal_type_id, animal_count, description)
+            (name, archived, client_name, animal_type_id, number, description)
             VALUES (?, ?, ?, ?, ?, ?)"""
             values = (
                 study['name'],
                 study['archived'],
                 "Client " + study['name'],
                 study['animal_type_id'],
-                study['animal_count'],
+                study['number'],
                 study['description']
             )
             self.cursor.execute(query, values)
@@ -816,6 +826,16 @@ class DBCursor:
             values = (room['name'], room['archived'], room['description'])
             self.cursor.execute(query, values)
             self.connection.commit()
+
+    def safe_delete_study(self, study_name:str) -> bool:
+        """
+        Deletes a study in the database.
+        """
+        self.cursor.execute("""
+            UPDATE `studies` SET `deleted` = 1 WHERE `name` = ?;
+        """, (study_name,))
+        self.connection.commit()
+        return True
 
     def close_connection(self) -> bool:
         """
