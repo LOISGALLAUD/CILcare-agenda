@@ -3,6 +3,7 @@ right_click.py
 
 This file contain the menu object displayed
 next to the mouse when right clicking.
+#pylint disable=django-not-configured
 """
 
 #------------------------------------------------------------------------------#
@@ -42,10 +43,12 @@ class RCMSerial(Menu):
     def __init__(self, manager, study_template):
         super().__init__(manager)
         self.manager = manager
+        self.study_template = study_template
+        self.widget = None
         self.config(tearoff=False)
         self.add_command(label="Add a template", command=None)
         self.add_command(label="Add a task",
-                         command=None)
+                         command=self.add_task)
         self.add_command(label="Activate", command=None)
         self.add_separator()
         self.add_command(label="Delete", command=None)
@@ -54,7 +57,15 @@ class RCMSerial(Menu):
         """
         Shows the menu at the given coordinates.
         """
+        self.widget = event.widget
         self.tk_popup(event.x_root, event.y_root)
+
+
+    def add_task(self):
+        """
+        Adds a task to the serial.
+        """
+        self.study_template.show_add_task_template(self.widget)
 
 class RCMTemplates(Menu):
     """

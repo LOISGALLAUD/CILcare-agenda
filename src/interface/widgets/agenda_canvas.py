@@ -161,6 +161,8 @@ class SerialCanvas(Canvas):
         self.grid(row=0, column=1, sticky='ew')
         self.master = master
 
+        self.name = self.master.name
+
         self.width = 0
         self.height = 0
         self.time_interval = 0

@@ -22,8 +22,8 @@ class TemplatesTemplate(Frame):
         super().__init__(body)
         self.configure(bg='red')
         self.manager = body
-        self.db_cursor_manager = self.manager.manager.manager.gui.app.db_cursor
-        self.template_examples = self.db_cursor_manager.get_templates()
+        self.db_manager = self.manager.manager.manager.gui.app.db_cursor
+        self.template_examples = self.db_manager.get_templates()
         self.configure(bg="white")
         self.propagate(False)
 
@@ -111,12 +111,14 @@ class TaskTemplate(Frame):
     """
     Task frame displayed when right clicked.
     """
-    def __init__(self, manager):
+    def __init__(self, manager, study_id=None, serial_id=None, task_name=None):
         super().__init__(manager)
         self.manager = manager
         self.config(bg="white")
-        self.task_name = None
+        self.task_name = task_name
         self.room_options = None
+        self.study_id = study_id
+        self.serial_id = serial_id
         self.setup_widgets()
 
     def setup_widgets(self):
@@ -142,7 +144,7 @@ class TaskTemplate(Frame):
 
         # Adding the checkboxes
         self.qual_checkboxes = []
-        for qual in self.manager.db_cursor_manager.get_qualifications():
+        for qual in self.manager.db_manager.get_qualifications():
             qual_var = IntVar()
             qual_checkbutton = Checkbutton(qual_inner_frame, text=qual["name"],
                                       variable=qual_var)
@@ -166,7 +168,7 @@ class TaskTemplate(Frame):
 
         # Adding the checkboxes
         self.eqpt_checkboxes = []
-        for eqpt in self.manager.db_cursor_manager.get_equipments():
+        for eqpt in self.manager.db_manager.get_equipments():
             eqpt_var = IntVar()
             eqpt_checkbutton = Checkbutton(eqpt_inner_frame, text=eqpt["name"],
                                       variable=eqpt_var, command=self.update_allowed_rooms)
@@ -189,6 +191,7 @@ class TaskTemplate(Frame):
 
         # Schedule picker
         self.schedule_selector = SchedulePicker(self)
+        self.schedule_selector.confirm_filtering_btn.pack_forget()
         self.schedule_selector.pack(side="left")
 
         # Force checkbox
@@ -202,9 +205,9 @@ class TaskTemplate(Frame):
         self.bottom_frame = Frame(self, bg="white")
         self.bottom_frame.pack(fill='both', side='bottom', padx=10, pady=10)
         self.confirm_btn = ButtonApp(self.bottom_frame, text="Confirm",
-                                     command=None)
+                                     command=self.add_task)
         self.back_btn = ButtonApp(self.bottom_frame, text="Back",
-                                  command=self.manager.from_add_task_to_timeline)
+                                  command=self.manager.from_addtask_to_timeline)
         self.confirm_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
         self.back_btn.pack(fill='both', expand=True, side='left', padx=10, pady=10)
 
@@ -247,13 +250,13 @@ class TaskTemplate(Frame):
 
         rooms_allowed_id = []
         for eqpt_id in eqpt_checked_vars:
-            rooms_allowed_id.append(self.manager.db_cursor_manager.get_room_equipment(eqpt_id))
+            rooms_allowed_id.append(self.manager.db_manager.get_room_equipment(eqpt_id))
 
         # Checks if every id is the same
         if rooms_allowed_id:
             common_id = rooms_allowed_id[0] if all(element == rooms_allowed_id[0]
                                                 for element in rooms_allowed_id) else None
-            room = self.manager.db_cursor_manager.get_rooms(room_id=common_id)[0] if common_id else None
+            room = self.manager.db_manager.get_rooms(room_id=common_id)[0] if common_id else None
             self.room_label.entry.config(state="normal")
             self.room_label.entry.delete(0, "end")
             self.room_label.entry.insert(0, room["name"] if room else 'None')
@@ -263,6 +266,22 @@ class TaskTemplate(Frame):
             self.room_label.entry.delete(0, "end")
             self.room_label.entry.insert(0, 'No room')
             self.room_label.entry.config(state="readonly")
+
+    def add_task(self) -> None:
+        """
+        Adds a task to the database.
+        """
+        task_name = self.task_name.entry.get()
+        color = self.cget("bg")
+        force = self.checkbox_var.get()
+        qual_checked_vars = self.get_qual_checked_vars()
+        eqpt_checked_vars = self.get_eqpt_checked_vars()
+        start_time, end_time = self.schedule_selector.get_schedule()
+        self.manager.db_manager.insert_task(self.study_id, self.serial_id, task_name,
+                                                   qual_checked_vars, eqpt_checked_vars,
+                                                   color, start_time, end_time, force)
+        self.manager.from_addtask_to_timeline()
+        self.master.update_timelines(self.master.starting_time, self.master.time_interval, None)
 
 #-------------------------------------------------------------------#
 
@@ -287,7 +306,7 @@ class AddTemplateTemplate(Frame):
 
         # animal_type widget
         options = [animal_type["name"] for
-                   animal_type in self.manager.db_cursor_manager.get_animal_types()]
+                   animal_type in self.manager.db_manager.get_animal_types()]
         self.animal_type = StringVar()
         Combobox(self, textvariable=self.animal_type, values=options,
                                state="readonly", width=30).pack()
@@ -318,14 +337,14 @@ class AddTemplateTemplate(Frame):
         """
         study_name = self.template_name.entry.get()
         archived = self.checkbox_var.get()
-        animal_type_id = self.manager.db_cursor_manager.get_animal_types(
+        animal_type_id = self.manager.db_manager.get_animal_types(
             self.animal_type.get())[0]["id"]
         description = self.description.get("1.0", "end-1c")
 
-        self.manager.db_cursor_manager.insert_template(study_name, archived,
+        self.manager.db_manager.insert_template(study_name, archived,
                                                        animal_type_id, description)
 
-        self.manager.template_examples = self.manager.db_cursor_manager.get_templates()
+        self.manager.template_examples = self.manager.db_manager.get_templates()
         self.manager.clear_timeline()
         self.manager.templates_timeline.setup_timeline()
         self.manager.from_add_templates_to_timeline()

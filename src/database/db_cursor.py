@@ -156,20 +156,39 @@ class DBCursor:
             CREATE TABLE IF NOT EXISTS tasks (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 study_id INTEGER,
-                series_id INTEGER,
-                operator_id INTEGER,
-                room_id INTEGER,
+                serial_id INTEGER,
+                name VARCHAR(255),
+                qual_id INTEGER,
                 equipment_id INTEGER,
-                animal_type_id INTEGER,
+                color VARCHAR(255),
                 start_date DATETIME,
                 end_date DATETIME,
-                description TEXT,
+
+                force BOOLEAN DEFAULT 0,
                 FOREIGN KEY (study_id) REFERENCES studies(id),
-                FOREIGN KEY (series_id) REFERENCES series(id),
-                FOREIGN KEY (operator_id) REFERENCES operators(id),
-                FOREIGN KEY (room_id) REFERENCES rooms(id),
-                FOREIGN KEY (equipment_id) REFERENCES equipments(id),
-                FOREIGN KEY (animal_type_id) REFERENCES animal_types(id)
+                FOREIGN KEY (serial_id) REFERENCES series(id),
+                FOREIGN KEY (qual_id) REFERENCES qualifications(id),
+                FOREIGN KEY (equipment_id) REFERENCES equipments(id)
+            );
+        """)
+
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS task_qualifications (
+                task_id INTEGER,
+                qual_id INTEGER,
+                PRIMARY KEY (task_id, qual_id),
+                FOREIGN KEY (task_id) REFERENCES tasks(id),
+                FOREIGN KEY (qual_id) REFERENCES qualifications(id)
+            );
+        """)
+
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS task_equipments (
+                task_id INTEGER,
+                equipment_id INTEGER,
+                PRIMARY KEY (task_id, equipment_id),
+                FOREIGN KEY (task_id) REFERENCES tasks(id),
+                FOREIGN KEY (equipment_id) REFERENCES equipments(id)
             );
         """)
         return True
@@ -431,13 +450,22 @@ class DBCursor:
         ]
         return studies
 
-    def get_serials(self, study_id:int) -> list:
+    def get_serials(self, study_id:int=None, serial_name:str=None) -> list:
         """
         Returns the serials.
         """
-        self.cursor.execute("""
-            SELECT * FROM `serial` WHERE `study_id` = ?;
-        """, (study_id,))
+        if study_id is None and serial_name is None:
+            self.cursor.execute("""
+                SELECT * FROM `serial`;
+            """)
+        elif study_id is not None:
+            self.cursor.execute("""
+                SELECT * FROM `serial` WHERE `study_id` = ?;
+            """, (study_id,))
+        elif serial_name is not None:
+            self.cursor.execute("""
+                SELECT * FROM `serial` WHERE `name` = ?;
+            """, (serial_name,))
         rows = self.cursor.fetchall()
         serials = [
             {
@@ -450,6 +478,40 @@ class DBCursor:
             for row in rows
         ]
         return serials
+
+    def get_tasks(self, study_id:int=None, serial_id:int=None) -> list:
+        """
+        Returns the tasks.
+        """
+        if study_id is None and serial_id is None:
+            self.cursor.execute("""
+                SELECT * FROM `tasks`;
+            """)
+        elif study_id is not None:
+            self.cursor.execute("""
+                SELECT * FROM `tasks` WHERE `study_id` = ?;
+                """, (study_id,))
+        elif serial_id is not None:
+            self.cursor.execute("""
+                SELECT * FROM `tasks` WHERE `serial_id` = ?;
+                """, (study_id,))
+        rows = self.cursor.fetchall()
+        tasks = [
+            {
+                'id': row[0],
+                'study_id': row[1],
+                'serial_id': row[2],
+                'name': row[3],
+                'qual_id': row[4],
+                'equipment_id': row[5],
+                'color': row[6],
+                'start_date': row[7],
+                'end_date': row[8],
+                'force': row[9]
+            }
+            for row in rows
+        ]
+        return tasks
 
     def insert_room(self, name:str, archived:int, description:str) -> bool:
         """
@@ -543,18 +605,40 @@ class DBCursor:
         self.connection.commit()
         return True
 
-    def insert_task(self, study_id:int, series_id:int, operator_id:int,
-                    room_id:int, equipment_id:int, animal_type_id:int,
-                    start_date:datetime, end_date:datetime, description:str) -> bool:
+    def insert_task(self, study_id: int, serial_id: int,
+                    task_name: str, qual_id: list,
+                equipment_id: list, color: str, start_date: datetime,
+                end_date: datetime, force: bool) -> bool:
         """
         Inserts a task in the database.
         """
+        # Insert the task into the tasks table
         self.cursor.execute("""
-            INSERT INTO `tasks` (`study_id`, `series_id`, `operator_id`, `room_id`, `equipment_id`, `animal_type_id`, `start_date`, `end_date`, `description`)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
-            """, (study_id, series_id, operator_id, room_id, equipment_id, animal_type_id, start_date, end_date, description))
+            INSERT INTO tasks (study_id, serial_id, name, color, start_date, end_date, force)
+            VALUES (?, ?, ?, ?, ?, ?, ?);
+            """, (study_id, serial_id, task_name, color, start_date, end_date, force))
         self.connection.commit()
-        return  True
+
+        # Get the auto-generated ID of the newly inserted task
+        task_id = self.cursor.lastrowid
+
+        # Insert the task-qualification relationships into the task_qualifications table
+        for q_id in qual_id:
+            self.cursor.execute("""
+                INSERT INTO task_qualifications (task_id, qual_id)
+                VALUES (?, ?);
+                """, (task_id, q_id))
+        self.connection.commit()
+
+        # Insert the task-equipment relationships into the task_equipments table
+        for eq_id in equipment_id:
+            self.cursor.execute("""
+                INSERT INTO task_equipments (task_id, equipment_id)
+                VALUES (?, ?);
+                """, (task_id, eq_id))
+        self.connection.commit()
+
+        return True
 
     def insert_study(self, name:str, archived:bool, client_name:str,
                      animal_type_id:int, number:int, description:str) -> bool:

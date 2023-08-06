@@ -3,10 +3,11 @@ studies.py
 
 Studies template for the body
 """
+#pylint: disable=django-not-configured
 
 # -------------------------------------------------------------------#
 
-# from datetime import datetime
+from datetime import datetime
 from tkcolorpicker import askcolor
 from src.utils.graphical_utils import Frame, Canvas, Label, ButtonApp, Text, StringVar
 from src.utils.graphical_utils import LabelEntryPair, Serials, IntVar, Checkbutton
@@ -15,6 +16,7 @@ from src.interface.widgets.schedule_picker import SchedulePicker
 from src.interface.widgets.right_click import RCMStudy, RCMSerial
 from src.interface.widgets.agenda_canvas import WorkingFrame
 from src.interface.widgets.footer_grad import FooterFrame
+from src.interface.menus.right.body_templates.templates import TaskTemplate
 
 # -------------------------------------------------------------------#
 
@@ -39,6 +41,8 @@ class StudiesTemplate(Frame):
         self.study_frame = None
         self.add_study = None
         self.add_days_off = None
+
+        self.add_task_template = None
 
         self.setup_timelines()
 
@@ -181,6 +185,43 @@ class StudiesTemplate(Frame):
         Deletes the study.
         """
 
+    def show_add_task_template(self, widget) -> None:
+        """
+        Shows the template of adding a task.
+        """
+        if isinstance(widget, Label):
+            widget_name = widget.cget("text")
+        else:
+            widget_name = widget.name
+
+        serial = self.db_manager.get_serials(serial_name=widget_name)[0]
+        serial_id = serial["id"]
+        study_id = serial["study_id"]
+
+        if self.add_task_template is not None:
+            return
+        self.manager.manager.footer.hide_filters()
+        self.study_frame.grid_forget()
+        self.days_off_frame.grid_forget()
+        self.footer_frame.grid_forget()
+        self.compact_btn.grid_forget()
+        self.add_task_template = TaskTemplate(self, study_id, serial_id, widget_name)
+        self.add_task_template.pack(fill='both', expand=True,
+                            side='top', padx=10, pady=10)
+
+    def from_addtask_to_timeline(self) -> None:
+        """
+        Back to the timeline.
+        """
+        self.manager.manager.header.reset_modifications()
+        self.add_task_template.pack_forget()
+        self.add_task_template = None
+        self.manager.manager.footer.show_filters()
+        self.study_frame.grid(row=2, column=0, sticky='nsew', pady=(0, 10))
+        self.days_off_frame.grid(row=1, column=0, sticky='nsew', pady=(0, 10))
+        self.compact_btn.grid(row=0, column=0, sticky='nsew')
+        self.footer_frame.grid(row=3, column=0, sticky='nsew')
+
 # -------------------------------------------------------------------#
 
 
@@ -214,17 +255,20 @@ class StudyTimelineTemplate(WorkingFrame):
                                          study["client_name"], study["number"],
                                          study["animal_type_id"], study["description"])
             for serial in self.manager.db_manager.get_serials(study["id"]):
+                print((serial["id"]))
+                print(self.manager.db_manager.get_tasks(serial_id=serial["id"]))
                 serial_frame = self.add_serial(study_frame, serial["name"],
                                                serial["number"], serial["ears"])
-                # for task in self.manager.db_manager.get_tasks(serial["id"]):
-            #         self.add_task(serial_frame, task["name"], task["start_date"], task["end_date"])
+                for task in self.manager.db_manager.get_tasks(serial["id"]):
+                    print(serial_frame, task["name"], task["start_date"], task["end_date"])
+                    self.add_task(serial_frame, task["name"], task["start_date"], task["end_date"])
 
         # self.manager.db_manager.insert_study("STUDY TEST", 0, "CLIENT TEST", 1, 69, "Lorem ipsum")
         # self.add_study("STUDY TEST", 0, "CLIENT TEST", 1, 69, "Lorem ipsum")
         # serial_frame = self.add_serial(study_frame, "SERIAL TEST")
         # self.manager.db_manager.insert_task(1, 1, 1, 1, 1, 1, datetime(2023, 7, 16, 10, 0), datetime(2023, 7, 16, 18, 0),
         #                                     "Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
-        # self.add_task(serial_frame, "TASK TEST", datetime(2023, 7, 16, 10, 0), datetime(2023, 7, 16, 18, 0))
+        self.add_task(serial_frame, "TASK TEST", datetime(2023, 7, 16, 10, 0), datetime(2023, 7, 16, 18, 0))
 
     def retrieve_studies(self) -> list:
         """
